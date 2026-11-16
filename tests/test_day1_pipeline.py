@@ -1,8 +1,7 @@
 """Tests for the Day 1 ingestion, validation and partition pipeline.
 
-These tests are the executable version of the Day 1 contract. A trainer can
-run them before a session to prove the environment works, and a participant
-can run them to check their own solution.
+These tests are the executable version of the Day 1 contract. Run them to
+verify the environment and to check any change to the pipeline.
 """
 
 from __future__ import annotations
@@ -22,7 +21,7 @@ from schema import (
 )
 from validation import Thresholds, run_pipeline, write_outputs
 
-#: The shipped dataset is a teaching fixture. These numbers are the contract.
+#: The shipped dataset is a test fixture. These numbers are the contract.
 EXPECTED_RECEIVED = 25
 EXPECTED_DUPLICATES = 1
 EXPECTED_REJECTED = 17

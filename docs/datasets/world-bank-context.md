@@ -1,15 +1,15 @@
-# World Bank country-level context exercise
+# World Bank country-level context
 
 **Programme:** Operational Data Analytics and Dashboard Engineering for SupTech Systems
-**Status:** Day 1, separate exercise. Not part of the ingestion pipeline.
+**Status:** Day 1, separate source. Not part of the ingestion pipeline.
 
-> This exercise uses published country-level indicators from the World Bank's public
-> API. It is a separate activity on purpose. It is never joined to the
+> This uses published country-level indicators from the World Bank's public
+> API. It is kept separate on purpose. It is never joined to the
 > institution-level synthetic submissions.
 
 ---
 
-## 1. Why this is a separate exercise
+## 1. Why this is a separate source
 
 The synthetic submissions and the World Bank indicators are observations of different
 things at different grains.
@@ -70,7 +70,7 @@ The response has two elements:
   and value, the country code and name, the date, the unit and the country metadata
   object.
 
-Two things to read every time before teaching an indicator:
+Two things to read every time before using an indicator:
 
 - **The indicator name and definition**, which comes back inside each observation
   under `indicator.value`. The code alone does not tell you what it measures.
@@ -90,11 +90,11 @@ Financial-sector indicators to look for include account ownership (`FX.OWN.TOTL.
 domestic credit to the private sector (`FS.AST.PRVT.GD.ZS`), the depth of the
 financial intermediary, and the number of depositors per 1,000 adults. Confirm the
 definition, the unit, the coverage and the update frequency from the source metadata
-before teaching any of them.
+before using any of them.
 
 ---
 
-## 3. The exercise in the notebook
+## 3. The notebook
 
 `day-01-data-engineering/notebooks/world_bank_context.ipynb` runs the retrieval
 end to end. It does five things:
@@ -111,12 +111,12 @@ end to end. It does five things:
 The notebook does not join the two datasets, and it says why on the cell that could
 have done it.
 
-### Notes for the trainer
+### Operational notes
 
-- **The API is a live external service.** If the room has no internet access, the
-  notebook will fail at the retrieval step. Check this before the session and have
-  a saved copy of one response ready. The notebook prints the metadata block
-  precisely so a participant can see that it read a real published response.
+- **The API is a live external service.** If the environment has no internet access,
+  the notebook will fail at the retrieval step. Have a saved copy of one response
+  ready. The notebook prints the metadata block precisely so a reader can see that
+  it read a real published response.
 - **Gaps are normal.** Several indicators have missing years. A missing observation
   is not a zero, and the notebook shows a gap rather than filling it.
 - **The values are real.** This is the one part of the programme that uses published
@@ -126,9 +126,9 @@ have done it.
 
 ---
 
-## 4. What the exercise is for
+## 4. What this context is for
 
-By the end of it, the participant should be able to answer:
+The questions this source answers:
 
 1. What does one row of a country-level indicator represent?
 2. Why can it not be joined to an institution-level submission?
@@ -136,4 +136,4 @@ By the end of it, the participant should be able to answer:
 4. Where do the gaps in a published series come from, and why is a gap not a zero?
 
 That fourth question is the same question as "why is a missing deposit not a zero",
-and it is worth asking in both places.
+and it applies in both places.

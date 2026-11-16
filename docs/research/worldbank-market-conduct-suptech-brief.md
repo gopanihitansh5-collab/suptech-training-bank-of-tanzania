@@ -1,10 +1,10 @@
-# Day 1 morning theory brief: SupTech for market conduct supervision
+# SupTech for market conduct supervision
 
 **Citations.** "p.n" = the `=== PAGE n ===` markers of the extracted source text of the World Bank note (Source list). The note's printed pages run six lower (source p.7 = printed p.1).
 
 ## Purpose and scope
 
-Supports the Day 1 morning theory session. Primary source: the World Bank note *From Spreadsheets to Suptech* (June 2018), which defines Suptech and documents case studies of the U.S. CFPB, the Bank of Lithuania (BoL) and the Central Bank of Brazil (BCB) (p.7, Section 1).
+Domain reference for the programme. Primary source: the World Bank note *From Spreadsheets to Suptech* (June 2018), which defines Suptech and documents case studies of the U.S. CFPB, the Bank of Lithuania (BoL) and the Central Bank of Brazil (BCB) (p.7, Section 1).
 
 Scope: the note covers **market conduct supervision** — "aspects of financial sector supervision other than prudential supervision, such as consumer protection, anti-money laundering/combating the financing of terrorism (AML/CFT) and competition-related business conduct issues" (p.7). It says nothing about Bank of Tanzania systems; this prototype uses synthetic data only. Treat it as transferable practice, not a description of this repository.
 
@@ -24,7 +24,7 @@ The four-generation framing comes from the secondary source, not the World Bank 
 
 The note's own examples sit in the earlier generations: BoL's complaints system is a single relational database (Oracle, SharePoint) with scanned submissions uploaded by hand (p.17, p.18); Austria's platform standardises uploads into departmental "smart cubes" (p.10); Rwanda's warehouse automates pulls into a warehouse, not a lake (p.10); the CFPB migrated its CRM to integrate with wider IT (p.13, p.16); Brazil's SisCom remains bespoke (p.19, p.21).
 
-For a small central bank the note is explicit: "Suptech use cases and outcomes are possible regardless of the size or maturity of the jurisdiction" (p.21) and "many countries lack the resources available to the CFPB, but this does not preclude development of a basic yet robust system in a smaller country" (p.16). Tell participants plainly that **this training prototype is not a fourth-generation platform**: it is file-based ingestion and validation over synthetic CSV with a Pandas pipeline — gen 1-2 discipline (immutable source, structured outputs, documented decisions) plus Regnology's API-driven handoff, with no data lake, no distributed compute and no machine-learning runtime.
+For a small central bank the note is explicit: "Suptech use cases and outcomes are possible regardless of the size or maturity of the jurisdiction" (p.21) and "many countries lack the resources available to the CFPB, but this does not preclude development of a basic yet robust system in a smaller country" (p.16). State plainly that **this prototype is not a fourth-generation platform**: it is file-based ingestion and validation over synthetic CSV with a Pandas pipeline — gen 1-2 discipline (immutable source, structured outputs, documented decisions) plus Regnology's API-driven handoff, with no data lake, no distributed compute and no machine-learning runtime.
 
 ## SupTech vs RegTech
 
@@ -61,14 +61,14 @@ Network analytics and web scraping for a sentiment index are **not** in the note
 
 ## Data pipeline implications for Day 1
 
-The bridge to the afternoon practical (ingest synthetic CSV, check schema and types, identify duplicates, apply validation rules, emit valid / rejected / duplicate outputs plus a validation summary):
+The bridge to the ingestion pipeline (ingest synthetic CSV, check schema and types, identify duplicates, apply validation rules, emit valid / rejected / duplicate outputs plus a validation summary):
 
 - **Keep the raw source immutable.** The note's premise is that the supervisor, not the FSP, aggregates: data-pull and data-input both deliver raw data to the supervisor for transformation (p.9-10). A rejected record cannot be re-derived if the source was overwritten.
 - **Validate every record and record why it failed.** The outcome chain depends on "improved scope, accuracy, consistency, and timeliness of collected information" (p.12), and standardised submission produced more consistent, higher-quality data in Austria (p.10). BCB's SisCom "does not analyze or validate all data submitted by banks and NBFIs automatically"; part is validated by supervisors using other systems (p.19). The rejection-reason column makes that supervisory step explicit rather than silent.
 - **Do not mix country-level and institution-level grains.** The CFPB framework separates product-market inputs (market size, market risk) from institution product-line inputs (institution product size, field and market intelligence) (p.14). BoL's market-side assessment "does not necessarily take into account the size or systemic importance of FSPs" and works from complaints against particular products (p.18). Same discipline for the World Bank country indicators: join only under an explicit, defensible model.
 - **Where the API-driven handoff fits.** Regnology's third principle is API-driven exchange replacing GUI re-keying and proprietary A2A; the note's counterparts are executable rules, the CFPB Open Data API and API-based inter-regulator sharing (p.11, p.14, p.16). The dashboard handoff is where the validated, single-grain dataset becomes a supervisor-facing view, following the CFPB pattern of examiners drawing dynamic information from an internal dashboard (p.15).
 
-## Limitations, risks and what to tell participants
+## Limitations, risks and disclosure
 
 From Section 4 (Cross-cutting Considerations) and the case studies:
 

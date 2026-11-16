@@ -65,7 +65,7 @@ PARSED_COLUMNS = ("total_deposits", "total_loans", "reporting_date", "reporting_
 
 @dataclass(frozen=True)
 class Thresholds:
-    """Tunable thresholds, kept in one place so the workshop can discuss them."""
+    """Tunable thresholds, kept in one place so they can be reviewed."""
 
     max_total_deposits: float = 1.0e14
     max_total_loans: float = 1.0e14

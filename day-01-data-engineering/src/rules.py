@@ -15,8 +15,8 @@ Two severities are used:
     curated dataset and written to ``review_records.csv`` so that Day 2 can
     raise a supervisory exception for it.
 
-The catalog is data, not code, so the workshop can print it, filter it, and
-export it to ``datasets/reference/validation_rule_catalog.csv``.
+The catalog is data, not code, so it can be printed, filtered, and
+exported to ``datasets/reference/validation_rule_catalog.csv``.
 """
 
 from __future__ import annotations

@@ -166,9 +166,9 @@ The shipped dataset has 25 records. Running the pipeline produces:
 | Rules evaluated | 19 |
 | Rules breached | 19 |
 
-The row-level breakdown is the trainer's answer key and is kept in
-`day-01-data-engineering/solutions/day1_answer_key.md` so it can be removed from a
-participant-only copy.
+The row-level breakdown is in `day-01-data-engineering/reports/data_quality_audit.csv`,
+one row per finding, and the per-rule totals are in
+`day-01-data-engineering/reports/rule_breach_counts.csv`.
 
 The acceptance rate of 0.16 is not a quality score for the data. It is the share of
 the file that would reach the curated layer, and it is deliberately low because the

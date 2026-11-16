@@ -6,7 +6,7 @@ that Day 2 starts from a database rather than from a CSV.
 Nothing here touches a database unless a connection string is supplied
 through the ``DATABASE_URL`` environment variable. The generated DDL is
 verified by the test suite without a live server, so the structure can be
-reviewed in the workshop on any machine.
+reviewed on any machine.
 
 Never put a password or a connection string in this repository or in a shared
 notebook. Use an environment variable that only exists on the training

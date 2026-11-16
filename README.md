@@ -1,18 +1,18 @@
-# NavsaTech — Bank of Tanzania SupTech training workspace
+# NavsaTech — Bank of Tanzania SupTech prototype
 
 **Programme:** Operational Data Analytics and Dashboard Engineering for SupTech Systems
-**Client context:** Bank of Tanzania (training prototype only)
+**Client context:** Bank of Tanzania (prototype only)
 **Duration:** Five days
 **Day 1 focus:** SupTech fundamentals, data architecture, ingestion and validation.
 
 > All institution names, identifiers, reporting values and records in this repository
-> are synthetic training data. This is not an official Bank of Tanzania system and it
-> contains no real institution submissions. The rule catalog is illustrative training
-> material, not a regulatory reporting standard.
+> are synthetic. This is not an official Bank of Tanzania system and it contains no
+> real institution submissions. The rule catalog is illustrative material, not a
+> regulatory reporting standard.
 
 ---
 
-## Day 1 outcome
+## Day 1 scope
 
 A documented solution architecture and a working initial data ingestion and
 preparation pipeline:
@@ -21,7 +21,7 @@ preparation pipeline:
 - records partitioned into valid, review, rejected and duplicate destinations;
 - an audit trail that explains every finding from the evidence;
 - a defined analytical data model and target relational structures;
-- a Colab notebook and a reusable implementation that are checked against each
+- a reference notebook and a reusable implementation that are checked against each
   other by the test suite.
 
 ---
@@ -38,20 +38,14 @@ suptech-training-bank-of-tanzania/
 │   │       ├── reporting_calendar.csv                 4 reporting periods
 │   │       └── validation_rule_catalog.csv            the 19 rules, generated
 │   ├── notebooks/
-│   │   ├── day1_pipeline.ipynb                        the Day 1 practical
-│   │   └── world_bank_context.ipynb                   separate context exercise
+│   │   ├── day1_pipeline.ipynb                        the Day 1 reference notebook
+│   │   └── world_bank_context.ipynb                   external context notebook
 │   ├── src/
 │   │   ├── ingestion.py                               load without repairing
 │   │   ├── rules.py                                   the declared rule catalog
 │   │   ├── validation.py                              the pipeline
 │   │   ├── schema.py                                  the data model and the DDL
 │   │   └── db.py                                      optional PostgreSQL load
-│   ├── exercises/
-│   │   ├── README.md                                  exercise index
-│   │   └── participant_workbook.md                    the participant workbook
-│   ├── solutions/
-│   │   ├── README.md                                  trainer notes
-│   │   └── day1_answer_key.md                         trainer answer key
 │   └── reports/                                       generated, not committed
 ├── docs/
 │   ├── architecture/
@@ -60,8 +54,7 @@ suptech-training-bank-of-tanzania/
 │   │   ├── day1-data-flow.md                          the Day 1 flow and rules
 │   │   └── poc-scope-and-acceptance-criteria.md       scope and measurable criteria
 │   ├── datasets/world-bank-context.md                 country-level context, kept separate
-│   ├── research/worldbank-market-conduct-suptech-brief.md   source-grounded theory brief
-│   └── day1-session-plan.md                           the trainer run sheet
+│   └── research/worldbank-market-conduct-suptech-brief.md   source-grounded theory brief
 ├── tests/
 │   ├── conftest.py
 │   ├── test_day1_pipeline.py                          40 tests on the pipeline
@@ -139,13 +132,13 @@ and 4 warning findings across all 19 rules.
 
 That acceptance rate of 0.16 is not a data quality score. The dataset exists to
 exercise every rule in the catalog, and the row-level breakdown is in
-`day-01-data-engineering/solutions/day1_answer_key.md`.
+`day-01-data-engineering/reports/data_quality_audit.csv`.
 
 ---
 
 ## The Day 1 notebooks
 
-### `day1_pipeline.ipynb` — the practical
+### `day1_pipeline.ipynb` — the reference notebook
 
 Run it in Colab or in a local Jupyter environment. It finds the data automatically
 when it is run from a clone of the repository, and it prompts for an upload when
@@ -156,19 +149,19 @@ pip install jupyterlab
 jupyter lab
 ```
 
-The notebook is the trainer's readable implementation. The production version lives
+The notebook is a readable reference implementation. The production version lives
 in `day-01-data-engineering/src/validation.py`. The two are deliberately separate,
 and `tests/test_notebook_parity.py` executes the notebook's cells and checks that
 both sides agree on every record, every reason and every finding.
 
-### `world_bank_context.ipynb` — the context exercise
+### `world_bank_context.ipynb` — external context
 
-Retrieves published country-level indicators from the World Bank API. It is a
-separate exercise on purpose: country-level indicators and institution-level
-submissions are observations at different grains and are never joined. See
+Retrieves published country-level indicators from the World Bank API. It is
+deliberately separate: country-level indicators and institution-level submissions
+are observations at different grains and are never joined. See
 `docs/datasets/world-bank-context.md`.
 
-This notebook calls a live external service. If the training room has no internet
+This notebook calls a live external service. If the environment has no internet
 access, save one response in advance.
 
 ---
@@ -198,14 +191,14 @@ exported and argued about without touching the pipeline.
 | --- | --- | --- |
 | Repository | GitHub | One central repository. Keep it private until the material is approved. |
 | IDE | VS Code | Application development. |
-| Notebook | Google Colab | Guided demonstrations and participant exercises. |
+| Notebook | Google Colab | Exploration and demonstrations. |
 | Language | Python 3.11+ | Data processing. |
 | Data manipulation | Pandas | Ingestion and validation. |
 | Database | PostgreSQL | Relational storage, introduced on Day 2. |
-| Dataset | Synthetic plus World Bank | Training data. |
+| Dataset | Synthetic plus World Bank | Prototype data. |
 | Version control | Git | Change tracking. |
 
-Colab is the teaching and exploration environment. VS Code is where the reusable
+Colab is the exploration environment. VS Code is where the reusable
 application is developed. PostgreSQL is introduced through the local or cloud
 development environment; connect to it only when an approved and secure connection
 is available.
@@ -264,27 +257,14 @@ a separate context exercise:
 - Financial Development data collection: https://data.worldbank.org/collections/findata
 
 Country-level indicators are not institution-level supervisory submissions. Keep
-the data levels distinct in teaching and in the data model.
-
----
-
-## Suggested Day 1 teaching flow
-
-The full run sheet, with timings and checkpoints, is in
-`docs/day1-session-plan.md`.
-
-- 20% introduction: objectives, participant context, the SupTech scenario and the
-  project walkthrough.
-- 30% theory: SupTech, sources, architecture, ETL, quality and modelling.
-- 50% practical: environment check, ingestion demo, participant exercise, validation
-  demo, participant implementation and review.
+the data levels distinct in the code and in the data model.
 
 ---
 
 ## Scope note
 
-This repository is a training workspace. It is not production-ready software, it is
+This repository is a prototype. It is not production-ready software, it is
 not a regulatory reporting standard, and it does not represent Bank of Tanzania
-internal data or systems. Confirm the participant's laptop policy, the approved
+internal data or systems. Confirm the machine policy, the approved
 cloud environment, the software versions and the data-handling restrictions before
-the training.
+use.

@@ -6,8 +6,8 @@ This module is the single source of truth for:
 * the reference tables the pipeline validates against;
 * the target PostgreSQL structures that Day 2 loads into.
 
-The DDL is kept as plain SQL text so it can be reviewed in a workshop and
-verified in tests without a live database.
+The DDL is kept as plain SQL text so it can be reviewed without a live
+database.
 
 All identifiers, names and values used in this repository are synthetic
 training data.
@@ -140,8 +140,8 @@ def curated_column_names() -> list[str]:
 def create_schema_sql() -> str:
     """Return the DDL for the Day 1 target relational structures.
 
-    The DDL is plain text so it can be reviewed line by line in the workshop
-    and asserted on in tests without provisioning a database.
+    The DDL is plain text so it can be reviewed line by line and asserted on in
+    tests without provisioning a database.
     """
     return f"""
 CREATE SCHEMA IF NOT EXISTS {TARGET_SCHEMA};

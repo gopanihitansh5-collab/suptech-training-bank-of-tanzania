@@ -104,8 +104,8 @@ cannot be checked is not an acceptance criterion.
 | # | Criterion | How it is verified |
 | --- | --- | --- |
 | D5.1 | Core data processing, API, integration and dashboard workflows pass their tests. | The full suite, run and reported. |
-| D5.2 | Results are measured against the criteria above and the result is documented. | The acceptance checklist in the Day 5 session. |
-| D5.3 | The participant demonstrates the PoC and explains its architecture, its limitations and its next steps. | The demonstration, reviewed against the architecture document. |
+| D5.2 | Results are measured against the criteria above and the result is documented. | The acceptance checklist at the Day 5 review. |
+| D5.3 | The PoC is demonstrated and its architecture, its limitations and its next steps are explained. | The demonstration, reviewed against the architecture document. |
 
 ---
 
@@ -116,10 +116,10 @@ cannot be checked is not an acceptance criterion.
 | `institution_reports_synthetic.csv` | One row per institution per reporting period. | The primary dataset. 25 records, deliberately covering every rule in the catalog. |
 | `institutions_registry.csv` | One row per institution. | Reference data for `R002`, `R003`, `W003`, `W004`. |
 | `reporting_calendar.csv` | One row per reporting period. | Reference data for `R005`, `R006`, `R007`, `R015`. |
-| World Bank country indicators | One row per country per year per indicator. | A separate context exercise. Not joined to the institution-level data. |
+| World Bank country indicators | One row per country per year per indicator. | A separate context source. Not joined to the institution-level data. |
 
 The dataset is small on purpose. Its job is to make every rule reachable, so that a
-participant can trace any rejection back to a line in the file and a rule in the
+rejection can be traced back to a line in the file and a rule in the
 catalog.
 
 ---
@@ -128,9 +128,9 @@ catalog.
 
 | Risk | Handling |
 | --- | --- |
-| A participant treats a warning as a rejection and discards usable data. | The severity split is enforced by the pipeline, not by convention, and by two tests. |
+| A warning is treated as a rejection and usable data is discarded. | The severity split is enforced by the pipeline, not by convention, and by two tests. |
 | A rejection cannot be explained later. | Every finding is in the audit trail with the observed value, and the run manifest pins the input bytes. |
-| Country-level context gets joined to institution-level records. | The two grains are documented as separate, the context exercise is a separate notebook, and the architecture says not to join them. |
+| Country-level context gets joined to institution-level records. | The two grains are documented as separate, the context notebook is separate, and the architecture says not to join them. |
 | The prototype is mistaken for a production system. | Every document states the scope note, and the out-of-scope list is explicit. |
-| A rule threshold is treated as an official limit. | Thresholds are declared in one place, are labelled as training values, and are configurable. |
-| The PoC depends on the trainer's machine. | The pipeline is a plain script with no services to start, and `python -m pytest` verifies the environment in one command. |
+| A rule threshold is treated as an official limit. | Thresholds are declared in one place, are labelled as prototype values, and are configurable. |
+| The PoC depends on one machine. | The pipeline is a plain script with no services to start, and `python -m pytest` verifies the environment in one command. |

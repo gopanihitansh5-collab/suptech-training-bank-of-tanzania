@@ -1,10 +1,11 @@
 """The notebook and the pipeline must agree on every record.
 
-The Day 1 notebook carries the trainer's readable implementation and
-`day-01-data-engineering/src/validation.py` carries the reusable one. They are
-written separately on purpose: the notebook has to be read in a workshop, and
-the module has to be tested. The risk is drift, so these tests execute the
-notebook cells and compare the outcome with the pipeline.
+`day-01-data-engineering/notebooks/day1_pipeline.ipynb` carries a readable
+reference implementation and `day-01-data-engineering/src/validation.py`
+carries the reusable one. They are written separately on purpose: the notebook
+has to be readable on its own, and the module has to be tested. The risk is
+drift, so these tests execute the notebook cells and compare the outcome with
+the pipeline.
 """
 
 from __future__ import annotations

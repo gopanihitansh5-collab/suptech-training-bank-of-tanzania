@@ -1,4 +1,4 @@
-"""Shared test configuration for the SupTech training workspace."""
+"""Shared test configuration for the SupTech prototype."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def repo_root() -> Path:
 
 @pytest.fixture(scope="session")
 def pipeline_result():
-    """Run the shipped dataset through the pipeline once for the whole session."""
+    """Run the shipped dataset through the pipeline once for the whole test run."""
     from validation import run_pipeline
 
     return run_pipeline()
