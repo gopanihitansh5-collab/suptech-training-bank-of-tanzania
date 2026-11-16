@@ -1,0 +1,16 @@
+# Core data processing
+pandas>=2.2,<4
+numpy>=1.26,<3
+
+# Notebooks
+jupyter>=1.0
+jupyterlab>=4.0
+nbformat>=5.9
+nbclient>=0.9
+
+# Target relational store, used from Day 2
+sqlalchemy>=2.0,<3
+psycopg[binary]>=3.2,<4
+
+# Testing
+pytest>=8.0

@@ -1,0 +1,20 @@
+institution_id,institution_name,institution_type,licence_status,region,reporting_frequency,watchlist_flag
+TZ001,Institution Alpha,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ002,Institution Beta,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ003,Institution Gamma,Microfinance Bank,Active,Arusha,Monthly,false
+TZ004,Institution Delta,Commercial Bank,Active,Mwanza,Monthly,false
+TZ005,Institution Epsilon,Credit Reference Bureau,Active,Dar es Salaam,Monthly,false
+TZ006,Institution Zeta,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ007,Institution Eta,Microfinance Bank,Active,Dodoma,Monthly,false
+TZ008,Institution Theta,Commercial Bank,Under Review,Dar es Salaam,Monthly,false
+TZ009,Institution Iota,Commercial Bank,Active,Tanga,Monthly,false
+TZ010,Institution Kappa,Microfinance Bank,Active,Njombe,Monthly,false
+TZ011,Institution Lambda,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ012,Institution Mu,Commercial Bank,Active,Arusha,Monthly,false
+TZ013,Institution Nu,Microfinance Bank,Active,Mbeya,Monthly,false
+TZ014,Institution Xi,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ015,Institution Omicron,Commercial Bank,Active,Dar es Salaam,Quarterly,true
+TZ016,Institution Pi,Microfinance Bank,Active,Tanga,Monthly,false
+TZ017,Institution Rho,Commercial Bank,Active,Dar es Salaam,Monthly,false
+TZ018,Institution Tau,Microfinance Bank,Active,Morogoro,Monthly,false
+TZ019,Institution Upsilon,Microfinance Bank,Active,Dar es Salaam,Monthly,false

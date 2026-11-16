@@ -1,0 +1,200 @@
+"""The Day 1 validation rule catalog.
+
+Every rule the pipeline applies is declared here, once, with an identifier, a
+severity, a plain-language description and the reason a supervisor cares.
+
+Two severities are used:
+
+``BLOCK``
+    The record cannot be trusted and is excluded from the curated dataset.
+    It is written to ``rejected_records.csv`` with its reasons and stays in
+    the audit trail.
+
+``WARN``
+    The record is plausible but needs a human look. It is admitted to the
+    curated dataset and written to ``review_records.csv`` so that Day 2 can
+    raise a supervisory exception for it.
+
+The catalog is data, not code, so the workshop can print it, filter it, and
+export it to ``datasets/reference/validation_rule_catalog.csv``.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+BLOCK = "BLOCK"
+WARN = "WARN"
+
+
+@dataclass(frozen=True)
+class Rule:
+    """One declared validation rule."""
+
+    rule_id: str
+    name: str
+    severity: str
+    description: str
+    rationale: str
+
+    @property
+    def is_blocking(self) -> bool:
+        return self.severity == BLOCK
+
+
+RULES: tuple[Rule, ...] = (
+    Rule(
+        "R001", "missing_required_field", BLOCK,
+        "A required field is empty, whitespace only, or absent after parsing.",
+        "A supervisory report with no identifier, name, date or period cannot "
+        "be attributed to an institution or placed in time.",
+    ),
+    Rule(
+        "R002", "invalid_institution_id_format", BLOCK,
+        "institution_id does not match the expected identifier pattern.",
+        "Identifiers are issued by the supervisor. A value that does not "
+        "follow the issued pattern is a submission error, not a new institution.",
+    ),
+    Rule(
+        "R003", "unknown_institution", BLOCK,
+        "institution_id is not present in the supervised institution register.",
+        "Reporting from an institution the supervisor does not recognise "
+        "cannot be supervised or aggregated into sector totals.",
+    ),
+    Rule(
+        "R004", "unparseable_reporting_date", BLOCK,
+        "reporting_date is not a valid calendar date.",
+        "The date anchors the report in time. An unparseable date silently "
+        "becomes a missing date once parsed.",
+    ),
+    Rule(
+        "R005", "reporting_date_outside_period", BLOCK,
+        "reporting_date falls outside the window of the stated reporting period.",
+        "A report dated outside its own period cannot be reconciled with the "
+        "period it claims to cover.",
+    ),
+    Rule(
+        "R006", "invalid_reporting_period_format", BLOCK,
+        "reporting_period does not match the expected YYYY-MM pattern.",
+        "The period is the aggregation key for every downstream indicator, so "
+        "it has to be a well formed period.",
+    ),
+    Rule(
+        "R007", "reporting_period_date_mismatch", BLOCK,
+        "reporting_period does not agree with the month of reporting_date.",
+        "The month in reporting_period and the month in reporting_date are "
+        "two statements of the same fact. When they disagree, the record "
+        "would be counted twice or in the wrong period.",
+    ),
+    Rule(
+        "R008", "non_numeric_total_deposits", BLOCK,
+        "total_deposits was supplied but cannot be read as a number.",
+        "Text such as 'not-reported' is a missing value wearing a disguise. "
+        "Coercing it to zero would understate sector deposits.",
+    ),
+    Rule(
+        "R009", "non_numeric_total_loans", BLOCK,
+        "total_loans was supplied but cannot be read as a number.",
+        "The same reasoning as R008, applied to loans and advances.",
+    ),
+    Rule(
+        "R010", "negative_total_deposits", BLOCK,
+        "total_deposits is negative.",
+        "A negative deposit balance is not economically meaningful for the "
+        "reported measure and signals an extraction or sign error.",
+    ),
+    Rule(
+        "R011", "negative_total_loans", BLOCK,
+        "total_loans is negative.",
+        "A negative loan balance is not economically meaningful for the "
+        "reported measure and signals an extraction or sign error.",
+    ),
+    Rule(
+        "R012", "implausible_magnitude", BLOCK,
+        "A financial amount exceeds the configured plausibility ceiling.",
+        "Magnitude ceilings catch unit errors, such as a value reported in "
+        "shillings instead of Tanzanian shillings.",
+    ),
+    Rule(
+        "R013", "exact_duplicate_record", BLOCK,
+        "The submitted row is identical to a row already received.",
+        "Exact duplicates inflate totals. They are separated from resubmissions "
+        "because no judgement is needed to detect them.",
+    ),
+    Rule(
+        "R014", "duplicate_submission_key", BLOCK,
+        "Another row was received for the same institution and reporting period.",
+        "Two different values for one institution and period is a resubmission "
+        "or an amendment. Which one is authoritative cannot be decided from "
+        "the file alone, so a supervisor has to confirm it.",
+    ),
+    Rule(
+        "R015", "unknown_reporting_period", BLOCK,
+        "reporting_period is not present in the reporting calendar.",
+        "The calendar defines which periods exist and when they close. A "
+        "period that is not on the calendar cannot be aggregated.",
+    ),
+    Rule(
+        "W001", "loan_to_deposit_ratio_out_of_band", WARN,
+        "Loans divided by deposits is outside the expected band.",
+        "The ratio is a supervisory indicator. An implausible ratio is not "
+        "proof of a bad submission, so it is flagged for review rather than "
+        "discarded.",
+    ),
+    Rule(
+        "W002", "zero_total_deposits", WARN,
+        "total_deposits is zero.",
+        "A zero balance is legal but unusual for an operating institution "
+        "and often means the figure was not supplied.",
+    ),
+    Rule(
+        "W003", "institution_on_watchlist", WARN,
+        "The reporting institution is on the enhanced monitoring list.",
+        "The report is valid, but a supervisor should see it alongside the "
+        "institution's watchlist status.",
+    ),
+    Rule(
+        "W004", "reporting_frequency_granularity_mismatch", WARN,
+        "The reporting period is finer than the institution's reporting cadence.",
+        "A quarterly institution reporting a monthly period is either a "
+        "template error or an early submission, and needs confirmation.",
+    ),
+)
+
+RULES_BY_ID: dict[str, Rule] = {rule.rule_id: rule for rule in RULES}
+RULES_BY_NAME: dict[str, Rule] = {rule.name: rule for rule in RULES}
+
+
+def rule_catalog_frame():
+    """Return the catalog as a pandas frame, ready to export or display."""
+    import pandas as pd
+
+    return pd.DataFrame(
+        [
+            {
+                "rule_id": rule.rule_id,
+                "rule_name": rule.name,
+                "severity": rule.severity,
+                "description": rule.description,
+                "rationale": rule.rationale,
+            }
+            for rule in RULES
+        ]
+    )
+
+
+def export_rule_catalog(destination=None):
+    """Write the catalog to the reference folder so it can be reviewed and diffed."""
+    from pathlib import Path
+
+    from schema import REFERENCE_DIR
+
+    destination = Path(destination or REFERENCE_DIR / "validation_rule_catalog.csv")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    rule_catalog_frame().to_csv(destination, index=False)
+    return destination
+
+
+if __name__ == "__main__":
+    path = export_rule_catalog()
+    print(f"Exported {len(RULES)} rules to {path}")

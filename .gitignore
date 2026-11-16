@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.env
+*.pyc
+.DS_Store
+.pytest_cache/
+
+# Generated pipeline output
+day-01-data-engineering/datasets/processed/
+day-01-data-engineering/reports/
+day-01-data-engineering/notebooks/day1_outputs/
+
+# Local environment and tooling
+.idea/
+.vscode/
