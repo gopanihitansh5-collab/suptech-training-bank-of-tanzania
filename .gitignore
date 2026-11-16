@@ -11,6 +11,14 @@ day-01-data-engineering/datasets/processed/
 day-01-data-engineering/reports/
 day-01-data-engineering/notebooks/day1_outputs/
 
+# Generated Day 2 output
+day-02-supervisory-analytics/datasets/processed/
+day-02-supervisory-analytics/reports/
+day-02-supervisory-analytics/notebooks/day2_outputs/
+
+# Notebook output written into the working directory
+day2_outputs/
+
 # Local environment and tooling
 .idea/
 .vscode/

@@ -83,12 +83,28 @@ cannot be checked is not an acceptance criterion.
 
 ### Day 2 — analytics and API
 
-| # | Criterion | How it is verified |
-| --- | --- | --- |
-| D2.1 | Selected indicators and threshold-based exceptions match independently checked expected results. | Indicator unit tests against hand-computed values. |
-| D2.2 | Protected endpoints enforce the configured authentication and reject an absent or invalid token. | API tests for both the success and the failure path. |
-| D2.3 | The curated layer loads into PostgreSQL with the declared constraints intact. | Load test plus constraint assertions. |
-| D2.4 | Every exception record carries the audit entries that explain it. | Join test between the exception table and the audit table. |
+| # | Criterion | How it is verified | State |
+| --- | --- | --- | --- |
+| D2.1 | Selected indicators and threshold-based exceptions match independently checked expected results. | `tests/test_day2_analytics.py`, 36 tests against hand computed values: the seven ratio values, the sector totals, the concentration index, the coverage ratio, the six exceptions and their severities. | Met |
+| D2.2 | Protected endpoints enforce the configured authentication and reject an absent or invalid token. | `tests/test_day2_api.py::test_a_protected_endpoint_rejects_a_missing_token`, `::test_a_protected_endpoint_rejects_an_invalid_token` and `::test_a_protected_endpoint_accepts_the_configured_token`. | Met |
+| D2.3 | The curated layer loads into PostgreSQL with the declared constraints intact. | `tests/test_day2_database.py`: the DDL is parsed and asserted without a server; the live load, the constraint checks and the foreign key check run when `DATABASE_URL` points at an approved development database. | Met, with the live check not yet run |
+| D2.4 | Every exception record carries the audit entries that explain it. | `tests/test_day2_analytics.py::test_every_audit_link_points_at_a_real_finding`, `::test_an_exception_from_a_flagged_record_carries_its_finding`, `::test_a_clean_record_raises_an_exception_without_a_finding` and `::test_a_sector_exception_links_to_the_findings_of_its_period`. | Met |
+
+Two notes on how D2.3 and D2.4 are read, because the wording can be made
+precise in more than one way.
+
+**D2.3.** The DDL, the loader and the constraint assertions are all in place
+and tested. The live load test is skipped until an approved development
+database is available; no PostgreSQL instance was reachable from the training
+machine, so that test has not been run. The state column says so.
+
+**D2.4.** An exception carries the audit entries of the records behind it,
+through a foreign-keyed link table, and each link says whether the finding
+*explains* the exception or is *context* for it. Where a subject produced no
+findings at all, the exception carries no link and says so in its explanation
+rather than borrowing an unrelated finding. A clean record that holds a
+quarter of the sector's deposits is a supervisory risk and not a data
+quality symptom, and the model says exactly that.
 
 ### Days 3 and 4 — real-time communication and the dashboard
 

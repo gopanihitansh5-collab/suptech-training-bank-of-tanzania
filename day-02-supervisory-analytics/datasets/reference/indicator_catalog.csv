@@ -1,0 +1,13 @@
+indicator_id,indicator_name,grain,unit,decimals,direction,description,formula
+IND-001,total_deposits,institution,TZS,2,neutral,Total customer deposits reported by the institution for the period.,total_deposits of the curated record
+IND-002,total_loans,institution,TZS,2,neutral,Total loans and advances reported by the institution for the period.,total_loans of the curated record
+IND-003,loan_to_deposit_ratio,institution,ratio,4,higher_is_worse,Loans as a share of deposits. The core intermediation indicator.,total_loans / total_deposits
+IND-004,sector_deposit_share,institution,percent,4,higher_is_worse,The institution's share of all deposits reported for the period.,total_deposits / sector_total_deposits * 100
+IND-005,deposit_growth_period_on_period,institution,percent,4,lower_is_worse,Change in deposits against the institution's previous period.,(total_deposits - previous_period_total_deposits) / previous_period_total_deposits * 100
+IND-006,loan_growth_period_on_period,institution,percent,4,higher_is_worse,Change in loans against the institution's previous period.,(total_loans - previous_period_total_loans) / previous_period_total_loans * 100
+IND-007,sector_total_deposits,sector,TZS,2,neutral,Total deposits reported across the supervised sector for the period.,sum(total_deposits) over the curated records of the period
+IND-008,sector_total_loans,sector,TZS,2,neutral,Total loans reported across the supervised sector for the period.,sum(total_loans) over the curated records of the period
+IND-009,sector_loan_to_deposit_ratio,sector,ratio,4,higher_is_worse,Sector loans as a share of sector deposits.,sector_total_loans / sector_total_deposits
+IND-010,sector_deposit_concentration_hhi,sector,index,4,higher_is_worse,Herfindahl-Hirschman concentration index of sector deposits.,sum((institution_deposit_share / 100) ** 2) * 10000
+IND-011,sector_watchlist_exposure_count,sector,count,0,neutral,Curated records in the period that came from an institution on the enhanced monitoring list.,count of curated records whose institution has watchlist_flag true
+IND-012,sector_reporting_coverage_ratio,sector,percent,4,lower_is_worse,Share of the institutions expected to report for the period that reached the curated layer.,distinct reporting institutions / expected reporters * 100

@@ -3,7 +3,8 @@
 **Programme:** Operational Data Analytics and Dashboard Engineering for SupTech Systems
 **Status:** Day 1. The model is defined here and generated from
 `day-01-data-engineering/src/schema.py`. The structures are exercised by the test
-suite; the live database load is introduced on Day 2.
+suite; the live database load is introduced on Day 2 and extended by
+`day-02-supervisory-analytics/src/ddl.py`.
 
 > All data in this repository is synthetic training data. The structures below are a
 > training model, not an agreed reporting standard.
@@ -192,17 +193,128 @@ evidence and not only the verdict.
 
 ---
 
-## 6. What Day 2 will add
+## 6. What Day 2 added
 
-The model above is enough for Day 1 and enough to start Day 2. Day 2 adds:
+Day 2 extends the model above without changing it. The rule still holds: the
+curated layer is the contract, and the later layers consume it without
+reaching back into the raw file.
 
-- **Indicator outputs.** A view or table of supervisory KPIs computed over the
-  curated layer, keyed by `institution_id` and `reporting_period`.
-- **Exception records.** A table of records that breach a configured threshold,
-  each one carrying the audit entries that explain it. This is why the audit table
-  exists in long format: an exception is a join, not a copy.
-- **The API read model.** Endpoints read the indicator and exception tables and
-  never the submitted file.
+### `suptech.supervisory_indicator`
 
-None of that changes the Day 1 tables. The rule is that the curated layer is the
-contract, and later layers consume it without reaching back into the raw file.
+```sql
+CREATE TABLE suptech.supervisory_indicator (
+    run_id             uuid NOT NULL,
+    indicator_id       text NOT NULL,
+    indicator_name     text NOT NULL,
+    grain              text NOT NULL CHECK (grain IN ('institution', 'sector')),
+    reporting_period   text NOT NULL,
+    subject_id         text NOT NULL,
+    institution_id     text,
+    indicator_value    numeric(18, 4),
+    unit               text NOT NULL,
+    decimals           integer NOT NULL,
+    direction          text NOT NULL,
+    calculation_basis  text,
+    created_at         timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (run_id, indicator_id, reporting_period, subject_id)
+);
+```
+
+One row means one indicator, for one subject, in one reporting period. The
+table is in long format for the same reason the audit trail is: the
+indicator catalog grows, and a new indicator has to be a new row rather than
+a schema migration.
+
+`subject_id` carries the identifier the indicator is about: the
+`institution_id` for an institution grain, and the literal `SECTOR` for a
+sector grain. The grain is declared, so a consumer never has to guess
+whether a number is an institution's figure or the sector's.
+
+`calculation_basis` says which records and which inputs produced the value.
+That is what makes a number on the dashboard inspectable.
+
+### `suptech.supervisory_exception`
+
+```sql
+CREATE TABLE suptech.supervisory_exception (
+    run_id              uuid NOT NULL,
+    exception_id        text NOT NULL,
+    threshold_id        text NOT NULL,
+    threshold_name      text NOT NULL,
+    indicator_id        text NOT NULL,
+    indicator_name      text NOT NULL,
+    grain               text NOT NULL CHECK (grain IN ('institution', 'sector')),
+    reporting_period    text NOT NULL,
+    subject_id          text NOT NULL,
+    institution_id      text,
+    source_row_number   integer,
+    severity            text NOT NULL
+                        CHECK (severity IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')),
+    observed_value      numeric(18, 4) NOT NULL,
+    observed_value_text text NOT NULL,
+    limit_description   text NOT NULL,
+    message             text NOT NULL,
+    explanation         text NOT NULL,
+    status              text NOT NULL CHECK (status IN ('open')),
+    link_mode           text NOT NULL CHECK (link_mode IN ('record', 'period')),
+    created_at          timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (run_id, exception_id)
+);
+```
+
+One row means one threshold breach. The identifier is a natural key built
+from the threshold, the subject and the period, so the same exception has
+the same identifier in every run. The primary key is therefore
+`(run_id, exception_id)`, not the identifier alone: two runs of the same
+data must not collide. This is the same decision the Day 1 curated table
+makes with `(run_id, source_row_number)`.
+
+`status` has one value, `open`, because triage workflow is out of scope for
+the prototype. It is declared so that the Day 3 and Day 4 work does not need
+a migration.
+
+### `suptech.exception_audit_link`
+
+```sql
+CREATE TABLE suptech.exception_audit_link (
+    run_id             uuid NOT NULL,
+    exception_id       text NOT NULL,
+    reporting_period   text NOT NULL,
+    source_row_number  integer NOT NULL,
+    rule_id            text NOT NULL,
+    rule_name          text NOT NULL,
+    severity           text NOT NULL,
+    observed_value     text,
+    detail             text,
+    relation           text NOT NULL CHECK (relation IN ('explains', 'context')),
+    link_mode          text NOT NULL,
+    PRIMARY KEY (run_id, exception_id, source_row_number, rule_id),
+    FOREIGN KEY (run_id, exception_id)
+        REFERENCES suptech.supervisory_exception (run_id, exception_id),
+    FOREIGN KEY (run_id, source_row_number, rule_id)
+        REFERENCES suptech.data_quality_audit (run_id, source_row_number, rule_id)
+);
+```
+
+One row means one finding attached to one exception. This is the join that
+the data model document promised: an exception is a join, not a copy.
+
+The foreign key into the audit trail is what makes the link trustworthy: an
+exception cannot point at a finding that does not exist. For the reference
+to resolve, Day 2 adds a unique index on the audit trail:
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS uq_audit_finding
+    ON suptech.data_quality_audit (run_id, source_row_number, rule_id);
+```
+
+`relation` separates the finding that *explains* the exception from the
+finding that is merely *context* for it. A sector exception is about the
+whole period, so it links to the findings of the period, and only some of
+them explain it.
+
+### The API read model
+
+The API reads the indicator and exception tables and never the submitted
+file. Its endpoints, its authentication and the verified numbers for the
+shipped dataset are in `docs/architecture/day2-analytics-and-api.md`.

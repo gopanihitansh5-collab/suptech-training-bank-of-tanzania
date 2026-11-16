@@ -4,11 +4,12 @@
 **Client context:** Bank of Tanzania (prototype only)
 **Duration:** Five days
 **Day 1 focus:** SupTech fundamentals, data architecture, ingestion and validation.
+**Day 2 focus:** Supervisory analytics, exception rules, the PostgreSQL load and the API.
 
 > All institution names, identifiers, reporting values and records in this repository
 > are synthetic. This is not an official Bank of Tanzania system and it contains no
-> real institution submissions. The rule catalog is illustrative material, not a
-> regulatory reporting standard.
+> real institution submissions. The rule catalog and the threshold catalog are
+> illustrative material, not a regulatory reporting standard.
 
 ---
 
@@ -23,6 +24,24 @@ preparation pipeline:
 - a defined analytical data model and target relational structures;
 - a reference notebook and a reusable implementation that are checked against each
   other by the test suite.
+
+---
+
+## Day 2 scope
+
+Supervisory indicators, exception rules and the read model the dashboard will
+consume:
+
+- twelve declared supervisory indicators computed over the curated layer;
+- ten declared thresholds with severities, bands and reasons;
+- exception records that carry the observed value, the limit and the reason;
+- a foreign-keyed link between an exception and the audit findings behind it;
+- the Day 2 relational structures and a loader for the curated layer;
+- an authenticated REST API over the read model, with no default token;
+- a reference notebook and a reusable implementation, checked against each
+  other by the test suite.
+
+The full narrative is in `docs/architecture/day2-analytics-and-api.md`.
 
 ---
 
@@ -47,26 +66,52 @@ suptech-training-bank-of-tanzania/
 │   │   ├── schema.py                                  the data model and the DDL
 │   │   └── db.py                                      optional PostgreSQL load
 │   └── reports/                                       generated, not committed
+├── day-02-supervisory-analytics/
+│   ├── datasets/
+│   │   ├── reference/
+│   │   │   ├── indicator_catalog.csv                  the 12 indicators, generated
+│   │   │   └── threshold_catalog.csv                  the 10 thresholds, generated
+│   │   └── processed/                                 generated, not committed
+│   ├── notebooks/
+│   │   └── day2_analytics.ipynb                      the Day 2 reference notebook
+│   ├── src/
+│   │   ├── analytics.py                               the analytics run
+│   │   ├── api.py                                     the REST API
+│   │   ├── auth.py                                    the training token scheme
+│   │   ├── catalogs.py                                the indicator and threshold catalogs
+│   │   ├── curated.py                                 the Day 1 curated layer
+│   │   ├── ddl.py                                     the Day 2 structures
+│   │   ├── exceptions.py                              threshold evaluation
+│   │   ├── indicators.py                              the indicator computation
+│   │   ├── loader.py                                  the PostgreSQL load
+│   │   ├── repository.py                              the read model
+│   │   └── serve.py                                   the ASGI entry point
+│   └── reports/                                       generated, not committed
 ├── docs/
 │   ├── architecture/
 │   │   ├── solution-architecture.md                   the reference architecture
 │   │   ├── data-model.md                              grains, tables, DDL
 │   │   ├── day1-data-flow.md                          the Day 1 flow and rules
+│   │   ├── day2-analytics-and-api.md                  the Day 2 flow and API
 │   │   └── poc-scope-and-acceptance-criteria.md       scope and measurable criteria
 │   ├── datasets/world-bank-context.md                 country-level context, kept separate
 │   └── research/worldbank-market-conduct-suptech-brief.md   source-grounded theory brief
 ├── tests/
 │   ├── conftest.py
 │   ├── test_day1_pipeline.py                          40 tests on the pipeline
-│   └── test_notebook_parity.py                        6 tests on notebook versus pipeline
+│   ├── test_notebook_parity.py                        6 tests on notebook versus pipeline
+│   ├── test_day2_analytics.py                         36 tests on the analytics
+│   ├── test_day2_api.py                               24 tests on the API
+│   ├── test_day2_database.py                          12 tests on the structures and the load
+│   └── test_day2_notebook_parity.py                    7 tests on notebook versus engine
 ├── requirements.txt
 ├── pytest.ini
 └── .gitignore
 ```
 
-Days 2 to 5 add `day-02-supervisory-analytics/`, `day-03-react-realtime/`,
-`day-04-integration/` and `day-05-testing/`. They are not created yet. The scope
-and the acceptance criteria for the whole programme are in
+Days 3 to 5 add `day-03-react-realtime/`, `day-04-integration/` and
+`day-05-testing/`. They are not created yet. The scope and the acceptance
+criteria for the whole programme are in
 `docs/architecture/poc-scope-and-acceptance-criteria.md`.
 
 ---
@@ -109,6 +154,12 @@ and the acceptance criteria for the whole programme are in
    python day-01-data-engineering/src/validation.py
    ```
 
+7. Run the Day 2 analytics over the curated layer:
+
+   ```bash
+   python day-02-supervisory-analytics/src/analytics.py
+   ```
+
 ### What the pipeline writes
 
 | Artefact | Contents |
@@ -124,6 +175,17 @@ and the acceptance criteria for the whole programme are in
 
 The `processed/` and `reports/` folders are generated output and are not committed.
 
+### What the Day 2 analytics writes
+
+| Artefact | Contents |
+| --- | --- |
+| `day-02-supervisory-analytics/datasets/processed/indicator_values.csv` | One row per indicator, per subject, per period. |
+| `day-02-supervisory-analytics/datasets/processed/exceptions.csv` | One row per threshold breach, with its evidence. |
+| `day-02-supervisory-analytics/datasets/processed/exception_audit_links.csv` | The link between an exception and the audit findings behind it. |
+| `day-02-supervisory-analytics/reports/sector_summary.csv` | One row per reporting period, for the dashboard summary. |
+| `day-02-supervisory-analytics/reports/exception_summary.csv` | Counts by severity. |
+| `day-02-supervisory-analytics/reports/analytics_manifest.json` | Run id, timestamps, input hashes, counts, versions. |
+
 ### The expected result
 
 The shipped dataset has 25 records. The pipeline produces 1 exact duplicate, 17
@@ -133,6 +195,14 @@ and 4 warning findings across all 19 rules.
 That acceptance rate of 0.16 is not a data quality score. The dataset exists to
 exercise every rule in the catalog, and the row-level breakdown is in
 `day-01-data-engineering/reports/data_quality_audit.csv`.
+
+### The expected result of Day 2
+
+The seven curated records produce 48 indicator values and 6 exceptions: two
+critical, two high and two medium. The sector holds 2,110,000,000 TZS in deposits
+and 1,580,000,000 TZS in loans, a loan-to-deposit ratio of 0.7488 and a deposit
+concentration index of 2,434.5814. The breakdown is in
+`day-02-supervisory-analytics/reports/sector_summary.csv`.
 
 ---
 
@@ -166,6 +236,22 @@ access, save one response in advance.
 
 ---
 
+## The Day 2 notebook
+
+### `day2_analytics.ipynb` — the reference notebook
+
+It reads the Day 1 curated layer, declares the indicator catalog and the threshold
+catalog, computes the indicators, evaluates the thresholds and writes the outputs.
+If the Day 1 artefacts are not on disk it runs the Day 1 pipeline first and reads
+what the pipeline published.
+
+The readable implementation lives in the notebook. The reusable one lives in
+`day-02-supervisory-analytics/src/`. The two are deliberately separate, and
+`tests/test_day2_notebook_parity.py` executes the notebook's cells and checks that
+both sides agree on every indicator value and every exception.
+
+---
+
 ## The rule catalog
 
 Nineteen rules are declared in `day-01-data-engineering/src/rules.py` and exported to
@@ -185,6 +271,26 @@ exported and argued about without touching the pipeline.
 
 ---
 
+## The indicator and threshold catalogs
+
+Twelve indicators and ten thresholds are declared in
+`day-02-supervisory-analytics/src/catalogs.py` and exported to
+`day-02-supervisory-analytics/datasets/reference/indicator_catalog.csv` and
+`day-02-supervisory-analytics/datasets/reference/threshold_catalog.csv`.
+
+An indicator is a measure. A threshold is a declared limit on one indicator, with
+the severity of a breach and the reason a supervisor would give for caring.
+
+The Day 2 severities are not the Day 1 severities. Day 1 asked whether a record
+can be trusted and answered `BLOCK` or `WARN`. Day 2 asks whether a number
+deserves attention and answers `CRITICAL`, `HIGH`, `MEDIUM` or `LOW`. A flawless
+record can raise a critical exception, and a flagged record can raise none.
+
+Both catalogs are data rather than code, so a supervisory limit is a change to a
+table and not a change to the pipeline.
+
+---
+
 ## Environment decisions
 
 | Component | Choice | Purpose |
@@ -195,6 +301,7 @@ exported and argued about without touching the pipeline.
 | Language | Python 3.11+ | Data processing. |
 | Data manipulation | Pandas | Ingestion and validation. |
 | Database | PostgreSQL | Relational storage, introduced on Day 2. |
+| API | FastAPI with Uvicorn | The read model the dashboard consumes. |
 | Dataset | Synthetic plus World Bank | Prototype data. |
 | Version control | Git | Change tracking. |
 
@@ -208,11 +315,13 @@ is available.
 ## PostgreSQL
 
 The target relational structures are defined in
-`day-01-data-engineering/src/schema.py` and generated by
-`schema.create_schema_sql()`. The DDL is verified by the test suite without a live
-server, so it can be reviewed on any machine.
+`day-01-data-engineering/src/schema.py` and `day-02-supervisory-analytics/src/ddl.py`,
+and generated by `schema.create_schema_sql()` and `ddl.create_schema_sql()`. The DDL
+is verified by the test suite without a live server, so it can be reviewed on any
+machine.
 
-Loading the curated layer is Day 2 work and needs a PostgreSQL instance:
+Loading the curated layer, the audit trail, the indicator values, the exceptions and
+the links needs a PostgreSQL instance:
 
 ```bash
 export DATABASE_URL="postgresql+psycopg://user:password@localhost:5432/suptech"
@@ -221,6 +330,34 @@ export DATABASE_URL="postgresql+psycopg://user:password@localhost:5432/suptech"
 Read the connection string from the environment only. Never put a password or a
 connection string in this repository or in a shared notebook, and never send
 credentials from a browser to a backend.
+
+---
+
+## The API
+
+The Day 2 API serves the read model: the supervisory indicators, the exceptions and
+the reason behind every exception.
+
+```bash
+export SUPTECH_API_TOKEN="<a value you choose>"
+uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+```
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/health` | public |
+| `GET` | `/api/v1/meta` | token |
+| `GET` | `/api/v1/institutions` | token |
+| `GET` | `/api/v1/institutions/{institution_id}` | token |
+| `GET` | `/api/v1/indicators` | token |
+| `GET` | `/api/v1/exceptions` | token |
+| `GET` | `/api/v1/exceptions/{exception_id}` | token |
+| `GET` | `/api/v1/summary` | token |
+
+There is no default token. If `SUPTECH_API_TOKEN` is missing the API refuses to
+start, because a hard-coded default is a hard-coded credential. The token scheme
+is a training scheme: one shared token, no users, no roles, no expiry and no record
+of who looked at what. It is not an identity provider.
 
 ---
 
