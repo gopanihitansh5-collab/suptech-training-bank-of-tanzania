@@ -189,7 +189,7 @@ exported and argued about without touching the pipeline.
 
 | Component | Choice | Purpose |
 | --- | --- | --- |
-| Repository | GitHub | One central repository. Keep it private until the material is approved. |
+| Repository | GitHub | One central repository, published for collaboration. |
 | IDE | VS Code | Application development. |
 | Notebook | Google Colab | Exploration and demonstrations. |
 | Language | Python 3.11+ | Data processing. |

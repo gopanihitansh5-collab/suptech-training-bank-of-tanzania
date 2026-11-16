@@ -217,7 +217,7 @@ later.
   from a browser to a backend.
 - The notebook contains no credential of any kind. A test in
   `tests/test_notebook_parity.py` enforces this, so the guarantee cannot rot.
-- Connect only to a training database that the engagement has explicitly approved.
+- Connect only to a development database that the engagement has explicitly approved.
 - The reference and source documents for this programme are public material. The
   World Bank publication and the Regnology insight are cited in
   `docs/research/worldbank-market-conduct-suptech-brief.md`.
