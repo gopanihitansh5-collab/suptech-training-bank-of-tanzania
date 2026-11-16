@@ -14,3 +14,7 @@ day-01-data-engineering/notebooks/day1_outputs/
 # Local environment and tooling
 .idea/
 .vscode/
+
+# Local credentials
+gopanigithub.txt
+*.txt.local
