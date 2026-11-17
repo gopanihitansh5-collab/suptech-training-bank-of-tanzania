@@ -56,8 +56,27 @@ def test_the_dashboard_has_a_package_json_with_a_test_script(repo_root):
     )
     assert "test" in payload["scripts"]
     assert "build" in payload["scripts"]
+    assert "next" in payload["dependencies"]
     assert payload["dependencies"]["react"]
     assert payload["dependencies"]["recharts"]
+
+
+def test_the_dashboard_uses_the_next_app_router(repo_root):
+    dashboard = repo_root / DASHBOARD
+    package = json.loads((dashboard / "package.json").read_text(encoding="utf-8"))
+    assert package["scripts"]["dev"] == "next dev"
+    assert (dashboard / "app" / "layout.tsx").exists()
+    assert (dashboard / "app" / "page.tsx").exists()
+    assert not (dashboard / "src" / "main.tsx").exists()
+    assert not (dashboard / "index.html").exists()
+
+
+def test_vercel_routes_the_dashboard_and_api_as_services(repo_root):
+    config = json.loads((repo_root / "vercel.json").read_text(encoding="utf-8"))
+    assert config["services"]["frontend"]["framework"] == "nextjs"
+    assert config["services"]["backend"]["framework"] == "fastapi"
+    assert config["rewrites"][0]["source"] == "/api/(.*)"
+    assert "bindings" not in config["services"]["frontend"]
 
 
 def test_the_dashboard_reads_the_api_and_invents_nothing(frontend_text):
@@ -81,25 +100,26 @@ def test_the_dashboard_holds_no_credential(frontend_text):
         assert not re.search(pattern, frontend_text, flags=re.IGNORECASE)
 
 
-def test_the_dashboard_asks_for_the_token_at_runtime(frontend_sources):
-    """The token is typed by the operator and kept in memory."""
-    unlock = frontend_sources["day-03-react-realtime/dashboard/src/components/UnlockScreen.tsx"]
-    assert "localStorage" not in unlock
-    assert "sessionStorage" not in unlock
-    assert "password" in unlock
+def test_the_dashboard_does_not_prompt_for_a_token(repo_root):
+    """The public prototype opens directly without an unlock screen."""
+    page = (
+        repo_root / DASHBOARD / "app" / "page.tsx"
+    ).read_text(encoding="utf-8")
+    assert "UnlockScreen" not in page
+    assert "Dashboard" in page
 
 
-def test_the_dashboard_sends_the_token_in_the_header(frontend_sources):
+def test_browser_requests_do_not_send_credentials(frontend_sources):
     client = frontend_sources["day-03-react-realtime/dashboard/src/api.ts"]
-    assert "Authorization" in client
-    assert "Bearer" in client
+    live = frontend_sources["day-03-react-realtime/dashboard/src/live.ts"]
+    assert "Authorization" not in client
+    assert "Authorization" not in live
 
 
-def test_the_dashboard_reads_the_stream_with_a_header(frontend_sources):
-    """The stream is read with fetch, so the token never travels in a URL."""
+def test_the_dashboard_reads_the_stream_with_fetch(frontend_sources):
+    """The stream uses fetch so it can replay events after reconnecting."""
     live = frontend_sources["day-03-react-realtime/dashboard/src/live.ts"]
     assert "new EventSource(" not in live
-    assert "Authorization" in live
     assert "Last-Event-ID" in live
 
 

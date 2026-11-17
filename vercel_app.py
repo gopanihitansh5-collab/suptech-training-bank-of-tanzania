@@ -1,4 +1,4 @@
-"""Vercel entrypoint for the FastAPI application and React frontend."""
+"""Vercel entrypoint for the FastAPI backend service."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT / "day-03-react-realtime" / "backend"
-DASHBOARD_DIST = ROOT / "day-03-react-realtime" / "dashboard" / "dist"
 
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
@@ -24,4 +23,3 @@ sys.modules[backend_spec.name] = backend_app
 backend_spec.loader.exec_module(backend_app)
 
 app = backend_app.build_app()
-app.frontend("/", directory=str(DASHBOARD_DIST), fallback="index.html")

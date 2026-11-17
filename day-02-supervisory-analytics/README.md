@@ -22,7 +22,7 @@ into the read model the dashboard will consume.
 | Exception records that carry their evidence. | `src/exceptions.py` |
 | The link between an exception and the data quality findings behind it. | `src/exceptions.py`, `src/ddl.py` |
 | The Day 2 relational structures and the PostgreSQL load. | `src/ddl.py`, `src/loader.py` |
-| A read model and an authenticated REST API. | `src/repository.py`, `src/api.py`, `src/auth.py` |
+| A read model and a public, read-only REST API for synthetic data. | `src/repository.py`, `src/api.py` |
 | A readable reference notebook. | `notebooks/day2_analytics.ipynb` |
 | The tests that hold all of it to the contract. | `tests/test_day2_*.py` |
 
@@ -50,7 +50,6 @@ day-02-supervisory-analytics/
 └── src/
     ├── analytics.py                                  the analytics run
     ├── api.py                                        the REST API
-    ├── auth.py                                       the training token scheme
     ├── catalogs.py                                   the indicator and threshold catalogs
     ├── curated.py                                    the Day 1 curated layer
     ├── ddl.py                                        the Day 2 structures
@@ -87,23 +86,20 @@ python -m pytest
 ### The API
 
 ```bash
-export SUPTECH_API_TOKEN="<a value you choose>"
-uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 ```
 
 Windows PowerShell:
 
 ```powershell
-$env:SUPTECH_API_TOKEN = "<a value you choose>"
-uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 ```
 
 Then:
 
 ```bash
 curl http://127.0.0.1:8000/health
-curl -H "Authorization: Bearer $SUPTECH_API_TOKEN" \
-     http://127.0.0.1:8000/api/v1/exceptions
+curl http://127.0.0.1:8000/api/v1/exceptions
 ```
 
 The API serves the tables in PostgreSQL when `DATABASE_URL` points at an
@@ -163,13 +159,8 @@ Day 1 pipeline itself and reads what the pipeline published.
 
 ---
 
-## Security notes
+## Prototype access note
 
-- The API token is read from `SUPTECH_API_TOKEN` and from nowhere else. It
-  is never written into this repository, into a notebook or into a URL.
-- There is no default token. Without the environment variable the API
-  refuses to start.
-- The token scheme is a training scheme. It is not an identity provider: no
-  users, no roles, no expiry, no revocation, and no record of who looked at
-  what.
-- A missing token and a wrong token produce the same 401 response.
+- The API has no login or token and exposes public read-only endpoints.
+- This is appropriate only because all shipped records are synthetic. Never
+  use this prototype with real supervisory information.

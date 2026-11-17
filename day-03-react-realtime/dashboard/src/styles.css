@@ -121,6 +121,24 @@ h4 {
   color: var(--ink-soft);
 }
 
+.app__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.app__nav a {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app__nav a:hover {
+  text-decoration: underline;
+}
+
 .app__header-side {
   display: flex;
   align-items: center;
@@ -584,6 +602,95 @@ h4 {
   border: 1px solid var(--critical);
   border-radius: 8px;
   background: #fdf2f2;
+}
+
+.analyst {
+  display: grid;
+  gap: 16px;
+}
+
+.analyst__intro {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.analyst__mode {
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.analyst__form {
+  display: grid;
+  gap: 10px;
+}
+
+.analyst__label {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.analyst__form textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+
+.analyst__form textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.analyst__safety {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.analyst__plan,
+.analyst__result {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  min-width: 0;
+}
+
+.analyst__plan h3,
+.analyst__result h3 {
+  font-size: 14px;
+}
+
+.analyst__plan p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.analyst__plan code {
+  overflow-wrap: anywhere;
+}
+
+.analyst__result pre {
+  overflow: auto;
+  max-height: 420px;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
 }
 
 @media (max-width: 1000px) {

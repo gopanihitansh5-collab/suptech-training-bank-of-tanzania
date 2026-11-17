@@ -12,12 +12,11 @@ export interface LiveState {
 /**
  * Keep a live connection to the API and report what it says.
  *
- * The connection is opened once per token and closed when the token
- * changes or the dashboard goes away. A new run arrives as a
+ * The connection is opened with the dashboard and closed when it goes away.
+ * A new run arrives as a
  * `run.available` event, and the caller decides what to do with it.
  */
 export function useLiveEvents(
-  token: string | null,
   onEvent: (event: LiveEvent) => void,
 ): LiveState {
   const [status, setStatus] = useState<LiveStatus>('idle');
@@ -27,12 +26,7 @@ export function useLiveEvents(
   handler.current = onEvent;
 
   useEffect(() => {
-    if (!token) {
-      setStatus('idle');
-      return;
-    }
     const client = createLiveClient({
-      token,
       onStatus: setStatus,
       onEvent: (event) => {
         setLastEvent(event);
@@ -42,7 +36,7 @@ export function useLiveEvents(
     });
     client.start();
     return () => client.stop();
-  }, [token]);
+  }, []);
 
   return { status, lastEvent, eventsReceived };
 }

@@ -214,31 +214,17 @@ serves the read model, which is computed from the curated layer.
 | Method | Path | Auth | Returns |
 | --- | --- | --- | --- |
 | `GET` | `/health` | public | The service status. |
-| `GET` | `/api/v1/meta` | token | The indicator catalog and the threshold catalog. |
-| `GET` | `/api/v1/institutions` | token | The register, with the exception counts of each institution. |
-| `GET` | `/api/v1/institutions/{id}` | token | One institution, its indicators and its exceptions. |
-| `GET` | `/api/v1/indicators` | token | Indicator values, filtered by institution, period, indicator or grain. |
-| `GET` | `/api/v1/exceptions` | token | Exceptions, filtered by institution, period, severity, indicator or threshold. |
-| `GET` | `/api/v1/exceptions/{id}` | token | One exception with the audit entries that explain it. |
-| `GET` | `/api/v1/summary` | token | The sector summary of one period, or of every period. |
+| `GET` | `/api/v1/meta` | public, read-only | The indicator catalog and the threshold catalog. |
+| `GET` | `/api/v1/institutions` | public, read-only | The register, with the exception counts of each institution. |
+| `GET` | `/api/v1/institutions/{id}` | public, read-only | One institution, its indicators and its exceptions. |
+| `GET` | `/api/v1/indicators` | public, read-only | Indicator values, filtered by institution, period, indicator or grain. |
+| `GET` | `/api/v1/exceptions` | public, read-only | Exceptions, filtered by institution, period, severity, indicator or threshold. |
+| `GET` | `/api/v1/exceptions/{id}` | public, read-only | One exception with the audit entries that explain it. |
+| `GET` | `/api/v1/summary` | public, read-only | The sector summary of one period, or of every period. |
 
-`/health` is public on purpose: a health check that needs a credential
-cannot tell an operator whether the service is up.
-
-The authentication scheme is in `src/auth.py`:
-
-- one shared bearer token, read from the `SUPTECH_API_TOKEN` environment
-  variable;
-- **no default token.** If the variable is missing the API refuses to start,
-  because a hard-coded default is a hard-coded credential;
-- the comparison is constant time;
-- a missing token and a wrong token produce the same 401, so the API does
-  not tell an attacker which of the two it was.
-
-**This is not an identity provider.** There are no users, no roles, no
-expiry, no refresh, no revocation and no record of who looked at what. A
-production deployment needs all of those, and the scope note for the
-repository says so.
+This prototype has no login or token. It is public because it contains only
+synthetic training data and supports read-only requests. Never use it with
+real supervisory information.
 
 ### Step 7 — Load the database
 
@@ -328,22 +314,19 @@ python day-02-supervisory-analytics/src/analytics.py
 python day-02-supervisory-analytics/src/catalogs.py
 
 # 4. Serve the API.
-export SUPTECH_API_TOKEN="<a value you choose>"
-uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:SUPTECH_API_TOKEN = "<a value you choose>"
-uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 ```
 
 A request:
 
 ```bash
-curl -H "Authorization: Bearer $SUPTECH_API_TOKEN" \
-     http://127.0.0.1:8000/api/v1/exceptions
+curl http://127.0.0.1:8000/api/v1/exceptions
 ```
 
 ---

@@ -159,11 +159,9 @@ The Day 2 API is the door, and it is the only door: the dashboard reads the
 Day 2 read model and nothing else. Day 3 adds the live update mechanism and
 the dashboard itself.
 
-- **Live update.** Server-Sent Events on `/api/v1/events`, protected by the
-  same dependency factory as every other endpoint. The token travels in the
-  header, never in a URL, and a reconnecting client is replayed exactly the
-  events it missed.
-- **The dashboard.** A responsive React application with the live status, the
+- **Live update.** Public, read-only Server-Sent Events on `/api/v1/events`;
+  reconnecting clients are replayed exactly the events they missed.
+- **The dashboard.** A responsive Next.js application with the live status, the
   sector indicators, the exceptions, the register, the filters, two
   drill-downs and the charts.
 
@@ -257,7 +255,7 @@ later.
 | L2 Validation | Implemented, 19 rules, audit trail, tested. |
 | L3 Curation | Structures defined, DDL generated, loading code written and extended for Day 2. Live load untested: no PostgreSQL instance on the training machine. |
 | L4 Analytics | Implemented: 12 indicators, 10 thresholds, exception records with the link to the audit trail, tested against hand computed values. |
-| L5 Presentation | The API is implemented and token protected. The live update mechanism and the React dashboard are implemented and tested. Threshold highlighting, the comparison view and the trend view are Day 4. |
+| L5 Presentation | The public read-only API, live update mechanism and Next.js dashboard are implemented and tested. Threshold highlighting, the comparison view and the trend view are Day 4. |
 
 The gap at L3 is real and is stated rather than hidden: the DDL is verified by
 parsing it with SQLAlchemy's PostgreSQL dialect and by asserting on the objects it
@@ -286,9 +284,9 @@ written and is skipped until an approved development database is available.
    supervisory checks and nothing more. They have not been calibrated against real
    supervisory policy, and they are declared in one place so that they can be
    replaced without touching the pipeline.
-8. **The API token scheme is a training scheme.** One shared token, no users, no
-   roles, no expiry and no record of who looked at what. It is labelled as such in
-   the code, in the documentation and in the API responses.
+8. **The prototype has no authentication.** Its public API is read-only and
+   serves synthetic training data only. It must not be used with real
+   supervisory information.
 9. **The API is read only.** There is no triage workflow and no supervisory action
    trail, so an exception has a status of `open` and nothing else.
 10. **The live database load has not been exercised.** The DDL and the loader are

@@ -12,15 +12,8 @@ reasons that matter in a supervisory tool:
   a protocol upgrade;
 * it reconnects on its own and replays what was missed.
 
-**The token travels in the header, not in the URL.** The browser's built in
-``EventSource`` cannot send an ``Authorization`` header, and the usual
-workaround is to put the token in the query string, where it ends up in
-access logs and in the browser history. This prototype does not do that.
-The dashboard reads the stream with ``fetch`` and a readable stream instead,
-which can send a header. The server accepts the header only.
-
-The endpoint is protected with the same rule as every other endpoint, and
-it uses the same dependency factory, so the two cannot drift apart.
+The dashboard uses a same-origin `fetch` connection. The API is public and
+read-only because this prototype contains synthetic data only.
 
 The run watcher is driven by the stream itself. When the stream is idle the
 server asks the watcher to look for a new run, and the watcher publishes an
@@ -33,7 +26,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
@@ -41,7 +34,6 @@ from day2_bridge import (
     day1_db,
     day2_analytics,
     day2_api,
-    day2_auth,
     day2_repository,
     day2_serve,
 )
@@ -54,8 +46,8 @@ EVENT_RUN_AVAILABLE = "run.available"
 
 #: The default browser origins the dashboard is served from.
 DEFAULT_CORS_ORIGINS = (
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 )
 
 
@@ -76,28 +68,21 @@ def _frame(event_type: str, data: dict[str, Any]) -> str:
 
 def create_app(
     repository: Any = None,
-    token: str | None = None,
     broker: EventBroker | None = None,
     manifest_path: str | None = None,
 ) -> FastAPI:
     """Build the Day 3 application: the Day 2 API and the live stream."""
-    expected_token = (
-        token if token is not None else day2_auth.token_from_environment()
-    )
-
-    app = day2_api.create_app(repository=repository, token=expected_token)
+    app = day2_api.create_app(repository=repository)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins(),
         allow_credentials=False,
         allow_methods=["GET"],
-        allow_headers=["Authorization", "Content-Type", "Last-Event-ID"],
+        allow_headers=["Content-Type", "Last-Event-ID"],
     )
 
     broker = broker or EventBroker()
     watcher = RunWatcher(broker, manifest_path or DEFAULT_MANIFEST_PATH)
-    require_token = day2_api.build_token_dependency(expected_token)
-
     async def event_stream(request: Request, last_event_id: int | None = None):
         """Stream the live events to the dashboard."""
         yield _frame(
@@ -124,7 +109,6 @@ def create_app(
     @app.get(
         "/api/v1/events",
         tags=["live"],
-        dependencies=[Depends(require_token)],
     )
     async def events(
         request: Request,
@@ -155,7 +139,7 @@ def create_app(
             },
         )
 
-    @app.get("/api/v1/live", tags=["live"], dependencies=[Depends(require_token)])
+    @app.get("/api/v1/live", tags=["live"])
     def live_status() -> dict[str, Any]:
         """Report the state of the live update mechanism."""
         watcher.detect()
@@ -188,7 +172,6 @@ def build_app() -> FastAPI:
 def app_factory() -> FastAPI:
     """The ASGI application factory the server calls on startup.
 
-        export SUPTECH_API_TOKEN="<a value you choose>"
         uvicorn app:app_factory --factory --app-dir day-03-react-realtime/backend
     """
     return build_app()

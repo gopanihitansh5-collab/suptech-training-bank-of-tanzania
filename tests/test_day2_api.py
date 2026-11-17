@@ -1,13 +1,4 @@
-"""Tests for the Day 2 API.
-
-The API is the door between the analytics layer and the dashboard, so the
-tests are about two things: that it serves the right numbers, and that it
-does not serve them to anyone who does not present the token.
-
-The API is built in the tests with an in-memory read model and a known
-token, so the suite runs on a machine with no database and no environment
-variable set.
-"""
+"""Tests for the public, read-only Day 2 training API."""
 
 from __future__ import annotations
 
@@ -16,9 +7,6 @@ from fastapi.testclient import TestClient
 
 from api import create_app
 from repository import InMemoryRepository
-
-#: The token the tests configure. It is a test value, not a credential.
-TEST_TOKEN = "training-token-for-the-test-suite"
 
 EXPECTED_EXCEPTIONS = 6
 EXPECTED_INDICATORS = 48
@@ -29,18 +17,18 @@ EXPECTED_INSTITUTIONS = 19
 def client(analytics_result, curated_layer):
     """Build the API over the in-memory read model."""
     repository = InMemoryRepository(analytics_result, curated_layer.registry)
-    app = create_app(repository=repository, token=TEST_TOKEN)
+    app = create_app(repository=repository)
     return TestClient(app)
 
 
 @pytest.fixture(scope="module")
 def headers():
-    """The authorization header a protected endpoint needs."""
-    return {"Authorization": f"Bearer {TEST_TOKEN}"}
+    """Compatibility fixture for calls that do not need credentials."""
+    return {}
 
 
 # ----------------------------------------------------------------------
-# Authentication
+# Public API
 # ----------------------------------------------------------------------
 
 
@@ -52,50 +40,11 @@ def test_the_health_endpoint_is_public(client):
     assert response.json()["training_only"] is True
 
 
-def test_a_protected_endpoint_rejects_a_missing_token(client):
+def test_read_endpoints_are_public(client):
     response = client.get("/api/v1/exceptions")
-    assert response.status_code == 401
-    assert response.headers.get("WWW-Authenticate") == "Bearer"
-
-
-def test_a_protected_endpoint_rejects_an_invalid_token(client):
-    response = client.get(
-        "/api/v1/exceptions", headers={"Authorization": "Bearer wrong-token"}
-    )
-    assert response.status_code == 401
-
-
-def test_a_protected_endpoint_rejects_a_malformed_header(client):
-    response = client.get("/api/v1/exceptions", headers={"Authorization": TEST_TOKEN})
-    assert response.status_code == 401
-
-
-def test_a_protected_endpoint_accepts_the_configured_token(client, headers):
-    response = client.get("/api/v1/exceptions", headers=headers)
     assert response.status_code == 200
-
-
-def test_the_api_refuses_to_start_without_a_token(monkeypatch):
-    """There is no default token. A missing one is a startup failure."""
-    from auth import API_TOKEN_ENV
-
-    monkeypatch.delenv(API_TOKEN_ENV, raising=False)
-    with pytest.raises(RuntimeError, match=API_TOKEN_ENV):
-        create_app(repository=object())
-
-
-def test_the_token_is_never_echoed_by_the_api(client, headers):
-    """The configured token must never appear in a response."""
-    for path in ("/health", "/api/v1/exceptions", "/api/v1/summary"):
-        response = client.get(path, headers=headers)
-        assert TEST_TOKEN not in response.text
-
-
-def test_the_token_is_never_echoed_in_a_failure(client):
-    response = client.get(
-        "/api/v1/exceptions", headers={"Authorization": f"Bearer {TEST_TOKEN}-x"}
-    )
-    assert TEST_TOKEN not in response.text
+    assert response.json()["count"] == EXPECTED_EXCEPTIONS
+    assert client.get("/api/v1/summary").status_code == 200
 
 
 # ----------------------------------------------------------------------

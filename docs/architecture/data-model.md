@@ -316,5 +316,5 @@ them explain it.
 ### The API read model
 
 The API reads the indicator and exception tables and never the submitted
-file. Its endpoints, its authentication and the verified numbers for the
+file. Its endpoints, its public read-only access and the verified numbers for the
 shipped dataset are in `docs/architecture/day2-analytics-and-api.md`.

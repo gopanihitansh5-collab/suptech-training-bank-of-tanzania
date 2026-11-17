@@ -5,7 +5,6 @@ import { ExceptionDetail } from '../components/ExceptionDetail';
 import { ExceptionsTable } from '../components/ExceptionsTable';
 import { InstitutionsTable } from '../components/InstitutionsTable';
 import { LiveStatusBadge } from '../components/LiveStatusBadge';
-import { UnlockScreen } from '../components/UnlockScreen';
 import type {
   Institution,
   SupervisoryException,
@@ -110,30 +109,6 @@ describe('the live status badge', () => {
   });
 });
 
-describe('the unlock screen', () => {
-  it('refuses an empty token', () => {
-    const onUnlock = vi.fn();
-    render(<UnlockScreen onUnlock={onUnlock} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /open the dashboard/i }));
-
-    expect(onUnlock).not.toHaveBeenCalled();
-    expect(screen.getByText(/cannot be empty/i)).toBeInTheDocument();
-  });
-
-  it('hands the typed token to the caller', () => {
-    const onUnlock = vi.fn();
-    render(<UnlockScreen onUnlock={onUnlock} />);
-
-    fireEvent.change(screen.getByLabelText(/api token/i), {
-      target: { value: 'a-token' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /open the dashboard/i }));
-
-    expect(onUnlock).toHaveBeenCalledWith('a-token');
-  });
-});
-
 describe('the exception detail', () => {
   it('shows the evidence and the explanation', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
@@ -164,7 +139,6 @@ describe('the exception detail', () => {
 
     render(
       <ExceptionDetail
-        token="a-token"
         exception={exception}
         onClose={() => {}}
       />,

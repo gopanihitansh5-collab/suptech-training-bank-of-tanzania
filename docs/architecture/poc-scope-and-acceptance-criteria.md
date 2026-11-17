@@ -14,7 +14,7 @@ A **Supervisory Monitoring Dashboard** that ingests institution-level supervisor
 reporting records, validates them against a declared rule catalog, derives supervisory
 indicators from the records that pass, applies threshold rules to produce exceptions,
 exposes those indicators and exceptions through an authenticated API, and presents
-them on a responsive React dashboard that updates live when the pipeline produces a
+them on a responsive Next.js dashboard that updates live when the pipeline produces a
 new event.
 
 ---
@@ -32,9 +32,9 @@ new event.
 | A defined analytical data model and target relational structures. | Day 1 |
 | Loading the curated layer into PostgreSQL. | Day 2 |
 | Supervisory KPIs, KRIs, thresholds and exception rules. | Day 2 |
-| A REST API exposing indicators and exception records, with authentication. | Day 2 |
+| A public, read-only REST API exposing indicators and exception records for synthetic training data. | Day 2 |
 | A live update mechanism, Server-Sent Events or WebSockets. | Day 3 |
-| A responsive React dashboard with charts, tables, filters, drill-downs and live status. | Days 3 and 4 |
+| A responsive Next.js dashboard with charts, tables, filters, drill-downs and live status. | Days 3 and 4 |
 | Threshold highlighting and institution-level comparison and trend views. | Day 4 |
 | Tests against the acceptance criteria below. | Day 5 |
 | A demonstration of the full data-to-dashboard workflow. | Day 5 |
@@ -52,8 +52,9 @@ list of things a prototype does not claim to do.
 - Automated resolution of resubmissions. The pipeline detects them and routes them
   to a supervisor, because the evidence needed to decide is not in the file.
 - Model risk management, model validation and formal model governance.
-- A production identity provider. Day 2 uses a simple token scheme that is
-  explicitly labelled as training-only.
+- Authentication and production identity management. The public prototype
+  contains synthetic data only and must not be used with real supervisory
+  information.
 - Multi-tenancy, data residency and the full regulatory obligations that come with
   holding real supervisory data.
 
@@ -86,7 +87,7 @@ cannot be checked is not an acceptance criterion.
 | # | Criterion | How it is verified | State |
 | --- | --- | --- | --- |
 | D2.1 | Selected indicators and threshold-based exceptions match independently checked expected results. | `tests/test_day2_analytics.py`, 36 tests against hand computed values: the seven ratio values, the sector totals, the concentration index, the coverage ratio, the six exceptions and their severities. | Met |
-| D2.2 | Protected endpoints enforce the configured authentication and reject an absent or invalid token. | `tests/test_day2_api.py::test_a_protected_endpoint_rejects_a_missing_token`, `::test_a_protected_endpoint_rejects_an_invalid_token` and `::test_a_protected_endpoint_accepts_the_configured_token`. | Met |
+| D2.2 | Read-only endpoints serve the synthetic training read model without requiring a login or token. | `tests/test_day2_api.py::test_read_endpoints_are_public` and the endpoint response tests. | Met |
 | D2.3 | The curated layer loads into PostgreSQL with the declared constraints intact. | `tests/test_day2_database.py`: the DDL is parsed and asserted without a server; the live load, the constraint checks and the foreign key check run when `DATABASE_URL` points at an approved development database. | Met, with the live check not yet run |
 | D2.4 | Every exception record carries the audit entries that explain it. | `tests/test_day2_analytics.py::test_every_audit_link_points_at_a_real_finding`, `::test_an_exception_from_a_flagged_record_carries_its_finding`, `::test_a_clean_record_raises_an_exception_without_a_finding` and `::test_a_sector_exception_links_to_the_findings_of_its_period`. | Met |
 
@@ -113,7 +114,7 @@ quality symptom, and the model says exactly that.
 | D3.1 | The dashboard displays data that came from the API, not from a fixture. | `tests/test_day3_dashboard.py`: the frontend source is checked for institution identifiers, sector totals, ratios and index values, and for the routes it calls against the routes the backend serves. | Met |
 | D3.2 | The dashboard updates when the pipeline generates a new event, and recovers after a disconnection. | `tests/test_day3_live.py`: the broker replays exactly the events a reconnecting subscriber missed, the watcher publishes when the run changes, and the stream endpoint is protected and really is Server-Sent Events. `dashboard/src/__tests__/live.test.ts`: the client reconnects after a failure and asks for what it missed with `Last-Event-ID`. | Met |
 | D4.1 | Threshold breaches are highlighted consistently between the API and the dashboard. | Day 4. |
-| D4.2 | Access controls are applied to the dashboard's data requests. | The dashboard sends the token on every request, and `tests/test_day3_dashboard.py` checks that the frontend holds no credential of its own. The formal check is Day 4. | Partly met, Day 4 completes it |
+| D4.2 | The public demo dashboard reads only synthetic data and requires no user-entered credential. | `tests/test_day3_dashboard.py` checks the dashboard has no unlock prompt and sends no credential headers; API tests verify public read-only access. | Met for the synthetic-data prototype; production access control is out of scope |
 
 ### Day 5 — acceptance
 

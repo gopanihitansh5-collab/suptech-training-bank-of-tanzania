@@ -40,7 +40,6 @@ export interface DashboardData {
  * `refresh` and the same read model is fetched again.
  */
 export function useDashboardData(
-  token: string | null,
   filters: Filters,
 ): DashboardData {
   const [summary, setSummary] = useState<SectorSummary | null>(null);
@@ -53,21 +52,18 @@ export function useDashboardData(
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!token) {
-      return;
-    }
     setLoading(true);
     try {
       const [summaryResult, exceptionResult, institutionResult, indicatorResult] =
         await Promise.all([
-          api.summary(token),
-          api.exceptions(token, {
+          api.summary(),
+          api.exceptions({
             reporting_period: filters.reportingPeriod || undefined,
             severity: filters.severity || undefined,
             institution_id: filters.institution || undefined,
           }),
-          api.institutions(token),
-          api.indicators(token, {
+          api.institutions(),
+          api.indicators({
             reporting_period: filters.reportingPeriod || undefined,
           }),
         ]);
@@ -93,7 +89,7 @@ export function useDashboardData(
     } finally {
       setLoading(false);
     }
-  }, [token, filters.reportingPeriod, filters.severity, filters.institution]);
+  }, [filters.reportingPeriod, filters.severity, filters.institution]);
 
   useEffect(() => {
     void refresh();

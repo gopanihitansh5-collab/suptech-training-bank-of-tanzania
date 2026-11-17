@@ -79,7 +79,6 @@ describe('the live client', () => {
     });
 
     const client = createLiveClient({
-      token: 'a-token',
       url: '/api/v1/events',
       onEvent: () => {},
       onStatus: (status) => statuses.push(status),
@@ -106,7 +105,6 @@ describe('the live client', () => {
     });
 
     const client = createLiveClient({
-      token: 'a-token',
       url: '/api/v1/events',
       onEvent: (event) => events.push(event),
       onStatus: () => {},
@@ -137,7 +135,6 @@ describe('the live client', () => {
     });
 
     const client = createLiveClient({
-      token: 'a-token',
       url: '/api/v1/events',
       onEvent: () => {},
       onStatus: (status) => statuses.push(status),
@@ -171,7 +168,6 @@ describe('the live client', () => {
     });
 
     const client = createLiveClient({
-      token: 'a-token',
       url: '/api/v1/events',
       onEvent: () => {},
       onStatus: () => {},
@@ -200,7 +196,6 @@ describe('the live client', () => {
     });
 
     const client = createLiveClient({
-      token: 'a-token',
       url: '/api/v1/events',
       onEvent: () => {},
       onStatus: () => {},

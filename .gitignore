@@ -22,7 +22,9 @@ day2_outputs/
 # The Day 3 dashboard: installed packages and the build output
 day-03-react-realtime/dashboard/node_modules/
 day-03-react-realtime/dashboard/dist/
+day-03-react-realtime/dashboard/.next/
 day-03-react-realtime/dashboard/.vite/
+*.tsbuildinfo
 
 # Local environment and tooling
 .idea/
@@ -31,6 +33,7 @@ day-03-react-realtime/dashboard/.vite/
 
 # Local credentials
 gopanigithub.txt
+gopanihitansh.txt
 *.txt.local
 
 .vercel

@@ -25,9 +25,6 @@ from fastapi.testclient import TestClient
 from events import HEARTBEAT, EventBroker, LiveEvent
 from watcher import RunWatcher
 
-TOKEN = "training-token-for-the-test-suite"
-
-
 def run(coroutine):
     """Run one coroutine to completion on a fresh event loop."""
     return asyncio.run(coroutine)
@@ -241,7 +238,7 @@ def app(analytics_result, curated_layer):
     repository = day2_repository.InMemoryRepository(
         analytics_result, curated_layer.registry
     )
-    return create_app(repository=repository, token=TOKEN)
+    return create_app(repository=repository)
 
 
 @pytest.fixture
@@ -302,23 +299,9 @@ async def read_first_frame(app, headers=None, path="/api/v1/events"):
     return response_start, b"".join(body).decode("utf-8")
 
 
-def test_the_live_stream_needs_a_token(client):
-    response = client.get("/api/v1/events")
-    assert response.status_code == 401
-
-
-def test_the_live_stream_rejects_a_wrong_token(client):
-    response = client.get(
-        "/api/v1/events", headers={"Authorization": "Bearer wrong"}
-    )
-    assert response.status_code == 401
-
-
 def test_the_live_stream_is_server_sent_events(app):
     """The stream says hello, and it says it in the Server-Sent Events shape."""
-    start, first = run(
-        read_first_frame(app, {"Authorization": f"Bearer {TOKEN}"})
-    )
+    start, first = run(read_first_frame(app))
     assert start["status"] == 200
     headers = {
         name.decode(): value.decode() for name, value in start["headers"]
@@ -329,16 +312,14 @@ def test_the_live_stream_is_server_sent_events(app):
 
 
 def test_the_live_stream_carries_the_run_the_api_is_serving(app):
-    _, first = run(read_first_frame(app, {"Authorization": f"Bearer {TOKEN}"}))
+    _, first = run(read_first_frame(app))
     payload = json.loads(first.split("data: ", 1)[1].split("\n", 1)[0])
     assert "run_id" in payload
     assert payload["heartbeat_seconds"] > 0
 
 
 def test_the_live_status_endpoint_reports_the_mechanism(client):
-    response = client.get(
-        "/api/v1/live", headers={"Authorization": f"Bearer {TOKEN}"}
-    )
+    response = client.get("/api/v1/live")
     assert response.status_code == 200
     payload = response.json()
     assert "broker_events" in payload
@@ -347,9 +328,7 @@ def test_the_live_status_endpoint_reports_the_mechanism(client):
 
 def test_the_day2_endpoints_still_work(client):
     """Adding the stream must not break the API the dashboard reads."""
-    response = client.get(
-        "/api/v1/exceptions", headers={"Authorization": f"Bearer {TOKEN}"}
-    )
+    response = client.get("/api/v1/exceptions")
     assert response.status_code == 200
     assert response.json()["count"] == 6
 
@@ -357,7 +336,7 @@ def test_the_day2_endpoints_still_work(client):
 def test_a_bad_last_event_id_is_rejected(client):
     response = client.get(
         "/api/v1/events",
-        headers={"Authorization": f"Bearer {TOKEN}", "Last-Event-ID": "not-a-number"},
+        headers={"Last-Event-ID": "not-a-number"},
     )
     assert response.status_code == 400
 

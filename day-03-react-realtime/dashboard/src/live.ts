@@ -7,11 +7,9 @@
  *
  * Two decisions are worth defending.
  *
- * **The stream is read with fetch, not with EventSource.** The built in
- * `EventSource` cannot send an `Authorization` header, and the usual
- * workaround is to put the token in the query string, where it ends up in
- * the access logs and in the browser history. `fetch` with a readable
- * stream can send a header, so the token never leaves the header.
+ * **The stream is read with fetch, not with EventSource.** A readable
+ * stream lets this client share its parser and reconnect behavior with
+ * ordinary fetch requests.
  *
  * **A reconnect asks for what it missed.** Every event carries an
  * identifier. The client remembers the last one it saw and sends it back
@@ -126,7 +124,6 @@ export function createSseParser(onEvent: (event: LiveEvent) => void): SseParser 
 }
 
 export interface LiveClientOptions {
-  token: string;
   url?: string;
   onEvent: (event: LiveEvent) => void;
   onStatus: (status: LiveStatus) => void;
@@ -179,7 +176,6 @@ export function createLiveClient(options: LiveClientOptions): LiveClient {
       let delivered = 0;
       try {
         const headers: Record<string, string> = {
-          Authorization: `Bearer ${options.token}`,
           Accept: 'text/event-stream',
         };
         if (lastEventId !== null) {

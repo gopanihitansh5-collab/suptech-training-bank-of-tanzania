@@ -25,7 +25,6 @@ if str(DAY2_SRC_DIR) not in sys.path:
 
 day2_analytics = importlib.import_module("analytics")
 day2_api = importlib.import_module("api")
-day2_auth = importlib.import_module("auth")
 day2_curated = importlib.import_module("curated")
 day2_repository = importlib.import_module("repository")
 day2_serve = importlib.import_module("serve")

@@ -18,7 +18,7 @@ Two things are built:
 - **A live update mechanism.** The API streams events over Server-Sent
   Events, and the dashboard reads that stream with a header, a backoff and
   a replay.
-- **A responsive React dashboard.** Live status, the sector indicators, the
+- **A responsive Next.js dashboard.** Live status, the sector indicators, the
   exceptions, the register, filters and two drill-downs.
 
 Nothing else changed. The dashboard reads the Day 2 API and nothing else. It
@@ -77,15 +77,9 @@ in a supervisory tool:
 - it is plain HTTP, so it passes through proxies without a protocol upgrade;
 - it reconnects on its own and replays what was missed.
 
-**The token travels in the header, not in the URL.** The browser's built in
-`EventSource` cannot send an `Authorization` header, and the usual
-workaround is to put the token in the query string, where it ends up in
-access logs and in the browser history. This prototype does not do that. The
-dashboard reads the stream with `fetch` and a readable stream instead, which
-can send a header, and the server accepts the header only.
-
-The endpoint is protected by the same dependency factory as every other
-endpoint, so the two cannot drift apart.
+The endpoint is public and read-only, like the rest of the API. This is safe
+only because the prototype serves synthetic training data; it must not be used
+with real supervisory information.
 
 ---
 
@@ -109,12 +103,10 @@ number when the API is down is worse than a screen that says the API is
 down. `tests/test_day3_dashboard.py` checks the source for the shapes a
 fixture would have.
 
-### The token
+### Public demo access
 
-The token is typed on the unlock screen and held in memory. It is never
-written to storage, never put in a URL and never sent anywhere except the
-API header. This is a training scheme; a production deployment would
-replace it with a real identity provider.
+The dashboard opens directly without a login or token. API and event-stream
+routes are public and read-only for synthetic training data only.
 
 ### The live status is always on the page
 
@@ -156,7 +148,6 @@ python day-01-data-engineering/src/validation.py
 python day-02-supervisory-analytics/src/analytics.py
 
 # 2. The API, with the live endpoint.
-export SUPTECH_API_TOKEN="<a value you choose>"
 uvicorn app:app_factory --factory --app-dir day-03-react-realtime/backend
 
 # 3. The dashboard.
@@ -165,18 +156,11 @@ npm install
 npm run dev
 ```
 
-Then open http://127.0.0.1:5173 and type the token in.
+Then open http://127.0.0.1:3000. No token is required.
 
-Windows PowerShell:
-
-```powershell
-$env:SUPTECH_API_TOKEN = "<a value you choose>"
-uvicorn app:app_factory --factory --app-dir day-03-react-realtime/backend
-```
-
-The development server proxies `/api` to the backend, so the browser only
+The Next.js development server proxies `/api` to the backend, so the browser only
 ever talks to one origin. That keeps the CORS rules out of the way and it
-keeps the token out of the URL.
+uses the same API paths in local and deployed environments.
 
 ### Watch it update
 

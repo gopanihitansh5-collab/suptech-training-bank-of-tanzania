@@ -16,33 +16,33 @@ describe('the API client', () => {
     expect(url).toBe('/api/v1/exceptions?severity=CRITICAL');
   });
 
-  it('sends the token in the authorization header', async () => {
+  it('does not send credentials from the browser', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ count: 0, exceptions: [] }),
     });
 
-    await getJson('/api/v1/exceptions', 'a-token', undefined, fetchImpl as never);
+    await getJson('/api/v1/exceptions', undefined, fetchImpl as never);
 
     const [, options] = fetchImpl.mock.calls[0];
-    expect(options.headers.Authorization).toBe('Bearer a-token');
+    expect(options.headers.Authorization).toBeUndefined();
   });
 
-  it('never puts the token in the URL', async () => {
+  it('calls the same-origin API without credential parameters', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ count: 0, exceptions: [] }),
     });
 
-    await api.exceptions('a-token', undefined, fetchImpl as never);
+    await api.exceptions(undefined, fetchImpl as never);
 
     const [url] = fetchImpl.mock.calls[0];
-    expect(String(url)).not.toContain('a-token');
+    expect(String(url)).toBe('/api/v1/exceptions');
   });
 
-  it('raises an error when the API refuses the token', async () => {
+  it('raises an error when the API refuses the request', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -50,7 +50,7 @@ describe('the API client', () => {
     });
 
     await expect(
-      api.exceptions('wrong-token', undefined, fetchImpl as never),
+      api.exceptions(undefined, fetchImpl as never),
     ).rejects.toBeInstanceOf(ApiError);
   });
 
@@ -62,7 +62,7 @@ describe('the API client', () => {
     });
 
     await expect(
-      api.exceptions('a-token', undefined, fetchImpl as never),
+      api.exceptions(undefined, fetchImpl as never),
     ).rejects.toMatchObject({ status: 503 });
   });
 
@@ -73,7 +73,7 @@ describe('the API client', () => {
       json: async () => ({ institution_id: 'TZ013' }),
     });
 
-    await api.institution('a-token', 'TZ013', fetchImpl as never);
+    await api.institution('TZ013', fetchImpl as never);
 
     const [url] = fetchImpl.mock.calls[0];
     expect(String(url)).toContain('/api/v1/institutions/TZ013');
@@ -86,7 +86,7 @@ describe('the API client', () => {
       json: async () => ({}),
     });
 
-    await api.exceptionDetail('a-token', 'a b/c', fetchImpl as never);
+    await api.exceptionDetail('a b/c', fetchImpl as never);
 
     const [url] = fetchImpl.mock.calls[0];
     expect(String(url)).toContain('a%20b%2Fc');

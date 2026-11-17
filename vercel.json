@@ -1,8 +1,26 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "vercel_app.py": {
-      "maxDuration": 60
+  "services": {
+    "frontend": {
+      "root": "day-03-react-realtime/dashboard",
+      "framework": "nextjs"
+    },
+    "backend": {
+      "root": ".",
+      "entrypoint": "vercel_app:app",
+      "framework": "fastapi",
+      "buildCommand": "python build_vercel.py",
+      "installCommand": "pip install -r requirements-vercel.txt",
+      "functions": {
+        "vercel_app.py": {
+          "maxDuration": 60
+        }
+      }
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "backend" } },
+    { "source": "/health", "destination": { "service": "backend" } },
+    { "source": "/(.*)", "destination": { "service": "frontend" } }
+  ]
 }

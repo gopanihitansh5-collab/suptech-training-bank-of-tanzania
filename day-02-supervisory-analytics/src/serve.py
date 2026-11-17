@@ -1,6 +1,5 @@
 """Run the Day 2 API.
 
-    export SUPTECH_API_TOKEN="<a value you choose>"
     uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 
 The application is built by the factory when the server starts, so the
@@ -16,7 +15,7 @@ database.
 
 Importing this module has no side effect. That matters: the Day 3 backend
 imports it to reuse the loader, and an import that quietly builds an
-application and demands a token would make that impossible.
+application during import would make that impossible.
 """
 
 from __future__ import annotations

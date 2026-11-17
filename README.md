@@ -5,7 +5,7 @@
 **Duration:** Five days
 **Day 1 focus:** SupTech fundamentals, data architecture, ingestion and validation.
 **Day 2 focus:** Supervisory analytics, exception rules, the PostgreSQL load and the API.
-**Day 3 focus:** The live update mechanism and the React dashboard.
+**Day 3 focus:** Live updates and the Next.js supervisory dashboard.
 
 > All institution names, identifiers, reporting values and records in this repository
 > are synthetic. This is not an official Bank of Tanzania system and it contains no
@@ -38,7 +38,7 @@ consume:
 - exception records that carry the observed value, the limit and the reason;
 - a foreign-keyed link between an exception and the audit findings behind it;
 - the Day 2 relational structures and a loader for the curated layer;
-- an authenticated REST API over the read model, with no default token;
+- a public, read-only REST API over synthetic training data;
 - a reference notebook and a reusable implementation, checked against each
   other by the test suite.
 
@@ -50,13 +50,13 @@ The full narrative is in `docs/architecture/day2-analytics-and-api.md`.
 
 A live update mechanism and a responsive dashboard over the Day 2 API:
 
-- a Server-Sent Events endpoint that is protected like every other endpoint;
+- a public, read-only Server-Sent Events endpoint over synthetic data;
 - an event broker with a bounded history that replays exactly what a
   reconnecting client missed;
 - a watcher that turns a new pipeline run into an event;
-- a React dashboard with the live status, the sector indicators, the
+- a Next.js dashboard with the live status, the sector indicators, the
   exceptions, the register, the filters and two drill-downs;
-- the token typed at runtime, held in memory, and never in a URL.
+- no login or token prompt for the public synthetic-data demo.
 
 The dashboard reads the Day 2 API and nothing else: no fixture, no hard-coded
 number and no fallback data. The full narrative is in
@@ -96,7 +96,6 @@ suptech-training-bank-of-tanzania/
 │   ├── src/
 │   │   ├── analytics.py                               the analytics run
 │   │   ├── api.py                                     the REST API
-│   │   ├── auth.py                                    the training token scheme
 │   │   ├── catalogs.py                                the indicator and threshold catalogs
 │   │   ├── curated.py                                 the Day 1 curated layer
 │   │   ├── ddl.py                                     the Day 2 structures
@@ -113,14 +112,16 @@ suptech-training-bank-of-tanzania/
 │   │   └── watcher.py                               the run watcher
 │   └── dashboard/
 │       ├── package.json
-│       ├── vite.config.ts
+│       ├── next.config.ts
+│       ├── app/
+│       ├── vitest.config.ts
 │       └── src/
 │           ├── App.tsx                              the shell and the drill-downs
 │           ├── api.ts                               the one client for the API
 │           ├── live.ts                              the stream reader
 │           ├── components/                          the panels
 │           ├── hooks/                               the read model and the connection
-│           └── __tests__/                           27 frontend tests
+│           └── __tests__/                           frontend tests
 ├── docs/
 │   ├── architecture/
 │   │   ├── solution-architecture.md                   the reference architecture
@@ -133,22 +134,24 @@ suptech-training-bank-of-tanzania/
 │   └── research/worldbank-market-conduct-suptech-brief.md   source-grounded theory brief
 ├── tests/
 │   ├── conftest.py
-│   ├── test_day1_pipeline.py                          40 tests on the pipeline
-│   ├── test_notebook_parity.py                        6 tests on notebook versus pipeline
-│   ├── test_day2_analytics.py                         36 tests on the analytics
-│   ├── test_day2_api.py                               24 tests on the API
-│   ├── test_day2_database.py                          12 tests on the structures and the load
-│   ├── test_day2_notebook_parity.py                    7 tests on notebook versus engine
-│   ├── test_day3_live.py                              21 tests on the live update
-│   └── test_day3_dashboard.py                          9 tests on the dashboard contract
+│   ├── test_day1_pipeline.py                          pipeline behavior
+│   ├── test_notebook_parity.py                        notebook/pipeline parity
+│   ├── test_day2_analytics.py                         analytics behavior
+│   ├── test_day2_api.py                               API contract
+│   ├── test_day2_database.py                          database structures and loading
+│   ├── test_day2_notebook_parity.py                    notebook/engine parity
+│   ├── test_day3_live.py                              live update behavior
+│   └── test_day3_dashboard.py                          dashboard contract
 ├── requirements.txt
 ├── pytest.ini
 └── .gitignore
 ```
 
-Days 4 and 5 add `day-04-integration/` and `day-05-testing/`. They are not
-created yet. The scope and the acceptance criteria for the whole programme are
-in `docs/architecture/poc-scope-and-acceptance-criteria.md`.
+Day 4 and Day 5 have dedicated plans in
+`planning/day-04-dashboard-analytics/` and
+`planning/day-05-acceptance-demo/`. Their application implementation is still
+planned. The scope and acceptance criteria for the whole programme are in
+`docs/architecture/poc-scope-and-acceptance-criteria.md`.
 
 ---
 
@@ -375,35 +378,31 @@ The Day 2 API serves the read model: the supervisory indicators, the exceptions 
 the reason behind every exception.
 
 ```bash
-export SUPTECH_API_TOKEN="<a value you choose>"
-uvicorn serve:app --app-dir day-02-supervisory-analytics/src
+uvicorn serve:app_factory --factory --app-dir day-02-supervisory-analytics/src
 ```
 
-| Method | Path | Auth |
+| Method | Path | Access |
 | --- | --- | --- |
 | `GET` | `/health` | public |
-| `GET` | `/api/v1/meta` | token |
-| `GET` | `/api/v1/institutions` | token |
-| `GET` | `/api/v1/institutions/{institution_id}` | token |
-| `GET` | `/api/v1/indicators` | token |
-| `GET` | `/api/v1/exceptions` | token |
-| `GET` | `/api/v1/exceptions/{exception_id}` | token |
-| `GET` | `/api/v1/summary` | token |
+| `GET` | `/api/v1/meta` | public, read-only |
+| `GET` | `/api/v1/institutions` | public, read-only |
+| `GET` | `/api/v1/institutions/{institution_id}` | public, read-only |
+| `GET` | `/api/v1/indicators` | public, read-only |
+| `GET` | `/api/v1/exceptions` | public, read-only |
+| `GET` | `/api/v1/exceptions/{exception_id}` | public, read-only |
+| `GET` | `/api/v1/summary` | public, read-only |
 
-There is no default token. If `SUPTECH_API_TOKEN` is missing the API refuses to
-start, because a hard-coded default is a hard-coded credential. The token scheme
-is a training scheme: one shared token, no users, no roles, no expiry and no record
-of who looked at what. It is not an identity provider.
+The API is public and read-only because the prototype contains synthetic data.
+Do not use it to process real supervisory information.
 
 ---
 
 ## The dashboard
 
-Day 3 adds a live update mechanism and a React dashboard over the same API.
+Day 3 adds a live update mechanism and a Next.js dashboard over the same API.
 
 ```bash
 # The API, with the live endpoint.
-export SUPTECH_API_TOKEN="<a value you choose>"
 uvicorn app:app_factory --factory --app-dir day-03-react-realtime/backend
 
 # The dashboard.
@@ -412,15 +411,15 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173 and type the token in. Run the pipeline again and the
+Open http://127.0.0.1:3000. No login or API token is needed. Run the pipeline again and the
 dashboard reloads itself.
 
-| Method | Path | Auth |
+| Method | Path | Access |
 | --- | --- | --- |
-| `GET` | `/api/v1/events` | token |
+| `GET` | `/api/v1/events` | public, read-only |
 
-The stream is Server-Sent Events. The token travels in the header, never in a
-URL, and a client that reconnects is replayed exactly the events it missed.
+The stream is Server-Sent Events, and a client that reconnects is replayed
+exactly the events it missed.
 
 The frontend has its own tests:
 
@@ -433,28 +432,24 @@ npm run build
 ### Deploy on Vercel
 
 The repository root is the Vercel project root. Vercel builds the curated
-synthetic dataset and the React dashboard, serves the dashboard from the CDN,
-and runs the FastAPI read model as a Python function. The project is configured
-for `suptech-monitor.vercel.app`.
+synthetic dataset and the Next.js dashboard, and runs FastAPI as a separate
+service in the same project. Both services share
+`suptech-monitor.vercel.app`. This uses Vercel Services, which is currently a
+beta feature.
 
 The deployment uses `requirements-vercel.txt` for runtime dependencies;
 `requirements.txt` remains the full local training and notebook environment.
 
-Set `SUPTECH_API_TOKEN` as a Production environment variable in the Vercel
-project settings before deploying. Use a strong, unique value and enter the
-same value in the dashboard unlock screen. Do not put the token in source
-control, a browser URL, or a frontend build-time variable.
-
 ```powershell
 vercel link --project suptech-monitor
-vercel env add SUPTECH_API_TOKEN --environment production
 vercel deploy --prod
 ```
 
 The API and dashboard share the same origin. The deployment remains a training
 prototype: the dataset is synthetic, the threshold catalog is illustrative,
-and the in-memory live event broker is not a distributed production event
-service.
+and all API routes are public, read-only endpoints. Do not put real
+supervisory information on this prototype. The in-memory live event broker is
+not a distributed production event service.
 
 ---
 

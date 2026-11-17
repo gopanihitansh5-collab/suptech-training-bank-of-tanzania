@@ -4,7 +4,6 @@ import { api } from '../api';
 import type { SupervisoryException } from '../types';
 
 export interface ExceptionDetailProps {
-  token: string;
   exception: SupervisoryException;
   onClose: () => void;
 }
@@ -18,7 +17,6 @@ export interface ExceptionDetailProps {
  * the panel says which.
  */
 export function ExceptionDetail({
-  token,
   exception,
   onClose,
 }: ExceptionDetailProps) {
@@ -30,7 +28,7 @@ export function ExceptionDetail({
     setDetail(exception);
     setError(null);
     api
-      .exceptionDetail(token, exception.exception_id)
+      .exceptionDetail(exception.exception_id)
       .then((result) => {
         if (!cancelled) {
           setDetail(result);
@@ -48,7 +46,7 @@ export function ExceptionDetail({
     return () => {
       cancelled = true;
     };
-  }, [token, exception]);
+  }, [exception]);
 
   const entries = detail.audit_entries ?? [];
 

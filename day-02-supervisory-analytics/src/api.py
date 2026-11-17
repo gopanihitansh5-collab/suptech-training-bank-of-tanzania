@@ -15,77 +15,37 @@ carries the threshold evidence, the reason a supervisor would give, and the
 audit entries that explain it. A number on a screen with no reason behind it
 is not a supervisory tool.
 
-The endpoints are protected with a bearer token. ``/health`` is public
-because a health check that needs a credential cannot tell an operator
-whether the service is up. Everything else needs the token.
-
-This is a training prototype. The token scheme is labelled as such in
-``auth.py`` and it is not an identity provider.
+The API is public and read-only for this prototype. It serves synthetic
+training data only and must not be used with real supervisory data.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from auth import INVALID_TOKEN_MESSAGE, token_from_environment, token_matches
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 
 API_TITLE = "NavsaTech supervisory analytics API"
 API_VERSION = "1.0.0"
 
-#: The bearer scheme. ``auto_error`` is off so that a missing credential
-#: produces the same 401 as a wrong one.
-bearer_scheme = HTTPBearer(auto_error=False)
-
-
-def build_token_dependency(expected_token: str):
-    """Return the dependency that protects an endpoint.
-
-    The factory is exported so that a later day can protect its own routes
-    with exactly the same rule, instead of writing a second one that
-    drifts.
-    """
-
-    def require_token(
-        credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
-    ) -> str:
-        """Reject a request that does not carry the configured token."""
-        presented = credentials.credentials if credentials else ""
-        if not token_matches(presented, expected_token):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=INVALID_TOKEN_MESSAGE,
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return presented
-
-    return require_token
-
-
 def create_app(
     repository: Any = None,
-    token: str | None = None,
     title: str = API_TITLE,
     version: str = API_VERSION,
 ) -> FastAPI:
     """Build the API application.
 
-    The repository and the token are injected so that the application can be
-    built in a test without a database and without an environment variable.
+    The repository is injected so that the application can be built in a test
+    without a database.
     """
-    expected_token = token if token is not None else token_from_environment()
-    require_token = build_token_dependency(expected_token)
-
     app = FastAPI(
         title=title,
         version=version,
         description=(
             "Training-only REST API for the Bank of Tanzania SupTech "
             "prototype. It serves the supervisory indicators and the "
-            "exceptions computed over the Day 1 curated layer. The bearer "
-            "token scheme is not an identity provider."
+            "exceptions computed over the Day 1 curated layer. All records "
+            "are synthetic training data, and this API is read-only."
         ),
     )
 
@@ -98,8 +58,6 @@ def create_app(
             )
         return repository
 
-    protected = [Depends(require_token)]
-
     @app.get("/health", tags=["operations"])
     def health() -> dict[str, Any]:
         """Report that the service is up. This endpoint is public."""
@@ -108,10 +66,10 @@ def create_app(
             "service": "suptech-analytics-api",
             "version": version,
             "training_only": True,
-            "authentication": "bearer token, training scheme, not an identity provider",
+            "authentication": "none; public synthetic-data training prototype",
         }
 
-    @app.get("/api/v1/meta", tags=["catalogs"], dependencies=protected)
+    @app.get("/api/v1/meta", tags=["catalogs"])
     def meta(repo: Any = Depends(active_repository)) -> dict[str, Any]:
         """Return the indicator catalog and the threshold catalog."""
         catalogs = repo.catalogs()
@@ -122,7 +80,7 @@ def create_app(
             **catalogs,
         }
 
-    @app.get("/api/v1/institutions", tags=["institutions"], dependencies=protected)
+    @app.get("/api/v1/institutions", tags=["institutions"])
     def institutions(
         repo: Any = Depends(active_repository),
     ) -> dict[str, Any]:
@@ -133,7 +91,6 @@ def create_app(
     @app.get(
         "/api/v1/institutions/{institution_id}",
         tags=["institutions"],
-        dependencies=protected,
     )
     def institution(
         institution_id: str, repo: Any = Depends(active_repository)
@@ -150,7 +107,7 @@ def create_app(
             )
         return detail
 
-    @app.get("/api/v1/indicators", tags=["indicators"], dependencies=protected)
+    @app.get("/api/v1/indicators", tags=["indicators"])
     def indicators(
         institution_id: str | None = Query(default=None),
         reporting_period: str | None = Query(default=None),
@@ -169,7 +126,7 @@ def create_app(
         )
         return {"count": len(records), "indicators": records}
 
-    @app.get("/api/v1/exceptions", tags=["exceptions"], dependencies=protected)
+    @app.get("/api/v1/exceptions", tags=["exceptions"])
     def exceptions(
         institution_id: str | None = Query(default=None),
         reporting_period: str | None = Query(default=None),
@@ -193,7 +150,6 @@ def create_app(
     @app.get(
         "/api/v1/exceptions/{exception_id}",
         tags=["exceptions"],
-        dependencies=protected,
     )
     def exception_detail(
         exception_id: str,
@@ -209,7 +165,7 @@ def create_app(
             )
         return detail
 
-    @app.get("/api/v1/summary", tags=["summary"], dependencies=protected)
+    @app.get("/api/v1/summary", tags=["summary"])
     def summary(
         reporting_period: str | None = Query(default=None),
         repo: Any = Depends(active_repository),

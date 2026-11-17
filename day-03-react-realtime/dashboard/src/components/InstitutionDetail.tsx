@@ -5,7 +5,6 @@ import { formatIndicator } from '../format';
 import type { InstitutionDetail as InstitutionDetailData } from '../types';
 
 export interface InstitutionDetailProps {
-  token: string;
   institutionId: string;
   onClose: () => void;
 }
@@ -17,7 +16,6 @@ export interface InstitutionDetailProps {
  * be traced back to the records it came from without leaving the screen.
  */
 export function InstitutionDetail({
-  token,
   institutionId,
   onClose,
 }: InstitutionDetailProps) {
@@ -29,7 +27,7 @@ export function InstitutionDetail({
     setDetail(null);
     setError(null);
     api
-      .institution(token, institutionId)
+      .institution(institutionId)
       .then((result) => {
         if (!cancelled) {
           setDetail(result);
@@ -47,7 +45,7 @@ export function InstitutionDetail({
     return () => {
       cancelled = true;
     };
-  }, [token, institutionId]);
+  }, [institutionId]);
 
   return (
     <aside className="detail" aria-label="Institution detail">
