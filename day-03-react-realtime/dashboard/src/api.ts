@@ -8,8 +8,8 @@
  * what survived validation, because the submitted file is not reachable
  * from here.
  *
- * The server-side same-origin route adds the configured API credential.
- * No credential is sent from or stored in the browser.
+ * The public prototype reads synthetic data through same-origin, read-only
+ * endpoints. No API credential is sent from or stored in the browser.
  */
 
 import type {

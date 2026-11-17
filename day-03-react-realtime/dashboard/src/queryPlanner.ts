@@ -3,6 +3,7 @@ import { api } from './api';
 export type QueryAction =
   | 'summary'
   | 'exceptions'
+  | 'exception_ranking'
   | 'indicators'
   | 'institutions'
   | 'institution_detail';
@@ -41,7 +42,21 @@ export function planQuery(question: string): QueryPlan {
     ...(institutionId ? { institution_id: institutionId } : {}),
   };
 
-  if (/exception|breach|threshold/.test(normalized)) {
+  if (
+    /exception|breach/.test(normalized) &&
+    /highest|most|top|rank/.test(normalized) &&
+    /institution|bank/.test(normalized)
+  ) {
+    return {
+      action: 'exception_ranking',
+      description:
+        'Count approved exception records by institution and rank them from highest to lowest.',
+      endpoint: '/api/v1/exceptions',
+      filters,
+    };
+  }
+
+  if (/exception|breach|threshold|flag/.test(normalized)) {
     return {
       action: 'exceptions',
       description: 'Read supervisory exceptions matching the selected filters.',
@@ -90,6 +105,8 @@ export function executeQueryPlan(plan: QueryPlan): Promise<unknown> {
     case 'summary':
       return api.summary(plan.filters.reporting_period);
     case 'exceptions':
+      return api.exceptions(plan.filters);
+    case 'exception_ranking':
       return api.exceptions(plan.filters);
     case 'indicators':
       return api.indicators(plan.filters);

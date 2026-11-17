@@ -630,6 +630,20 @@ h4 {
   gap: 10px;
 }
 
+.analyst__suggestions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.analyst__suggestions .button {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
 .analyst__label {
   color: var(--ink-soft);
   font-size: 13px;
@@ -676,6 +690,36 @@ h4 {
 }
 
 .analyst__plan p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.analyst__answer,
+.analyst__records {
+  display: grid;
+  gap: 10px;
+}
+
+.analyst__answer p,
+.analyst__record p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.analyst__review {
+  color: var(--ink-soft);
+}
+
+.analyst__record {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.analyst__record h4 {
   margin: 0;
   font-size: 13px;
 }
