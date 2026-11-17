@@ -12,6 +12,8 @@ DAY1_ROOT = REPO_ROOT / "day-01-data-engineering"
 SRC_ROOT = DAY1_ROOT / "src"
 DAY2_ROOT = REPO_ROOT / "day-02-supervisory-analytics"
 DAY2_SRC_ROOT = DAY2_ROOT / "src"
+DAY3_ROOT = REPO_ROOT / "day-03-react-realtime"
+DAY3_BACKEND_ROOT = DAY3_ROOT / "backend"
 
 # The Day 1 modules are plain scripts rather than a package, so the source
 # folder is placed on the import path for the tests.
@@ -22,6 +24,10 @@ if str(SRC_ROOT) not in sys.path:
 # names, so both folders can live on the import path at the same time.
 if str(DAY2_SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(DAY2_SRC_ROOT))
+
+# The Day 3 backend follows it too.
+if str(DAY3_BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(DAY3_BACKEND_ROOT))
 
 
 @pytest.fixture(scope="session")

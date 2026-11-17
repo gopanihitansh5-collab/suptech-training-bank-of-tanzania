@@ -153,13 +153,22 @@ is a change to a table rather than a change to the pipeline.
 
 ### L5 — Presentation
 
-Designed, not built. Days 3 and 4 add the React dashboard, the API and the live
-update mechanism.
+`day-03-react-realtime/backend/app.py` and `day-03-react-realtime/dashboard/`.
 
-The API is in place and sits on the boundary: `day-02-supervisory-analytics/src/api.py`
-serves the Day 2 read model with a bearer token, and it is what the dashboard
-will consume on Day 3. The dashboard itself, the live update mechanism and the
-integration work are not built.
+The Day 2 API is the door, and it is the only door: the dashboard reads the
+Day 2 read model and nothing else. Day 3 adds the live update mechanism and
+the dashboard itself.
+
+- **Live update.** Server-Sent Events on `/api/v1/events`, protected by the
+  same dependency factory as every other endpoint. The token travels in the
+  header, never in a URL, and a reconnecting client is replayed exactly the
+  events it missed.
+- **The dashboard.** A responsive React application with the live status, the
+  sector indicators, the exceptions, the register, the filters, two
+  drill-downs and the charts.
+
+Days 3 and 4 scope the comparison view, the trend view and the threshold
+highlighting. Those are not built yet.
 
 ---
 
@@ -241,14 +250,14 @@ later.
 
 ## 7. What is built and what is not
 
-| Layer | State on the end of Day 2 |
+| Layer | State on the end of Day 3 |
 | --- | --- |
 | L0 Sources | Synthetic dataset and reference data in place. World Bank context exercise documented. |
 | L1 Ingestion | Implemented and tested. |
 | L2 Validation | Implemented, 19 rules, audit trail, tested. |
 | L3 Curation | Structures defined, DDL generated, loading code written and extended for Day 2. Live load untested: no PostgreSQL instance on the training machine. |
 | L4 Analytics | Implemented: 12 indicators, 10 thresholds, exception records with the link to the audit trail, tested against hand computed values. |
-| L5 Presentation | The API is implemented, token protected and tested. The React dashboard, the live update mechanism and the integration are designed only. Days 3 and 4. |
+| L5 Presentation | The API is implemented and token protected. The live update mechanism and the React dashboard are implemented and tested. Threshold highlighting, the comparison view and the trend view are Day 4. |
 
 The gap at L3 is real and is stated rather than hidden: the DDL is verified by
 parsing it with SQLAlchemy's PostgreSQL dialect and by asserting on the objects it
@@ -290,3 +299,8 @@ written and is skipped until an approved development database is available.
     curated period, so the growth indicators are null by construction. The engine
     computes them when the history exists, and the test suite proves it with a
     two-period fixture.
+12. **The dashboard holds one period too.** It shows the period the curated layer
+    has. The comparison view, the trend view and the threshold highlighting are
+    Day 4, and they need more than one period to be worth building.
+13. **The frontend bundle is one chunk.** The charts library is in it, so the
+    bundle is larger than comfortable. Code splitting is a later conversation.

@@ -108,12 +108,12 @@ quality symptom, and the model says exactly that.
 
 ### Days 3 and 4 — real-time communication and the dashboard
 
-| # | Criterion | How it is verified |
-| --- | --- | --- |
-| D3.1 | The dashboard displays data that came from the API, not from a fixture. | Network inspection during a manual run. |
-| D3.2 | The dashboard updates when the pipeline generates a new event, and recovers after a disconnection. | Live update test plus a reconnect test. |
-| D4.1 | Threshold breaches are highlighted consistently between the API and the dashboard. | Cross-check of the same record on both sides. |
-| D4.2 | Access controls are applied to the dashboard's data requests. | Unauthenticated request test. |
+| # | Criterion | How it is verified | State |
+| --- | --- | --- | --- |
+| D3.1 | The dashboard displays data that came from the API, not from a fixture. | `tests/test_day3_dashboard.py`: the frontend source is checked for institution identifiers, sector totals, ratios and index values, and for the routes it calls against the routes the backend serves. | Met |
+| D3.2 | The dashboard updates when the pipeline generates a new event, and recovers after a disconnection. | `tests/test_day3_live.py`: the broker replays exactly the events a reconnecting subscriber missed, the watcher publishes when the run changes, and the stream endpoint is protected and really is Server-Sent Events. `dashboard/src/__tests__/live.test.ts`: the client reconnects after a failure and asks for what it missed with `Last-Event-ID`. | Met |
+| D4.1 | Threshold breaches are highlighted consistently between the API and the dashboard. | Day 4. |
+| D4.2 | Access controls are applied to the dashboard's data requests. | The dashboard sends the token on every request, and `tests/test_day3_dashboard.py` checks that the frontend holds no credential of its own. The formal check is Day 4. | Partly met, Day 4 completes it |
 
 ### Day 5 — acceptance
 

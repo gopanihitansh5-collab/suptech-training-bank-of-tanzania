@@ -5,6 +5,7 @@
 **Duration:** Five days
 **Day 1 focus:** SupTech fundamentals, data architecture, ingestion and validation.
 **Day 2 focus:** Supervisory analytics, exception rules, the PostgreSQL load and the API.
+**Day 3 focus:** The live update mechanism and the React dashboard.
 
 > All institution names, identifiers, reporting values and records in this repository
 > are synthetic. This is not an official Bank of Tanzania system and it contains no
@@ -42,6 +43,24 @@ consume:
   other by the test suite.
 
 The full narrative is in `docs/architecture/day2-analytics-and-api.md`.
+
+---
+
+## Day 3 scope
+
+A live update mechanism and a responsive dashboard over the Day 2 API:
+
+- a Server-Sent Events endpoint that is protected like every other endpoint;
+- an event broker with a bounded history that replays exactly what a
+  reconnecting client missed;
+- a watcher that turns a new pipeline run into an event;
+- a React dashboard with the live status, the sector indicators, the
+  exceptions, the register, the filters and two drill-downs;
+- the token typed at runtime, held in memory, and never in a URL.
+
+The dashboard reads the Day 2 API and nothing else: no fixture, no hard-coded
+number and no fallback data. The full narrative is in
+`docs/architecture/day3-live-dashboard.md`.
 
 ---
 
@@ -87,12 +106,28 @@ suptech-training-bank-of-tanzania/
 │   │   ├── repository.py                              the read model
 │   │   └── serve.py                                   the ASGI entry point
 │   └── reports/                                       generated, not committed
+├── day-03-react-realtime/
+│   ├── backend/
+│   │   ├── app.py                                   the API plus the live endpoint
+│   │   ├── events.py                                the event broker
+│   │   └── watcher.py                               the run watcher
+│   └── dashboard/
+│       ├── package.json
+│       ├── vite.config.ts
+│       └── src/
+│           ├── App.tsx                              the shell and the drill-downs
+│           ├── api.ts                               the one client for the API
+│           ├── live.ts                              the stream reader
+│           ├── components/                          the panels
+│           ├── hooks/                               the read model and the connection
+│           └── __tests__/                           27 frontend tests
 ├── docs/
 │   ├── architecture/
 │   │   ├── solution-architecture.md                   the reference architecture
 │   │   ├── data-model.md                              grains, tables, DDL
 │   │   ├── day1-data-flow.md                          the Day 1 flow and rules
 │   │   ├── day2-analytics-and-api.md                  the Day 2 flow and API
+│   │   ├── day3-live-dashboard.md                     the Day 3 live update and the dashboard
 │   │   └── poc-scope-and-acceptance-criteria.md       scope and measurable criteria
 │   ├── datasets/world-bank-context.md                 country-level context, kept separate
 │   └── research/worldbank-market-conduct-suptech-brief.md   source-grounded theory brief
@@ -103,16 +138,17 @@ suptech-training-bank-of-tanzania/
 │   ├── test_day2_analytics.py                         36 tests on the analytics
 │   ├── test_day2_api.py                               24 tests on the API
 │   ├── test_day2_database.py                          12 tests on the structures and the load
-│   └── test_day2_notebook_parity.py                    7 tests on notebook versus engine
+│   ├── test_day2_notebook_parity.py                    7 tests on notebook versus engine
+│   ├── test_day3_live.py                              21 tests on the live update
+│   └── test_day3_dashboard.py                          9 tests on the dashboard contract
 ├── requirements.txt
 ├── pytest.ini
 └── .gitignore
 ```
 
-Days 3 to 5 add `day-03-react-realtime/`, `day-04-integration/` and
-`day-05-testing/`. They are not created yet. The scope and the acceptance
-criteria for the whole programme are in
-`docs/architecture/poc-scope-and-acceptance-criteria.md`.
+Days 4 and 5 add `day-04-integration/` and `day-05-testing/`. They are not
+created yet. The scope and the acceptance criteria for the whole programme are
+in `docs/architecture/poc-scope-and-acceptance-criteria.md`.
 
 ---
 
@@ -358,6 +394,67 @@ There is no default token. If `SUPTECH_API_TOKEN` is missing the API refuses to
 start, because a hard-coded default is a hard-coded credential. The token scheme
 is a training scheme: one shared token, no users, no roles, no expiry and no record
 of who looked at what. It is not an identity provider.
+
+---
+
+## The dashboard
+
+Day 3 adds a live update mechanism and a React dashboard over the same API.
+
+```bash
+# The API, with the live endpoint.
+export SUPTECH_API_TOKEN="<a value you choose>"
+uvicorn app:app_factory --factory --app-dir day-03-react-realtime/backend
+
+# The dashboard.
+cd day-03-react-realtime/dashboard
+npm install
+npm run dev
+```
+
+Open http://127.0.0.1:5173 and type the token in. Run the pipeline again and the
+dashboard reloads itself.
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| `GET` | `/api/v1/events` | token |
+
+The stream is Server-Sent Events. The token travels in the header, never in a
+URL, and a client that reconnects is replayed exactly the events it missed.
+
+The frontend has its own tests:
+
+```bash
+cd day-03-react-realtime/dashboard
+npm test
+npm run build
+```
+
+### Deploy on Vercel
+
+The repository root is the Vercel project root. Vercel builds the curated
+synthetic dataset and the React dashboard, serves the dashboard from the CDN,
+and runs the FastAPI read model as a Python function. The project is configured
+for `suptech-monitor.vercel.app`.
+
+The deployment uses `requirements-vercel.txt` for runtime dependencies;
+`requirements.txt` remains the full local training and notebook environment.
+
+Set `SUPTECH_API_TOKEN` as a Production environment variable in the Vercel
+project settings before deploying. Use a strong, unique value and enter the
+same value in the dashboard unlock screen. Do not put the token in source
+control, a browser URL, or a frontend build-time variable.
+
+```powershell
+vercel link --project suptech-monitor
+vercel env add SUPTECH_API_TOKEN --environment production
+vercel deploy --prod
+```
+
+The API and dashboard share the same origin. The deployment remains a training
+prototype: the dataset is synthetic, the threshold catalog is illustrative,
+and the in-memory live event broker is not a distributed production event
+service.
 
 ---
 

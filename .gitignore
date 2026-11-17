@@ -19,10 +19,19 @@ day-02-supervisory-analytics/notebooks/day2_outputs/
 # Notebook output written into the working directory
 day2_outputs/
 
+# The Day 3 dashboard: installed packages and the build output
+day-03-react-realtime/dashboard/node_modules/
+day-03-react-realtime/dashboard/dist/
+day-03-react-realtime/dashboard/.vite/
+
 # Local environment and tooling
 .idea/
 .vscode/
+.vercel/
 
 # Local credentials
 gopanigithub.txt
 *.txt.local
+
+.vercel
+.env*

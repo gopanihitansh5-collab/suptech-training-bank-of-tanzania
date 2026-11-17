@@ -105,6 +105,7 @@ def run_analytics(curated: CuratedLayer) -> AnalyticsResult:
         "indicator_values": int(len(indicators)),
         "indicators_evaluated": len(INDICATORS),
         "exceptions": int(len(exceptions)),
+        "exception_ids": sorted(exceptions["exception_id"].tolist()),
         "thresholds_evaluated": len(THRESHOLDS),
         "exception_audit_links": int(len(links)),
         "input_sha256": _input_hashes(curated),

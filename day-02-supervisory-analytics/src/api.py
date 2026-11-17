@@ -40,29 +40,13 @@ API_VERSION = "1.0.0"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def create_app(
-    repository: Any = None,
-    token: str | None = None,
-    title: str = API_TITLE,
-    version: str = API_VERSION,
-) -> FastAPI:
-    """Build the API application.
+def build_token_dependency(expected_token: str):
+    """Return the dependency that protects an endpoint.
 
-    The repository and the token are injected so that the application can be
-    built in a test without a database and without an environment variable.
+    The factory is exported so that a later day can protect its own routes
+    with exactly the same rule, instead of writing a second one that
+    drifts.
     """
-    expected_token = token if token is not None else token_from_environment()
-
-    app = FastAPI(
-        title=title,
-        version=version,
-        description=(
-            "Training-only REST API for the Bank of Tanzania SupTech "
-            "prototype. It serves the supervisory indicators and the "
-            "exceptions computed over the Day 1 curated layer. The bearer "
-            "token scheme is not an identity provider."
-        ),
-    )
 
     def require_token(
         credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
@@ -76,6 +60,34 @@ def create_app(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return presented
+
+    return require_token
+
+
+def create_app(
+    repository: Any = None,
+    token: str | None = None,
+    title: str = API_TITLE,
+    version: str = API_VERSION,
+) -> FastAPI:
+    """Build the API application.
+
+    The repository and the token are injected so that the application can be
+    built in a test without a database and without an environment variable.
+    """
+    expected_token = token if token is not None else token_from_environment()
+    require_token = build_token_dependency(expected_token)
+
+    app = FastAPI(
+        title=title,
+        version=version,
+        description=(
+            "Training-only REST API for the Bank of Tanzania SupTech "
+            "prototype. It serves the supervisory indicators and the "
+            "exceptions computed over the Day 1 curated layer. The bearer "
+            "token scheme is not an identity provider."
+        ),
+    )
 
     def active_repository() -> Any:
         """Return the repository the API serves from."""
