@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#d2d9f4", "tertiary": "#545f74", "surface-container": "#eaedff", "on-tertiary-fixed-variant": "#3c475b", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00201c", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#4fdbc8", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#bcc7df", "primary": "#006b5f", "tertiary-container": "#99a4bc", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#faf8ff", "primary-fixed": "#71f8e4", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#004c69", "error": "#ba1a1a", "outline-variant": "#bbcac6", "inverse-primary": "#4fdbc8", "outline": "#6c7a77", "surface": "#faf8ff", "on-tertiary": "#ffffff", "surface-container-high": "#e2e7ff", "on-surface": "#131b2e", "secondary-fixed": "#c4e7ff", "on-surface-variant": "#3c4947", "on-secondary-fixed": "#001e2c", "on-tertiary-fixed": "#111c2e", "on-primary-fixed-variant": "#005048", "background": "#faf8ff", "on-primary-container": "#00423b", "on-error-container": "#93000a", "inverse-surface": "#283044", "secondary-fixed-dim": "#7bd0ff", "secondary-container": "#40c2fd", "on-secondary-container": "#004d6a", "primary-container": "#14b8a6", "secondary": "#00668a", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "tertiary-fixed": "#d8e3fc", "surface-tint": "#006b5f", "on-background": "#131b2e", "on-secondary": "#ffffff", "on-tertiary-container": "#303a4e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xs": "0.25rem", "margin": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-mobile": "1rem", "gutter-dense": "0.5rem", "space-xl": "2rem", "space-sm": "0.375rem", "gutter": "1rem" }, "fontFamily": { "body-lg": [ "Inter" ], "headline-lg": [ "Geist" ], "label-caps": [ "Geist" ], "display": [ "Geist" ], "data-mono-lg": [ "JetBrains Mono" ], "micro": [ "Inter" ], "headline-sm": [ "Geist" ], "data-mono-md": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "headline-md": [ "Geist" ], "body-sm": [ "Inter" ] }, "fontSize": { "body-lg": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "display": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "data-mono-lg": [ "14px", { "lineHeight": "18px", "letterSpacing": "-0.02em", "fontWeight": "500" } ], "micro": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "headline-sm": [ "15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "data-mono-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-md": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.08)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><img alt="SupTech Monitor Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrB1W6zcHzlb_ss0hCtCxameWhXWvbxZ5h00_XtevKfxyOoDrLuVu2TDY6pM-HnzSP4tXtqcvLX7NRctROiLzAnrO9o1otXsPAxoR0pDw6XaALF5Ix0edSGpW-ZGg0ZC1Vjop1ASaVkdLGCEZ8cdo6cMpj_J7XhVUJOfhxDQaUUu_FSgIzo8feNJNmrKL9K3IgHbnsAF_ssGfmA7Xz1JVwZ8Bmhmk72AgM62Aek1C_rXow"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-surface-container-lowest tracking-tight">SupTech Monitor</span><span class="font-micro text-micro text-secondary-container tracking-wider uppercase">Supervisory Intelligence</span></div></div><span class="px-space-xs py-0.5 rounded-sm bg-surface-variant/20 text-inverse-on-surface font-micro text-micro font-medium">PoC</span></div><div class="px-space-md py-space-xs"><div class="px-space-xs py-space-xs font-label-caps text-label-caps uppercase text-surface-dim/70 tracking-wider">Supervisory Console</div></div><nav class="flex flex-col gap-space-xs px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-headline-sm rounded-lg"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span>Overview</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="institutions" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Institutions</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="supervisory-analytics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Supervisory Analytics</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="exceptions-and-alerts" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">crisis_alert</span><span>Exceptions &amp; Alerts</span></div><span class="px-space-xs py-0.5 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md">14</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="custom-reports" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">description</span><span>Custom Reports</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-colors bg-primary-container text-on-primary-container font-headline-sm rounded-lg" data-path="data-explorer" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">table_chart</span><span>Data Explorer</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="ai-supervisory-assistant" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">psychology</span><span>AI Supervisory Assistant</span></div><span class="px-space-xs py-0.5 rounded-lg bg-primary text-on-primary font-micro text-micro">Copilot</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="integrations-and-system-health" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">sync_alt</span><span>Integrations &amp; System Health</span></div><span class="w-2 h-2 rounded-full bg-primary-fixed"></span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="administration-and-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">tune</span><span>Administration &amp; Settings</span></div></a></nav></div><div class="p-space-md m-space-sm rounded-xl bg-surface-container-lowest/10 backdrop-blur-xl"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps uppercase text-surface-dim">Environment</span><span class="font-data-mono-md text-data-mono-md text-secondary-fixed">BoT Staging v2.4</span></div><div class="flex items-center gap-space-xs"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span><span class="font-micro text-micro text-surface-dim">Realtime Telemetry Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Directorate of Banking Supervision</span><span class="text-outline">/</span><span>Analytics &amp; Regulatory Reporting</span><span class="text-outline">/</span><span class="text-primary font-medium">Data Explorer</span></div></div><div class="flex-1 max-w-md mx-margin"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-full h-8 pl-9 pr-14 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest" placeholder="Quick search institution, indicator, licence, exception ID..." type="text"/><span class="absolute right-space-sm px-space-xs py-0.5 rounded-sm bg-surface-container font-data-mono-md text-data-mono-md text-on-surface-variant pointer-events-none">Ctrl+K</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-md h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm"><span class="material-symbols-outlined text-[16px] text-outline">event</span><span>2026 Q3 — Oct Cycle</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="flex items-center gap-space-xs px-space-sm h-8 rounded-lg bg-primary-fixed/20 text-on-primary-fixed-variant font-data-mono-md text-data-mono-md"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span><span>Live Stream • 24ms</span></div><div class="relative flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md flex items-center justify-center text-[10px]">3</span></div><div class="flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">help_outline</span></div><div class="flex items-center gap-space-sm pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_MLxFzv9C_m29Rehhcl9BNiBJCc_EZGvIRcVi4FzeDb3r3HoL0XQHv-REKzIK2vPqomezFmkbfhUFVuOXzsUp5uhz7I233ZhMSmwYEzKXoxo0AOBgDbhbe7mSo1pdfliKgdiqaXViieRYdpDW4yeHfyeF69QlY9P5sLs4LIwWZKpTPI1y1UIt4Fy_BRUlGqO0IuEeAmgZA_V3qMAOwQZpy6sbeRZXoXGNJNZZZyKn"/><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-headline-sm leading-tight text-on-surface">Dr. M. Kimei</span><span class="font-micro text-micro text-on-surface-variant leading-tight">Chief Supervisory Analyst • BoT - BSD</span></div><span class="material-symbols-outlined text-[18px] text-outline">expand_more</span></div></div></header><main class="relative pt-16 w-full bg-surface px-gutter min-h-screen"><div class="flex flex-col w-full pb-margin">
+<!-- Top Breadcrumb & Environment Header -->
+<div class="flex flex-col gap-space-xs mb-space-lg">
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-outline">
+<span class="hover:text-on-surface cursor-pointer">Supervision Engine</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-on-surface cursor-pointer">Directorate of Banking Supervision</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-on-surface cursor-pointer">Data Engineering &amp; Regulatory Pipeline</span>
+<span class="text-outline-variant">/</span>
+<span class="text-primary font-medium">Data Explorer &amp; Ingestion Telemetry</span>
+</div>
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md mt-space-xs">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Data Explorer &amp; Regulatory Ingestion Workspace</h1>
+<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            ETL Pipeline v4.2 • XBRL &amp; SDMX Engine Active
+          </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">
+          Inspect multi-institution regulatory return datasets, automated ETL ingestion telemetry, schema validation rules, and record-level ingestion exceptions across 54 reporting entities.
+        </p>
+</div>
+<!-- Header Actions -->
+<div class="flex items-center gap-space-sm self-start xl:self-center flex-wrap">
+<button class="h-8 px-space-md rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-headline-sm text-headline-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">sync</span>
+<span>Trigger Ingestion Reconciliation</span>
+</button>
+<button class="h-8 px-space-md rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Download Manifest (.JSON/.CSV)</span>
+</button>
+<button class="h-8 px-space-md rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors font-headline-sm text-headline-sm flex items-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Run Schema Validator</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Analytical KPI Tier (5 High-Density Technical Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-space-md mb-space-lg">
+<!-- Card 1: Total Records -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Total Processed Records</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">database</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-sm mb-space-xs">
+<span class="font-display text-display text-on-surface tracking-tight font-headline-lg">184,920</span>
+<span class="inline-flex items-center gap-0.5 px-space-xs py-0.5 rounded-sm bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>+14,280
+          </span>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-on-surface-variant">
+<span>Across 54 institutions</span>
+<span class="font-data-mono-md text-data-mono-md text-outline">16 statutory forms</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Pass Rate -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Validation Pass Rate</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-sm mb-space-xs">
+<span class="font-display text-display text-on-surface tracking-tight font-headline-lg">99.14%</span>
+<span class="inline-flex items-center gap-0.5 px-space-xs py-0.5 rounded-sm bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[12px]">arrow_upward</span>+0.32%
+          </span>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-on-surface-variant">
+<span>183,330 / 184,920 compliant</span>
+<span class="font-data-mono-md text-data-mono-md text-primary">Target: 98.5%</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Rejected / Quarantined -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Quarantined Records</span>
+<div class="w-7 h-7 rounded-lg bg-error-container/60 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]">rule_folder</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-sm mb-space-xs">
+<span class="font-display text-display text-error tracking-tight font-headline-lg">1,142</span>
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-sm bg-error-container text-on-error-container font-data-mono-md text-data-mono-md">
+            0.62% Error Rate
+          </span>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-on-surface-variant">
+<span>742 Syntax</span>
+<span class="font-data-mono-md text-data-mono-md text-outline">400 Arithmetic</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Deduplicated Rows -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Duplicate / Overlapping</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">layers_clear</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-sm mb-space-xs">
+<span class="font-display text-display text-on-surface tracking-tight font-headline-lg">448</span>
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-sm bg-surface-container text-secondary font-data-mono-md text-data-mono-md">
+            Auto-Resolved 100%
+          </span>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-on-surface-variant">
+<span>MD5 collision solver</span>
+<span class="font-data-mono-md text-data-mono-md text-outline">0 Loss</span>
+</div>
+</div>
+</div>
+<!-- Card 5: Pipeline Latency -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Average ETL Latency</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-sm mb-space-xs">
+<span class="font-display text-display text-on-surface tracking-tight font-headline-lg">142<span class="font-headline-md text-headline-md text-on-surface-variant font-normal">ms</span></span>
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-sm bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>Live Streaming
+          </span>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-on-surface-variant">
+<span>PostgreSQL 16 + Redis</span>
+<span class="font-data-mono-md text-data-mono-md text-outline">BoT Edge Gateway</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Ingestion Pipeline Stage Flowbar -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-lg shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-space-md gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Filing Ingestion Pipeline Progress (2026 Q3 Statutory Cycle)</span>
+<span class="px-space-xs py-0.5 rounded-full bg-secondary-fixed/50 text-on-secondary-fixed-variant font-data-mono-md text-data-mono-md">Active Syncing</span>
+</div>
+<div class="flex items-center gap-space-md font-data-mono-md text-data-mono-md text-on-surface-variant">
+<span>Cycle Deadline: 15 Oct 2026</span>
+<span>•</span>
+<span class="text-primary font-semibold">97.8% Overall Completion</span>
+</div>
+</div>
+<!-- 4 Pipeline Stages -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<!-- Stage 1 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Stage 1: Gateway Ingestion</span>
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">54 / 54 Received</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-space-xs mb-space-xs overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-micro text-micro text-outline">XBRL, XML, &amp; Encrypted CSV • 100%</span>
+</div>
+<!-- Stage 2 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Stage 2: Schema &amp; Type Valid.</span>
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">184,920 Parsed</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-space-xs mb-space-xs overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 99.1%"></div>
+</div>
+<span class="font-micro text-micro text-outline">SDMX 3.0 XSD Syntactic Check • 99.1% Valid</span>
+</div>
+<!-- Stage 3 -->
+<div class="p-space-sm bg-surface-container rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Stage 3: Cross-Table Consistency</span>
+<span class="material-symbols-outlined text-[18px] text-secondary animate-spin">progress_activity</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">51 / 54 Verified</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 mt-space-xs mb-space-xs overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 94.4%"></div>
+</div>
+<span class="font-micro text-micro text-outline">3 Pending Forensic Balance Checksums</span>
+</div>
+<!-- Stage 4 -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Stage 4: DWH Storage Staging</span>
+<span class="material-symbols-outlined text-[18px] text-primary">sync</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">183,330 Staged</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-space-xs mb-space-xs overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 99.1%"></div>
+</div>
+<span class="font-micro text-micro text-outline">PostgreSQL Master Partition Replication</span>
+</div>
+</div>
+</div>
+<!-- Navigation View Tabs -->
+<div class="flex items-center justify-between mb-space-md flex-wrap gap-space-sm">
+<div class="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
+<button class="px-space-md py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm shadow-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">table_view</span>
+<span>Active Regulatory Datasets</span>
+<span class="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">6</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-body-md text-body-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">stream</span>
+<span>Raw Data Ingestion Stream</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-body-md text-body-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">grid_on</span>
+<span>Validated Data Grid</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-body-md text-body-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-error">notification_important</span>
+<span>Quarantined &amp; Rejected Records</span>
+<span class="px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container font-data-mono-md text-data-mono-md">1,142</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-body-md text-body-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Execution History</span>
+</button>
+</div>
+<!-- Quick Utilities -->
+<div class="flex items-center gap-space-xs">
+<button class="h-8 px-space-sm rounded-lg bg-surface-container text-on-surface font-body-sm text-body-sm hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">filter_alt</span>
+<span>Show Only Outliers</span>
+</button>
+<button class="h-8 px-space-sm rounded-lg bg-surface-container text-on-surface font-body-sm text-body-sm hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">code</span>
+<span>Export DDL Schema</span>
+</button>
+</div>
+</div>
+<!-- Global Filter & Search Control Bar -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl mb-space-md shadow-sm flex flex-col lg:flex-row items-center justify-between gap-space-md">
+<div class="relative flex items-center w-full lg:w-96">
+<span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span>
+<input class="w-full h-8 pl-9 pr-space-md bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container" placeholder="Filter by Dataset, Form ID, Institution, or Batch ID..." type="text"/>
+</div>
+<div class="flex items-center gap-space-sm w-full lg:w-auto flex-wrap justify-end">
+<!-- Category Filter -->
+<div class="flex items-center gap-1 bg-surface-container-low px-space-md h-8 rounded-lg font-body-sm text-body-sm text-on-surface">
+<span class="text-outline font-micro uppercase">Category:</span>
+<span class="font-medium">All Statutory Return Categories</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+<!-- Ingestion Status -->
+<div class="flex items-center gap-1 bg-surface-container-low px-space-md h-8 rounded-lg font-body-sm text-body-sm text-on-surface">
+<span class="text-outline font-micro uppercase">Status:</span>
+<span class="font-medium">All Statuses</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+<!-- Filing Cycle -->
+<div class="flex items-center gap-1 bg-surface-container-low px-space-md h-8 rounded-lg font-body-sm text-body-sm text-on-surface">
+<span class="text-outline font-micro uppercase">Cycle:</span>
+<span class="font-medium">2026 Q3 Filing Cycle</span>
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Dataset Inventory Master Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-space-lg">
+<div class="px-space-md py-space-sm bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Dataset Ingestion Registry</span>
+<span class="font-micro text-micro text-outline">6 Core Supervisory Submissions Active</span>
+</div>
+<div class="flex items-center gap-space-xs font-data-mono-md text-data-mono-md text-on-surface-variant">
+<span>Displaying 6 of 6 Datasets</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-md text-body-md">
+<thead>
+<tr class="bg-surface-container-low font-label-caps text-label-caps uppercase text-outline">
+<th class="py-space-sm px-space-md">Dataset Name &amp; Statutory Form</th>
+<th class="py-space-sm px-space-md">Batch Execution ID</th>
+<th class="py-space-sm px-space-md text-right">Total Records</th>
+<th class="py-space-sm px-space-md">Schema Spec</th>
+<th class="py-space-sm px-space-md">Last Ingestion Run</th>
+<th class="py-space-sm px-space-md">Pass Rate</th>
+<th class="py-space-sm px-space-md text-center">ETL Status</th>
+<th class="py-space-sm px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<!-- Row 1: Form 02-BS -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">account_balance_wallet</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Statement of Financial Position</span>
+<span class="font-micro text-micro text-outline">Form 02-BS • Balance Sheet Aggregates</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">
+              BATCH-2026Q3-091
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              42,180
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                48 cols • v2026.3
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Today, 08:35:12 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 99.8%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-on-surface">99.8%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+                VALIDATED
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="View Ingested Rows">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Form 08-LGR (ACTIVE SELECTED / HAS REJECTION) -->
+<tr class="bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">group_work</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Large Exposures &amp; Single Borrower</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-primary font-micro text-micro">Inspected Now</span>
+</div>
+<span class="font-micro text-micro text-outline">Form 08-LGR • Credit Risk Concentration</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary font-semibold">
+              BATCH-2026Q3-088
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              18,450
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                36 cols • v2026.1
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Today, 08:14:02 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 97.4%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-error font-medium">97.4%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-data-mono-md text-data-mono-md">
+                WARNING (42 REJ)
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded bg-surface-container text-primary flex items-center justify-center" title="Currently Selected">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Form 01-CAR -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">security</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Capital Adequacy &amp; Solvency</span>
+<span class="font-micro text-micro text-outline">Form 01-CAR • Basel II/III Capital Ratios</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">
+              BATCH-2026Q3-079
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              5,840
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                52 cols • v2026.3
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Today, 07:55:40 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 99.1%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-on-surface">99.1%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+                VALIDATED
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="View Rows">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Form 16-LCR -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">water_drop</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Liquidity Coverage &amp; Statutory Reserve</span>
+<span class="font-micro text-micro text-outline">Form 16-LCR • High Quality Liquid Assets (HQLA)</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">
+              BATCH-2026Q3-074
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              12,200
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                24 cols • v2026.2
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Yesterday, 22:40 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 98.6%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-on-surface">98.6%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-surface-container text-secondary font-data-mono-md text-data-mono-md">
+                PARTIAL
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="View Rows">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Form 09-FX -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">currency_exchange</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Foreign Exchange Net Open Position</span>
+<span class="font-micro text-micro text-outline">Form 09-FX • Cross-Currency Exposure</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">
+              BATCH-2026Q3-066
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              34,100
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                18 cols • v2026.1
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Yesterday, 18:12 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-primary font-medium">100%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">
+                VALIDATED
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="View Rows">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Form 04-NPL -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">query_stats</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Credit Portfolio Quality &amp; NPLs</span>
+<span class="font-micro text-micro text-outline">Form 04-NPL • Non-Performing Classification &amp; Provisioning</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">
+              BATCH-2026Q3-059
+            </td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">
+              72,150
+            </td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-data-mono-md text-data-mono-md">
+                64 cols • v2026.3
+              </span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              2 Days Ago, 14:00 EAT
+            </td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm w-36">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 96.9%"></div>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-on-surface">96.9%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded-full bg-secondary-fixed/50 text-secondary font-data-mono-md text-data-mono-md">
+                PROCESSING
+              </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Inspect Schema">
+<span class="material-symbols-outlined text-[16px]">schema</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="View Rows">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface" title="Export Dataset">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Record-Level Quality Forensic Section & Schema Inspector (Split Layout) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg mb-space-lg">
+<!-- Left 8 Cols: Interactive Record-Level Data Preview -->
+<div class="xl:col-span-8 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-md mb-space-md gap-space-xs">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface">Record-Level Quality Audit: Form 08-LGR (Large Exposures Register)</h2>
+<span class="px-space-xs py-0.5 rounded bg-surface-container font-data-mono-md text-data-mono-md text-outline">BATCH-2026Q3-088</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Showing 5 sample records from latest ingestion run • <span class="text-error font-medium">High-risk quarantine anomaly flagged on Row #4</span>
+</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-micro text-micro uppercase text-outline">Format:</span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-low font-data-mono-md text-data-mono-md text-secondary">SDMX 3.0 Matrix</span>
+</div>
+</div>
+<!-- Sub Tabs -->
+<div class="flex items-center gap-space-xs mb-space-md">
+<button class="px-space-md py-1 rounded bg-surface-container text-on-surface font-headline-sm text-headline-sm">
+            Sample Data Preview (Validated 18,408)
+          </button>
+<button class="px-space-md py-1 rounded text-error hover:bg-error-container/40 font-headline-sm text-headline-sm transition-colors flex items-center gap-1">
+<span>Quarantine Diagnostics (42 Records)</span>
+<span class="w-2 h-2 rounded-full bg-error"></span>
+</button>
+<button class="px-space-md py-1 rounded text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors">
+            Schema Specification (SDMX 3.0 XSD)
+          </button>
+</div>
+<!-- Data Grid Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low font-label-caps text-label-caps uppercase text-outline">
+<th class="py-space-sm px-space-sm">Row #</th>
+<th class="py-space-sm px-space-sm">Entity Code</th>
+<th class="py-space-sm px-space-sm">Institution Name</th>
+<th class="py-space-sm px-space-sm">Borrower Group / ID</th>
+<th class="py-space-sm px-space-sm">Sector</th>
+<th class="py-space-sm px-space-sm text-right">Exposure (TZS M)</th>
+<th class="py-space-sm px-space-sm">Type</th>
+<th class="py-space-sm px-space-sm text-right">% Tier 1</th>
+<th class="py-space-sm px-space-sm text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<!-- Sample Row 1: CRDB -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-outline">001</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-secondary">BOT-CB-001</td>
+<td class="py-space-sm px-space-sm font-medium text-on-surface">CRDB Bank Plc</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md">TANESCO Grid Expansion</td>
+<td class="py-space-sm px-space-sm text-outline">Energy &amp; Utilities</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">184,250.00</td>
+<td class="py-space-sm px-space-sm font-micro text-micro text-outline">Funded</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-primary font-semibold">14.2%</td>
+<td class="py-space-sm px-space-sm text-center">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">PASS</span>
+</td>
+</tr>
+<!-- Sample Row 2: NMB Bank -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-outline">002</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-secondary">BOT-CB-002</td>
+<td class="py-space-sm px-space-sm font-medium text-on-surface">NMB Bank Plc</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md">Azam Group Agro Synd.</td>
+<td class="py-space-sm px-space-sm text-outline">Manufacturing / Agro</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">142,800.00</td>
+<td class="py-space-sm px-space-sm font-micro text-micro text-outline">Funded</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-primary font-semibold">12.1%</td>
+<td class="py-space-sm px-space-sm text-center">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">PASS</span>
+</td>
+</tr>
+<!-- Sample Row 3: StanChart -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-outline">003</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-secondary">BOT-CB-008</td>
+<td class="py-space-sm px-space-sm font-medium text-on-surface">Standard Chartered Tz</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md">Standard Gauge Rail Ph2</td>
+<td class="py-space-sm px-space-sm text-outline">Infrastructure</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">96,500.00</td>
+<td class="py-space-sm px-space-sm font-micro text-micro text-outline">Unfunded LC</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-primary font-semibold">18.4%</td>
+<td class="py-space-sm px-space-sm text-center">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">PASS</span>
+</td>
+</tr>
+<!-- Sample Row 4: Mwanga Hakika (CRITICAL ANOMALY ROW) -->
+<tr class="bg-error-container/20 hover:bg-error-container/30 transition-colors">
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-error font-bold">004</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-error font-semibold">BOT-CB-031</td>
+<td class="py-space-sm px-space-sm font-medium text-on-surface">
+<div class="flex flex-col">
+<span class="text-error font-semibold">Mwanga Hakika Bank</span>
+<span class="font-micro text-micro text-error">FLAG: EXPOSURE_SUM_MISMATCH (Rule PRU-VAL-88)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-on-surface">Kilimanjaro Logistics Ltd</td>
+<td class="py-space-sm px-space-sm text-outline">Transport &amp; Freight</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-error font-bold">18,000.00</td>
+<td class="py-space-sm px-space-sm font-micro text-micro text-error font-medium">Funded + OBS</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-error font-bold">29.4%</td>
+<td class="py-space-sm px-space-sm text-center">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md animate-pulse">REJECT</span>
+</td>
+</tr>
+<!-- Sample Row 5: DTB -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-outline">005</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md text-secondary">BOT-CB-012</td>
+<td class="py-space-sm px-space-sm font-medium text-on-surface">Diamond Trust Bank Tz</td>
+<td class="py-space-sm px-space-sm font-data-mono-md text-data-mono-md">Bakhresa Grain Millers</td>
+<td class="py-space-sm px-space-sm text-outline">Agribusiness</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-on-surface font-medium">54,320.00</td>
+<td class="py-space-sm px-space-sm font-micro text-micro text-outline">Funded Loan</td>
+<td class="py-space-sm px-space-sm text-right font-data-mono-md text-data-mono-md text-primary font-semibold">11.8%</td>
+<td class="py-space-sm px-space-sm text-center">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-data-mono-md text-data-mono-md">PASS</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Meta -->
+<div class="flex items-center justify-between pt-space-md mt-space-sm font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span>Showing rows 1 - 5 of 18,450</span>
+<span>•</span>
+<span class="font-data-mono-md text-data-mono-md text-secondary">SDMX DSD: LGR_EXP_V4.2</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm disabled:opacity-40" disabled="">Previous</button>
+<span class="px-space-xs font-data-mono-md text-data-mono-md text-on-surface font-bold">1</span>
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right 4 Cols: Automated Data Quality & Forensic Drilldown Inspector -->
+<div class="xl:col-span-4 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col justify-between h-full">
+<div>
+<!-- Header -->
+<div class="flex items-center justify-between pb-space-sm mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-error text-[20px]">troubleshoot</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Violation Forensic Inspector</span>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-data-mono-md text-data-mono-md font-bold">
+              CRITICAL REJECTION
+            </span>
+</div>
+<!-- Quarantine Detail Card -->
+<div class="p-space-md bg-surface-container-low rounded-lg mb-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Error Code</span>
+<span class="font-data-mono-md text-data-mono-md text-error font-bold">ERR_SCHEMA_XBRL_ARITH_04</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Filing Entity</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">Mwanga Hakika Bank (BOT-CB-031)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Statutory Schedule</span>
+<span class="font-data-mono-md text-data-mono-md text-secondary">Form 08-LGR (Sched 3A, Line 14)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-outline">Statutory Limit</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface">Max 25.0% of Core Capital</span>
+</div>
+</div>
+<!-- Diagnostic Description -->
+<div class="flex flex-col gap-space-xs mb-space-md">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Arithmetic Integrity Exception</span>
+<div class="p-space-sm bg-surface-container rounded-lg font-data-mono-md text-data-mono-md text-on-surface leading-relaxed">
+              Reported sum of funded facility <span class="text-primary font-bold">(TZS 14,200M)</span> + off-balance sheet guarantees <span class="text-primary font-bold">(TZS 3,800M)</span> fails cross-table checksum against aggregate Form 02-BS OBS line item.<br/>
+<span class="text-outline">Expected:</span> TZS 18,000M<br/>
+<span class="text-error font-bold">Reported on Form 02-BS:</span> TZS 16,900M<br/>
+<span class="text-error font-bold">Unreconciled Variance:</span> -TZS 1,100M (-6.11%)
+            </div>
+</div>
+<!-- Supervisory Recommendation -->
+<div class="flex flex-col gap-space-xs mb-space-md">
+<span class="font-label-caps text-label-caps uppercase text-outline">Supervisory Rule Triggered</span>
+<div class="flex items-center gap-space-xs p-space-sm bg-surface-container-high/60 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">BoT Prudential Guideline 2024: Sec 14(2) Single Borrower Limit</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-space-xs pt-space-sm">
+<button class="w-full h-8 px-space-md rounded-lg bg-error text-on-error hover:bg-error/90 font-headline-sm text-headline-sm transition-colors flex items-center justify-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">forward_to_inbox</span>
+<span>Dispatch Statutory Re-submission Notice</span>
+</button>
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="h-8 px-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+<span>Override with Note</span>
+</button>
+<button class="h-8 px-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">code</span>
+<span>View Raw XML</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Realtime Telemetry Worker & Engine Status Footer Bar -->
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl p-space-md flex flex-col lg:flex-row items-center justify-between gap-space-md shadow-md">
+<!-- Left Status -->
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed animate-ping"></span>
+<div class="flex items-center gap-space-xs font-data-mono-md text-data-mono-md">
+<span class="text-surface-container-lowest font-semibold">Apache Airflow &amp; Kafka Ingestion Workers:</span>
+<span class="text-primary-fixed">8 of 8 Active</span>
+<span class="text-surface-dim/60">•</span>
+<span class="text-surface-dim">Queue: 0 pending</span>
+</div>
+</div>
+<!-- Center Performance Metrics -->
+<div class="flex items-center gap-space-md font-data-mono-md text-data-mono-md text-surface-dim">
+<div class="flex items-center gap-1">
+<span class="text-outline-variant font-micro uppercase">Kafka Lag:</span>
+<span class="text-primary-fixed">0ms</span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="text-outline-variant font-micro uppercase">PG Pool:</span>
+<span class="text-surface-container-lowest">14% util (112/800 conn)</span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="text-outline-variant font-micro uppercase">Memory:</span>
+<span class="text-surface-container-lowest">4.2 GB / 16 GB</span>
+</div>
+</div>
+<!-- Right Cryptographic Manifest -->
+<div class="flex items-center gap-space-sm font-data-mono-md text-data-mono-md text-surface-dim">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">lock</span>
+<span>SHA-256: <span class="text-surface-container-lowest">8f9b7c...14da</span></span>
+</div>
+<span>•</span>
+<span class="text-secondary-fixed">Last Run: 08:42:15 EAT</span>
+</div>
+</div>
+</div></main></div></body></html>

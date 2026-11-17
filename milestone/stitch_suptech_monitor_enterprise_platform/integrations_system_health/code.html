@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#c4e7ff","tertiary-fixed":"#d8e3fc","on-primary-container":"#00423b","tertiary-container":"#99a4bc","on-tertiary-fixed":"#111c2e","surface-container-high":"#e2e7ff","surface-dim":"#d2d9f4","inverse-on-surface":"#eef0ff","on-tertiary-fixed-variant":"#3c475b","outline-variant":"#bbcac6","surface-bright":"#faf8ff","secondary":"#00668a","inverse-surface":"#283044","surface-container-highest":"#dae2fd","tertiary":"#545f74","surface-container":"#eaedff","on-secondary-container":"#004d6a","tertiary-fixed-dim":"#bcc7df","on-background":"#131b2e","on-secondary-fixed-variant":"#004c69","primary-container":"#14b8a6","on-primary-fixed":"#00201c","surface":"#faf8ff","secondary-fixed-dim":"#7bd0ff","on-secondary":"#ffffff","on-tertiary-container":"#303a4e","on-surface":"#131b2e","outline":"#6c7a77","on-primary-fixed-variant":"#005048","on-secondary-fixed":"#001e2c","primary-fixed":"#71f8e4","inverse-primary":"#4fdbc8","primary-fixed-dim":"#4fdbc8","error-container":"#ffdad6","background":"#faf8ff","on-error":"#ffffff","surface-container-low":"#f2f3ff","on-error-container":"#93000a","surface-tint":"#006b5f","on-primary":"#ffffff","secondary-container":"#40c2fd","primary":"#006b5f","on-tertiary":"#ffffff","error":"#ba1a1a","on-surface-variant":"#3c4947","surface-container-lowest":"#ffffff","surface-variant":"#dae2fd"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"gutter":"1rem","space-lg":"1.25rem","gutter-dense":"0.5rem","space-sm":"0.375rem","margin":"1.5rem","space-xs":"0.25rem","space-xl":"2rem","space-md":"0.75rem","margin-mobile":"1rem"},"fontFamily":{"data-mono-md":["JetBrains Mono"],"data-mono-lg":["JetBrains Mono"],"body-md":["Inter"],"body-sm":["Inter"],"headline-md":["Geist"],"headline-sm":["Geist"],"body-lg":["Inter"],"headline-lg":["Geist"],"micro":["Inter"],"display":["Geist"],"label-caps":["Geist"]},"fontSize":{"data-mono-md":["12px",{"lineHeight":"16px","letterSpacing":"-0.01em","fontWeight":"500"}],"data-mono-lg":["14px",{"lineHeight":"18px","letterSpacing":"-0.02em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"18px","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.005em","fontWeight":"400"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["15px",{"lineHeight":"20px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["14px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"micro":["10px",{"lineHeight":"12px","letterSpacing":"0.02em","fontWeight":"500"}],"display":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"600"}],"label-caps":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-inverse-surface z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 px-margin flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><div class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[18px]">account_balance</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-inverse-on-surface leading-tight tracking-tight">SupTech Monitor</span><span class="font-micro text-micro text-tertiary-fixed-dim tracking-wide uppercase">Bank of Tanzania</span></div></div><span class="px-space-xs py-0.5 rounded-DEFAULT bg-surface-variant/20 text-inverse-on-surface font-label-caps text-label-caps">PoC</span></div><div class="px-margin py-space-xs"><div class="h-px bg-outline/20 w-full"></div></div><div class="px-margin py-space-xs"><span class="font-label-caps text-label-caps text-tertiary-fixed-dim uppercase tracking-wider">Supervisory Intelligence</span></div><nav class="flex-1 px-space-md py-space-xs space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="overview" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-sm text-body-sm">Overview</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="institutions" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">domain</span><span class="font-body-sm text-body-sm">Institutions</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="supervisory-analytics" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">analytics</span><span class="font-body-sm text-body-sm">Supervisory Analytics</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="exceptions-alerts" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">warning</span><span class="font-body-sm text-body-sm">Exceptions &amp; Alerts</span></div><span class="px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-data-mono-md text-micro font-semibold">14</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="custom-reports" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">description</span><span class="font-body-sm text-body-sm">Custom Reports</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="data-explorer" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">table_chart</span><span class="font-body-sm text-body-sm">Data Explorer</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="ai-supervisory-assistant" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">smart_toy</span><span class="font-body-sm text-body-sm">AI Supervisory Assistant</span></div><span class="px-space-xs py-0.5 rounded-DEFAULT bg-secondary-fixed text-on-secondary-fixed font-label-caps text-micro font-semibold uppercase">Copilot</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="integrations-system-health" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">hub</span><span class="font-body-sm text-body-sm">Integrations &amp; System Health</span></div><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg text-inverse-on-surface/80 hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="administration-settings" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-sm text-body-sm">Administration &amp; Settings</span></div></a></nav><div class="p-margin mt-auto bg-inverse-surface"><div class="p-space-md rounded-lg bg-surface-container-lowest/5 flex items-center justify-between"><div class="flex flex-col"><span class="font-micro text-micro text-tertiary-fixed-dim uppercase tracking-wider">Supervisory Gateway</span><span class="font-data-mono-md text-micro text-inverse-on-surface">v2.6.4-SECURE</span></div><span class="w-2 h-2 rounded-full bg-primary-fixed"></span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-14 bg-surface/80 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 w-full px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm"><span class="hover:text-on-surface transition-colors">Supervision Engine</span><span class="text-outline-variant font-data-mono-md">/</span><span class="hover:text-on-surface transition-colors">Directorate of Banking Supervision</span><span class="text-outline-variant font-data-mono-md">/</span><span class="text-on-surface font-semibold">System Infrastructure &amp; Telemetry</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-space-xs rounded-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><span class="material-symbols-outlined text-outline text-[18px]">search</span><span class="font-body-sm text-body-sm text-outline">Search registry, institutions, alerts...</span><kbd class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-low font-data-mono-md text-micro text-outline">Ctrl+K</kbd></div><div class="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-space-xs rounded-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)] text-on-surface font-body-sm text-body-sm"><span class="material-symbols-outlined text-outline text-[18px]">calendar_today</span><span class="font-data-mono-md font-medium">2026 Q3</span><span class="material-symbols-outlined text-outline text-[16px]">expand_more</span></div><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-full font-data-mono-md text-micro text-on-primary-container"><span class="w-2 h-2 rounded-full bg-primary-container"></span><span>Live Stream</span><span class="text-outline">|</span><span class="font-semibold">24ms</span></div><button class="relative p-space-xs text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-0 right-0 w-4 h-4 rounded-full bg-error text-on-error font-data-mono-md text-micro flex items-center justify-center font-bold">3</span></button><button class="p-space-xs text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">help</span></button><div class="h-6 w-px bg-outline-variant/40"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="flex flex-col text-right"><span class="font-headline-sm text-body-sm text-on-surface font-semibold leading-tight">Dr. M. Kimei</span><span class="font-micro text-micro text-on-surface-variant">Executive Supervisor</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="relative pt-14 w-full bg-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Command & Action Bar -->
+<div class="px-margin py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface border-b-0">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Integrations &amp; System Health</span>
+<span class="px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-data-mono-md text-micro font-semibold uppercase tracking-wider">TZ-VPC-01</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+        Real-time supervisory infrastructure topology, service mesh telemetry, and pipeline health for 54 reporting institutions
+      </p>
+</div>
+<!-- Quick Operations Toolbar -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-lg shadow-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-data-mono-md text-micro text-on-surface font-semibold tracking-wide">AUTO-REFRESH: 5s</span>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<span class="font-micro text-micro text-tertiary">POLL #1842</span>
+</div>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-lg shadow-sm transition-all text-body-sm font-headline-sm" id="runDiagnosticsBtn">
+<span class="material-symbols-outlined text-primary text-[18px]">play_circle</span>
+<span>Run Diagnostics</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-lowest hover:bg-error-container text-on-surface hover:text-on-error-container rounded-lg shadow-sm transition-all text-body-sm font-headline-sm" id="chaosTestBtn">
+<span class="material-symbols-outlined text-error text-[18px]">bolt</span>
+<span>Simulate Failover</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs bg-primary text-on-primary hover:bg-on-primary-fixed-variant rounded-lg shadow-sm transition-all text-body-sm font-headline-sm" id="exportTelemetryBtn">
+<span class="material-symbols-outlined text-on-primary text-[18px]">ios_share</span>
+<span>Export Metrics</span>
+</button>
+</div>
+</div>
+<!-- PoC Airgapped Notice Banner -->
+<div class="px-margin pt-space-xs pb-space-xs">
+<div class="w-full bg-surface-container-high/60 rounded-lg px-space-md py-space-xs flex items-center justify-between gap-space-md shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0">shield_with_heart</span>
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider shrink-0">Synthetic PoC Environment</span>
+<span class="text-outline-variant">/</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          BoT Central Data Center On-Premises Simulation (Airgapped VPC-TZ01) • NavsaTech Supervised Ingestion Node
+        </span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="px-space-xs py-0.5 rounded-DEFAULT bg-primary-fixed text-on-primary-fixed font-data-mono-md text-micro">FIPS-140-3 COMPLIANT</span>
+<span class="font-data-mono-md text-micro text-tertiary">LATENCY: 24ms</span>
+</div>
+</div>
+</div>
+<!-- Section 1: Core System KPI Cards (5 Metrics Grid) -->
+<div class="px-margin py-space-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-gutter">
+<!-- Card 1: API Gateway -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">dns</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed/40 text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> HEALTHY
+        </span>
+</div>
+<div class="mt-space-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider block">Backend API Gateway</span>
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight mt-0.5 block">99.98%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">FastAPI v0.110 • 18.4M req/cycle</span>
+</div>
+<div class="mt-space-sm pt-space-xs bg-surface-container-low/40 rounded px-1.5 py-1 flex items-center justify-between text-micro font-data-mono-md text-tertiary">
+<span>GATEWAY POOL</span>
+<span class="text-on-surface font-semibold">12 Replicas Active</span>
+</div>
+</div>
+<!-- Card 2: PostgreSQL 16 Cluster -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">database</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed/40 text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> OPTIMAL
+        </span>
+</div>
+<div class="mt-space-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider block">PostgreSQL 16 Cluster</span>
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight mt-0.5 block">3.4 / 10 TB</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">PgBouncer pool: 48/200 active</span>
+</div>
+<div class="mt-space-sm pt-space-xs bg-surface-container-low/40 rounded px-1.5 py-1 flex items-center justify-between text-micro font-data-mono-md text-tertiary">
+<span>AVG QUERY READ</span>
+<span class="text-primary font-semibold">4.2 ms</span>
+</div>
+</div>
+<!-- Card 3: Kafka & Event Stream -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed/40 text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> HEALTHY
+        </span>
+</div>
+<div class="mt-space-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider block">Kafka &amp; Event Stream</span>
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight mt-0.5 block">0 Lag / 42k</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">6 Topics • 12 Partitions active</span>
+</div>
+<div class="mt-space-sm pt-space-xs bg-surface-container-low/40 rounded px-1.5 py-1 flex items-center justify-between text-micro font-data-mono-md text-tertiary">
+<span>INGEST RATE</span>
+<span class="text-on-surface font-semibold">42,100 msg/sec</span>
+</div>
+</div>
+<!-- Card 4: Java-to-Python Bridge -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">sync_alt</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-data-mono-md text-micro font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> SYNCED
+        </span>
+</div>
+<div class="mt-space-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider block">Java-to-Python Bridge</span>
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight mt-0.5 block">100% Sync</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Core Banking to PyTorch Model</span>
+</div>
+<div class="mt-space-sm pt-space-xs bg-surface-container-low/40 rounded px-1.5 py-1 flex items-center justify-between text-micro font-data-mono-md text-tertiary">
+<span>SHARED MEMORY</span>
+<span class="text-primary font-semibold">1.4ms gRPC Wire</span>
+</div>
+</div>
+<!-- Card 5: Ingestion Latency -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">timer</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> REALTIME
+        </span>
+</div>
+<div class="mt-space-md">
+<span class="font-label-caps text-label-caps text-tertiary uppercase tracking-wider block">Ingestion Engine Latency</span>
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight mt-0.5 block">142 ms</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">p95: 280ms • Q3 Batch 091</span>
+</div>
+<div class="mt-space-sm pt-space-xs bg-surface-container-low/40 rounded px-1.5 py-1 flex items-center justify-between text-micro font-data-mono-md text-tertiary">
+<span>BATCH COMPLETE</span>
+<span class="text-on-surface font-semibold">08:42:15 EAT</span>
+</div>
+</div>
+</div>
+<!-- Section 2: Interactive End-to-End System Architecture Topology -->
+<div class="px-margin py-space-sm">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-xs pb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="p-1 rounded bg-surface-container-high text-primary">
+<span class="material-symbols-outlined text-[20px]">schema</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">End-to-End Supervisory Architecture Topology</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Live telemetry packet routing across BoT security boundaries</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="flex items-center gap-1 font-micro text-micro text-tertiary">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span> Zero Packet Drops (24h)
+          </span>
+<span class="px-2 py-0.5 rounded bg-surface-container-low text-tertiary font-data-mono-md text-micro">
+            mTLS v1.3 STRICT
+          </span>
+</div>
+</div>
+<!-- Topology Workflow Canvas -->
+<div class="w-full overflow-x-auto pb-space-sm pt-space-xs">
+<div class="min-w-[1040px] flex items-center justify-between relative py-space-md px-space-xs">
+<!-- Node 1: Reporting Institutions -->
+<div class="w-48 bg-surface-container-low p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-tertiary uppercase">External Perimeter</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">54 Supervised Entities</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">Commercial Banks, D-SIBs, MFIs</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">XBRL / SDMX / SFTP</span>
+<span class="text-primary font-semibold">54/54 Up</span>
+</div>
+<a class="mt-2 text-micro font-headline-sm text-primary hover:underline flex items-center gap-0.5" href="javascript:void(0)" onclick="alert('Viewing Institutions Mesh Registry: 54 active nodes, 0 dropped certs')">
+<span>Inspect Gateways</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- Connector 1 -->
+<div class="flex-1 flex flex-col items-center px-1 relative">
+<div class="w-full h-0.5 bg-outline-variant/60 relative">
+<div class="absolute inset-0 bg-primary/40 animate-pulse"></div>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-high rounded text-[9px] font-data-mono-md text-tertiary mt-1">mTLS 1.3 Tunnel</span>
+</div>
+<!-- Node 2: Java Core Banking Ingestion Gateway -->
+<div class="w-52 bg-surface-container-low p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Ingestion Gateway</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">Java 21 Spring Cloud</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">Apache Camel XML Sig Verifier</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">LATENCY: 24ms</span>
+<span class="text-on-surface font-semibold">18.4M req</span>
+</div>
+<a class="mt-2 text-micro font-headline-sm text-secondary hover:underline flex items-center gap-0.5" href="javascript:void(0)" onclick="alert('Spring Ingestion Gateway Telemetry: CPU 18%, Heap 4.2GB/8GB, mTLS Verified')">
+<span>Inspect Camel Routes</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- Connector 2 -->
+<div class="flex-1 flex flex-col items-center px-1 relative">
+<div class="w-full h-0.5 bg-outline-variant/60 relative">
+<div class="absolute inset-0 bg-primary/50 animate-pulse"></div>
+</div>
+<span class="px-1.5 py-0.5 bg-secondary-fixed rounded text-[9px] font-data-mono-md text-on-secondary-fixed mt-1">Arrow Zero-Copy</span>
+</div>
+<!-- Node 3: Python Processing & Econometrics -->
+<div class="w-52 bg-surface-container-low p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-primary uppercase">Analytics Engine</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">Python 3.12 + FastAPI</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">Airflow + Scikit CAMELS Rules</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">EXEC: 118ms</span>
+<span class="text-primary font-semibold">0 Errors</span>
+</div>
+<a class="mt-2 text-micro font-headline-sm text-primary hover:underline flex items-center gap-0.5" href="javascript:void(0)" onclick="alert('Econometric Core: 42 CAMELS models running in parallel. P95: 118ms')">
+<span>Inspect Pipelines</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- Connector 3 -->
+<div class="flex-1 flex flex-col items-center px-1 relative">
+<div class="w-full h-0.5 bg-outline-variant/60 relative">
+<div class="absolute inset-0 bg-primary/40 animate-pulse"></div>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-high rounded text-[9px] font-data-mono-md text-tertiary mt-1">PgSQL Wire / RLS</span>
+</div>
+<!-- Node 4: PostgreSQL 16 & Redis Cache -->
+<div class="w-52 bg-surface-container-low p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-tertiary uppercase">Storage Core</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">PostgreSQL 16 + Redis</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">Timescale Hypertables + RLS</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">3.4 TB STORED</span>
+<span class="text-secondary font-semibold">4.2ms read</span>
+</div>
+<a class="mt-2 text-micro font-headline-sm text-secondary hover:underline flex items-center gap-0.5" href="javascript:void(0)" onclick="alert('PostgreSQL 16 Cluster: Master dwh-01 in sync with Standby dwh-02. Lag 14B')">
+<span>Inspect Hypertables</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- Connector 4 -->
+<div class="flex-1 flex flex-col items-center px-1 relative">
+<div class="w-full h-0.5 bg-outline-variant/60 relative">
+<div class="absolute inset-0 bg-primary/40 animate-pulse"></div>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-high rounded text-[9px] font-data-mono-md text-tertiary mt-1">Vector Embeddings</span>
+</div>
+<!-- Node 5: AI Supervisory Assistant (vLLM Airgapped) -->
+<div class="w-52 bg-surface-container-low p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-primary uppercase">Airgapped AI Node</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">vLLM Llama-3-70B</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">On-Premises H100 Quantized</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">42 TOK/SEC</span>
+<span class="text-primary font-semibold">Zero Egress</span>
+</div>
+<a class="mt-2 text-micro font-headline-sm text-primary hover:underline flex items-center gap-0.5" href="javascript:void(0)" onclick="alert('Airgapped LLM Node: Offline tensor engine active. Zero telemetry leaks.')">
+<span>Inspect Quant Weights</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- Connector 5 -->
+<div class="flex-1 flex flex-col items-center px-1 relative">
+<div class="w-full h-0.5 bg-outline-variant/60 relative">
+<div class="absolute inset-0 bg-primary/40 animate-pulse"></div>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-high rounded text-[9px] font-data-mono-md text-tertiary mt-1">WS 24ms</span>
+</div>
+<!-- Node 6: Presentation UI Layer -->
+<div class="w-48 bg-primary/10 p-space-sm rounded-lg shadow-sm flex flex-col justify-between relative z-10 transition-transform hover:-translate-y-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-label-caps text-primary uppercase">Client Terminal</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="font-headline-sm text-body-md font-semibold text-on-surface">SupTech Monitor UI</div>
+<div class="font-body-sm text-micro text-on-surface-variant mt-0.5">BoT Examiners &amp; Governors</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-micro font-data-mono-md">
+<span class="text-tertiary">STREAM: LIVE</span>
+<span class="text-primary font-semibold">60 FPS</span>
+</div>
+<span class="mt-2 text-micro font-headline-sm text-primary flex items-center gap-0.5">
+<span>Active Session (v2.6)</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Two-Column Diagnostic & Log Workspace (60% / 40% Split) -->
+<div class="px-margin py-space-md grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Service Matrix & Volume Charts (60% -> col-span-7) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Subsystem Matrix Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">table_rows</span>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Service Mesh &amp; Subsystem Status Matrix</h4>
+<p class="font-body-sm text-micro text-on-surface-variant">Continuous healthcheck probe response across Tanzanian sovereign data mesh</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-tertiary font-data-mono-md text-micro">7 Nodes Checked</span>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto mt-space-xs">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-tertiary uppercase font-label-caps text-label-caps">
+<th class="py-space-xs px-space-md">Service Component</th>
+<th class="py-space-xs px-space-md">Tech Stack</th>
+<th class="py-space-xs px-space-md">Host / Cluster</th>
+<th class="py-space-xs px-space-md text-right">Uptime</th>
+<th class="py-space-xs px-space-md text-right">Latency</th>
+<th class="py-space-xs px-space-md text-right">Error (5m)</th>
+<th class="py-space-xs px-space-md text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">Regulatory Ingestion Gateway</div>
+<div class="text-micro font-data-mono-md text-tertiary">v3.4.1 • SHA: 8a7c29</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">Java 21 / Spring Cloud</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">node-bot-gw-01</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.99%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-primary font-medium">24ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.001%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold">HEALTHY</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">XBRL &amp; SDMX Validation Engine</div>
+<div class="text-micro font-data-mono-md text-tertiary">v2.8.0 • SHA: 13f4ba</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">Python 3.12 / Rust PyO3</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">node-bot-val-02</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.95%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-primary font-medium">118ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.012%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold">HEALTHY</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">Econometric Anomaly Detector</div>
+<div class="text-micro font-data-mono-md text-tertiary">v1.9.4 • CAMELS Pipeline</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">Python 3.12 / Scikit</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">node-bot-ml-01</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.92%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-primary font-medium">185ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.000%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold">HEALTHY</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">PostgreSQL 16 High-Availability</div>
+<div class="text-micro font-data-mono-md text-tertiary">v16.4 • TimescaleDB ext</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">PostgreSQL 16.4 + Timescale</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">dwh-bot-cluster-a</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">100.0%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-secondary font-medium">4.2ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.000%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-data-mono-md text-micro font-semibold">OPTIMAL</span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">Kafka Streaming Pipeline</div>
+<div class="text-micro font-data-mono-md text-tertiary">v3.7.0 • KRaft quorum</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">Apache Kafka (KRaft)</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">kafka-bot-broker-01</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.99%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-primary font-medium">12ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.000%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-data-mono-md text-micro font-semibold">HEALTHY</span>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">Airflow Pipeline Orchestrator</div>
+<div class="text-micro font-data-mono-md text-tertiary">v2.9.2 • CeleryExecutor</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">Apache Airflow</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">airflow-bot-master</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.88%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-tertiary font-medium">340ms</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-tertiary">0.045%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-data-mono-md text-micro font-semibold">WARN (Maint)</span>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-semibold text-on-surface">AI Copilot LLM Sandbox</div>
+<div class="text-micro font-data-mono-md text-tertiary">v0.4.2 • 4-bit AWQ</div>
+</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">vLLM / Llama-3-70B</td>
+<td class="py-space-sm px-space-md text-on-surface-variant font-data-mono-md text-micro">gpu-bot-h100-01</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm font-medium text-on-surface">99.78%</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-primary font-medium">42 tok/s</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-body-sm text-on-surface-variant">0.000%</td>
+<td class="py-space-sm px-space-md text-center">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-data-mono-md text-micro font-semibold">AIRGAPPED</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Ingestion Volume & SLA Latency Chart Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-space-sm gap-space-xs">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">API Request &amp; Ingestion Volume Trend (24h)</h4>
+<p class="font-body-sm text-micro text-on-surface-variant">Monitoring throughput surges during statutory filing windows across commercial banks</p>
+</div>
+<div class="flex items-center gap-space-md font-data-mono-md text-micro">
+<span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-primary rounded-full"></span> Req / Min</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-secondary rounded-full"></span> P95 Latency</span>
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-tertiary"></span> SLA Threshold (0.1%)</span>
+</div>
+</div>
+<!-- Custom SVG Telemetry Chart -->
+<div class="w-full pt-space-xs">
+<div class="w-full h-44 relative flex items-end">
+<!-- Background SLA grid lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+<div class="w-full h-px bg-outline"></div>
+<div class="w-full h-px bg-outline"></div>
+<div class="w-full h-px bg-outline"></div>
+<div class="w-full h-px bg-outline"></div>
+</div>
+<!-- SVG Curves -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 700 160">
+<defs>
+<lineargradient id="reqGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#14B8A6" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#14B8A6" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="latGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00668A" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#00668A" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Ingestion Volume Area (Peaks at 08:00 EAT) -->
+<path d="M0,130 Q70,125 140,110 T280,30 Q315,15 350,22 T420,95 Q520,105 600,118 T700,125 L700,160 L0,160 Z" fill="url(#reqGradient)"></path>
+<path d="M0,130 Q70,125 140,110 T280,30 Q315,15 350,22 T420,95 Q520,105 600,118 T700,125" fill="none" stroke="#006b5f" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Peak Marker Dot at 08:00 EAT -->
+<circle cx="315" cy="18" fill="#006b5f" r="4" stroke="#ffffff" stroke-width="2"></circle>
+<!-- P95 Latency Trend Line -->
+<path d="M0,105 Q90,95 180,98 T360,75 Q450,85 540,92 T700,100" fill="none" stroke="#00668a" stroke-dasharray="4 3" stroke-width="2"></path>
+</svg>
+<!-- Peak Callout Annotation -->
+<div class="absolute top-1 left-[42%] -translate-x-1/2 bg-surface-container-high px-2 py-1 rounded shadow-sm flex flex-col items-center pointer-events-none">
+<span class="font-data-mono-md text-micro font-bold text-on-surface">Peak: 42,180 req/min</span>
+<span class="font-micro text-[9px] text-tertiary">08:00 EAT (Statutory Window)</span>
+</div>
+</div>
+<!-- Chart Timeline X-Axis -->
+<div class="flex justify-between items-center pt-space-xs font-data-mono-md text-micro text-tertiary">
+<span>00:00 EAT</span>
+<span>04:00</span>
+<span class="text-on-surface font-semibold">08:00 (Rush)</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span>Now (08:45)</span>
+</div>
+<!-- Bottom Telemetry Badges -->
+<div class="grid grid-cols-3 gap-space-sm mt-space-sm pt-space-xs bg-surface-container-low rounded-lg p-space-sm">
+<div>
+<span class="font-label-caps text-label-caps text-tertiary block">AVERAGE P95 LATENCY</span>
+<span class="font-data-mono-lg text-data-mono-lg text-on-surface font-semibold">142.4 ms</span>
+<span class="font-micro text-micro text-primary">Well within 300ms SLA</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-tertiary block">TRANSACTION VOLUME (24H)</span>
+<span class="font-data-mono-lg text-data-mono-lg text-on-surface font-semibold">18,419,204</span>
+<span class="font-micro text-micro text-on-surface-variant">+8.4% vs last week</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-tertiary block">ERROR RATE (ROLLING)</span>
+<span class="font-data-mono-lg text-data-mono-lg text-primary font-semibold">0.021 %</span>
+<span class="font-micro text-micro text-secondary">Target: &lt; 0.100%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Dual-Stack Bridge & Terminal Ingestion Logs (40% -> col-span-5) -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Java-to-Python Ingestion Bridge Deep-Dive Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Java ↔ Python Bridge Architecture</h4>
+<p class="font-body-sm text-micro text-on-surface-variant">Dual-stack gRPC pipe connecting Core Banking Ingestion to Scikit/XGBoost</p>
+</div>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container animate-pulse"></span>
+</div>
+<!-- Architectural Explainer Cards -->
+<div class="space-y-space-sm mt-space-xs">
+<!-- Step 1: Java Ingestion -->
+<div class="p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-secondary font-semibold uppercase">Stage 1: Spring Boot Ingestion</span>
+<span class="font-data-mono-md text-micro text-on-surface bg-surface-container px-1.5 py-0.5 rounded">Java 21 LTS</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">
+              Terminates mTLS 1.3 tunnels from 54 commercial banks and microfinance institutions. Unpacks W3C XML digital signatures, validates SDMX schemas, and streams clean payloads into high-throughput Apache Arrow buffers.
+            </p>
+</div>
+<!-- Step 2: Python Processing -->
+<div class="p-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-primary font-semibold uppercase">Stage 2: Python Econometric Daemon</span>
+<span class="font-data-mono-md text-micro text-on-surface bg-surface-container px-1.5 py-0.5 rounded">FastAPI / Pandas</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">
+              Consumes normalized Arrow frames in zero-copy memory. Computes CAMELS supervisory indicators (Form 01-CAR Capital Adequacy, Form 08-LGR Liquidity Coverage, Form 02-BS Balance Sheet), checks anomaly deviations, and writes to PostgreSQL.
+            </p>
+</div>
+<!-- Bridge Live Telemetry Metrics -->
+<div class="grid grid-cols-2 gap-space-xs bg-surface-container p-space-sm rounded-lg font-data-mono-md text-micro">
+<div>
+<span class="text-tertiary block">TRANSFERRED:</span>
+<span class="text-on-surface font-semibold text-data-mono-md">184,920 records</span>
+</div>
+<div>
+<span class="text-tertiary block">MEM FOOTPRINT:</span>
+<span class="text-on-surface font-semibold text-data-mono-md">1.8 GB shared</span>
+</div>
+<div>
+<span class="text-tertiary block">PACKETS DROPPED:</span>
+<span class="text-primary font-semibold text-data-mono-md">0 (Zero Loss)</span>
+</div>
+<div>
+<span class="text-tertiary block">IPC OVERHEAD:</span>
+<span class="text-primary font-semibold text-data-mono-md">1.4ms gRPC Wire</span>
+</div>
+</div>
+<!-- Action buttons for bridge -->
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-headline-sm text-body-sm flex items-center justify-center gap-1 transition-colors" onclick="alert('Bridge handshake executed: Java Gateway and Python Workers re-synchronized in 12ms.')">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Re-sync Handshake</span>
+</button>
+<button class="py-1.5 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-headline-sm text-body-sm flex items-center justify-center gap-1 transition-colors" onclick="alert('gRPC Channels: 8 active HTTP/2 multiplexed streams, Keep-Alive 30s.')">
+<span class="material-symbols-outlined text-[16px]">stream</span>
+<span>Inspect gRPC</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Real-time Integration Event & Error Logs (Dark Telemetry Terminal) -->
+<div class="bg-[#0B1220] text-inverse-on-surface rounded-xl p-space-md shadow-md flex flex-col flex-1 border border-[#1E293B]">
+<!-- Terminal Header -->
+<div class="flex items-center justify-between pb-space-sm border-b border-[#1E293B]">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+</div>
+<span class="font-data-mono-md text-micro text-[#38BDF8] ml-2">sys_telemetry.log</span>
+<span class="text-[#64748B] text-micro font-data-mono-md">(VPC-TZ01 Live Daemon)</span>
+</div>
+<div class="flex items-center gap-1 font-data-mono-md text-micro">
+<button class="text-[#94A3B8] hover:text-white px-1.5 py-0.5 rounded hover:bg-[#1E293B] transition-colors" id="clearLogsBtn">Clear</button>
+<span class="text-[#475569]">•</span>
+<span class="text-[#10B981] flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping"></span> Live</span>
+</div>
+</div>
+<!-- Terminal Filter Bar -->
+<div class="flex items-center gap-space-xs py-space-xs font-data-mono-md text-micro border-b border-[#1E293B]/60 overflow-x-auto">
+<span class="text-[#64748B]">Filter:</span>
+<button class="px-1.5 py-0.5 rounded bg-[#1E293B] text-white">ALL (6)</button>
+<button class="px-1.5 py-0.5 rounded text-[#94A3B8] hover:bg-[#1E293B]">INFO</button>
+<button class="px-1.5 py-0.5 rounded text-[#F59E0B] hover:bg-[#1E293B]">WARN (1)</button>
+<button class="px-1.5 py-0.5 rounded text-[#38BDF8] hover:bg-[#1E293B]">METRICS</button>
+<button class="px-1.5 py-0.5 rounded text-[#10B981] hover:bg-[#1E293B]">HEALTH</button>
+</div>
+<!-- Terminal Output Stream -->
+<div class="font-data-mono-md text-micro space-y-2 py-space-sm overflow-y-auto max-h-[290px] leading-relaxed" id="terminalLogContainer">
+<!-- Log 1 -->
+<div class="flex items-start gap-2 hover:bg-[#1E293B]/40 p-1 rounded transition-colors">
+<span class="text-[#64748B] shrink-0">08:44:12</span>
+<span class="px-1 bg-[#1E293B] text-[#38BDF8] rounded shrink-0 font-bold">INFO</span>
+<span class="text-[#94A3B8] shrink-0">[Java-GW]</span>
+<span class="text-[#E2E8F0]">Handshake verified with <strong class="text-white">CRDB Bank Plc (BOT-CB-002)</strong>. mTLS cert SHA256 valid until Dec 2027.</span>
+</div>
+<!-- Log 2 -->
+<div class="flex items-start gap-2 hover:bg-[#1E293B]/40 p-1 rounded transition-colors">
+<span class="text-[#64748B] shrink-0">08:43:50</span>
+<span class="px-1 bg-[#1E293B] text-[#A78BFA] rounded shrink-0 font-bold">METRIC</span>
+<span class="text-[#94A3B8] shrink-0">[Kafka-Ingest]</span>
+<span class="text-[#E2E8F0]">Partition #4 rebalance complete. 0 messages lagged across 54 banking consumer groups.</span>
+</div>
+<!-- Log 3 -->
+<div class="flex items-start gap-2 hover:bg-[#1E293B]/40 p-1 rounded transition-colors">
+<span class="text-[#64748B] shrink-0">08:42:15</span>
+<span class="px-1 bg-[#1E293B] text-[#38BDF8] rounded shrink-0 font-bold">INFO</span>
+<span class="text-[#94A3B8] shrink-0">[Airflow]</span>
+<span class="text-[#E2E8F0]">DAG 'daily_prudential_reconciliation' finished in 184s. 54 institutions committed to TimescaleDB.</span>
+</div>
+<!-- Log 4: Warn -->
+<div class="flex items-start gap-2 bg-[#F59E0B]/10 p-1 rounded">
+<span class="text-[#64748B] shrink-0">08:40:02</span>
+<span class="px-1 bg-[#F59E0B]/20 text-[#F59E0B] rounded shrink-0 font-bold">WARN</span>
+<span class="text-[#94A3B8] shrink-0">[Airflow]</span>
+<span class="text-[#FDE68A]">Worker #3 memory threshold reached 78% (12.4GB/16GB). Automatic garbage collection triggered.</span>
+</div>
+<!-- Log 5: Healthcheck -->
+<div class="flex items-start gap-2 hover:bg-[#1E293B]/40 p-1 rounded transition-colors">
+<span class="text-[#64748B] shrink-0">08:38:19</span>
+<span class="px-1 bg-[#10B981]/20 text-[#10B981] rounded shrink-0 font-bold">HEALTH</span>
+<span class="text-[#94A3B8] shrink-0">[PostgreSQL]</span>
+<span class="text-[#E2E8F0]">Master replication slot lag: <span class="text-[#10B981] font-bold">14 bytes</span> (near-instant sync to standby node dwh-02).</span>
+</div>
+<!-- Log 6 -->
+<div class="flex items-start gap-2 hover:bg-[#1E293B]/40 p-1 rounded transition-colors">
+<span class="text-[#64748B] shrink-0">08:35:10</span>
+<span class="px-1 bg-[#1E293B] text-[#38BDF8] rounded shrink-0 font-bold">INFO</span>
+<span class="text-[#94A3B8] shrink-0">[vLLM-Sandbox]</span>
+<span class="text-[#E2E8F0]">Warm inference executed in 1.18s (44 tokens, zero telemetry egress, internal GPU context clean).</span>
+</div>
+</div>
+<!-- Terminal Prompt Line -->
+<div class="pt-space-xs mt-auto border-t border-[#1E293B] flex items-center justify-between text-micro font-data-mono-md text-[#64748B]">
+<div class="flex items-center gap-1.5">
+<span class="text-[#10B981] font-bold">&gt;</span>
+<span class="text-[#94A3B8]">tail -f /var/log/bot/supervisory-stream.log</span>
+<span class="w-1.5 h-3 bg-[#38BDF8] animate-pulse inline-block"></span>
+</div>
+<span class="text-[#475569]">SECURE STREAM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Persistent Hardware Telemetry Strip -->
+<div class="px-margin pb-space-lg pt-space-xs">
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl px-space-md py-space-sm flex flex-wrap items-center justify-between gap-space-md shadow-md text-micro font-data-mono-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-primary-fixed"></span>
+<span class="font-headline-sm text-body-sm font-semibold tracking-wide">SYSTEM HARDWARE TELEMETRY</span>
+<span class="text-tertiary-fixed-dim">|</span>
+<span class="text-tertiary-fixed-dim">HOST: BOT-DC-DAR01-RACK4</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-lg">
+<!-- CPU -->
+<div class="flex items-center gap-2">
+<span class="text-tertiary-fixed-dim">CPU LOAD:</span>
+<span class="text-inverse-on-surface font-semibold">24.2%</span>
+<div class="w-14 h-1.5 bg-surface-variant/20 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[24%]"></div>
+</div>
+<span class="text-tertiary-fixed-dim">(64 vCPUs)</span>
+</div>
+<!-- Memory -->
+<div class="flex items-center gap-2">
+<span class="text-tertiary-fixed-dim">RAM:</span>
+<span class="text-inverse-on-surface font-semibold">48.2 GB / 128 GB</span>
+<div class="w-14 h-1.5 bg-surface-variant/20 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed h-full w-[37%]"></div>
+</div>
+<span class="text-tertiary-fixed-dim">(ECC DDR5)</span>
+</div>
+<!-- Disk I/O -->
+<div class="flex items-center gap-1.5">
+<span class="text-tertiary-fixed-dim">DISK I/O:</span>
+<span class="text-inverse-on-surface font-semibold">142 MB/s</span>
+<span class="text-tertiary-fixed-dim">NVMe Gen4</span>
+</div>
+<!-- Network -->
+<div class="flex items-center gap-1.5">
+<span class="text-tertiary-fixed-dim">NET:</span>
+<span class="text-primary-fixed font-semibold">↑ 2.8 Gbps In</span>
+<span class="text-tertiary-fixed-dim">/</span>
+<span class="text-inverse-on-surface font-semibold">↓ 410 Mbps Out</span>
+</div>
+<!-- TLS Sessions -->
+<div class="flex items-center gap-1.5">
+<span class="text-tertiary-fixed-dim">TLS SESSIONS:</span>
+<span class="px-1.5 py-0.5 bg-surface-container-high/20 rounded text-inverse-on-surface font-bold">142 Active</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive JavaScript handlers -->
+<script>
+    // Run System Diagnostics micro-interaction
+    const diagBtn = document.getElementById('runDiagnosticsBtn');
+    if (diagBtn) {
+      diagBtn.addEventListener('click', () => {
+        diagBtn.innerHTML = '<span class="material-symbols-outlined text-primary text-[18px] animate-spin">refresh</span><span>Running Diagnostics...</span>';
+        setTimeout(() => {
+          diagBtn.innerHTML = '<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span><span>All 7 Services Optimal</span>';
+          setTimeout(() => {
+            diagBtn.innerHTML = '<span class="material-symbols-outlined text-primary text-[18px]">play_circle</span><span>Run System Diagnostics</span>';
+          }, 3000);
+        }, 1200);
+      });
+    }
+
+    // Simulate Chaos Failover
+    const chaosBtn = document.getElementById('chaosTestBtn');
+    if (chaosBtn) {
+      chaosBtn.addEventListener('click', () => {
+        const confirmed = confirm("Simulate Automated Failover on Node 'node-bot-gw-01'?\\nTraffic will re-route seamlessly to Secondary Gateway 'node-bot-gw-02'.");
+        if (confirmed) {
+          alert("Chaos Test Initiated: Gateway 01 gracefully drained. Standby Gateway 02 promoted in 82ms. 0 transactions lost.");
+        }
+      });
+    }
+
+    // Export Telemetry
+    const exportBtn = document.getElementById('exportTelemetryBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const telemetryPayload = {
+          cluster: "BoT-Airgapped-VPC-TZ01",
+          timestamp: new Date().toISOString(),
+          uptime: 99.98,
+          active_institutions: 54,
+          p95_latency_ms: 142.4,
+          database_size_gb: 3481.6,
+          kafka_lag: 0,
+          hardware: {
+            cpu_usage_pct: 24.2,
+            ram_used_gb: 48.2,
+            ram_total_gb: 128
+          }
+        };
+        const blob = new Blob([JSON.stringify(telemetryPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bot-telemetry-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Clear Terminal Logs
+    const clearBtn = document.getElementById('clearLogsBtn');
+    const logContainer = document.getElementById('terminalLogContainer');
+    if (clearBtn && logContainer) {
+      clearBtn.addEventListener('click', () => {
+        logContainer.innerHTML = '<div class="text-[#64748B] italic p-2">Terminal buffer cleared. Listening for incoming telemetry packets...</div>';
+      });
+    }
+  </script>
+</div></main></div></body></html>

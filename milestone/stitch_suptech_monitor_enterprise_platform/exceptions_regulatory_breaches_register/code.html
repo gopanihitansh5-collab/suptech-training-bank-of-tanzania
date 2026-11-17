@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#d2d9f4", "tertiary": "#545f74", "surface-container": "#eaedff", "on-tertiary-fixed-variant": "#3c475b", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00201c", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#4fdbc8", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#bcc7df", "primary": "#006b5f", "tertiary-container": "#99a4bc", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#faf8ff", "primary-fixed": "#71f8e4", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#004c69", "error": "#ba1a1a", "outline-variant": "#bbcac6", "inverse-primary": "#4fdbc8", "outline": "#6c7a77", "surface": "#faf8ff", "on-tertiary": "#ffffff", "surface-container-high": "#e2e7ff", "on-surface": "#131b2e", "secondary-fixed": "#c4e7ff", "on-surface-variant": "#3c4947", "on-secondary-fixed": "#001e2c", "on-tertiary-fixed": "#111c2e", "on-primary-fixed-variant": "#005048", "background": "#faf8ff", "on-primary-container": "#00423b", "on-error-container": "#93000a", "inverse-surface": "#283044", "secondary-fixed-dim": "#7bd0ff", "secondary-container": "#40c2fd", "on-secondary-container": "#004d6a", "primary-container": "#14b8a6", "secondary": "#00668a", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "tertiary-fixed": "#d8e3fc", "surface-tint": "#006b5f", "on-background": "#131b2e", "on-secondary": "#ffffff", "on-tertiary-container": "#303a4e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xs": "0.25rem", "margin": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-mobile": "1rem", "gutter-dense": "0.5rem", "space-xl": "2rem", "space-sm": "0.375rem", "gutter": "1rem" }, "fontFamily": { "body-lg": [ "Inter" ], "headline-lg": [ "Geist" ], "label-caps": [ "Geist" ], "display": [ "Geist" ], "data-mono-lg": [ "JetBrains Mono" ], "micro": [ "Inter" ], "headline-sm": [ "Geist" ], "data-mono-md": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "headline-md": [ "Geist" ], "body-sm": [ "Inter" ] }, "fontSize": { "body-lg": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "display": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "data-mono-lg": [ "14px", { "lineHeight": "18px", "letterSpacing": "-0.02em", "fontWeight": "500" } ], "micro": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "headline-sm": [ "15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "data-mono-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-md": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.08)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><img alt="SupTech Monitor Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrB1W6zcHzlb_ss0hCtCxameWhXWvbxZ5h00_XtevKfxyOoDrLuVu2TDY6pM-HnzSP4tXtqcvLX7NRctROiLzAnrO9o1otXsPAxoR0pDw6XaALF5Ix0edSGpW-ZGg0ZC1Vjop1ASaVkdLGCEZ8cdo6cMpj_J7XhVUJOfhxDQaUUu_FSgIzo8feNJNmrKL9K3IgHbnsAF_ssGfmA7Xz1JVwZ8Bmhmk72AgM62Aek1C_rXow"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-surface-container-lowest tracking-tight">SupTech Monitor</span><span class="font-micro text-micro text-secondary-container tracking-wider uppercase">Supervisory Intelligence</span></div></div><span class="px-space-xs py-0.5 rounded-sm bg-surface-variant/20 text-inverse-on-surface font-micro text-micro font-medium">PoC</span></div><div class="px-space-md py-space-xs"><div class="px-space-xs py-space-xs font-label-caps text-label-caps uppercase text-surface-dim/70 tracking-wider">Supervisory Console</div></div><nav class="flex flex-col gap-space-xs px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-headline-sm rounded-lg"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span>Overview</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="institutions" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Institutions</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="supervisory-analytics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Supervisory Analytics</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="exceptions-and-alerts" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">crisis_alert</span><span>Exceptions &amp; Alerts</span></div><span class="px-space-xs py-0.5 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md">14</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="custom-reports" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">description</span><span>Custom Reports</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="data-explorer" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">table_chart</span><span>Data Explorer</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="ai-supervisory-assistant" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">psychology</span><span>AI Supervisory Assistant</span></div><span class="px-space-xs py-0.5 rounded-lg bg-primary text-on-primary font-micro text-micro">Copilot</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="integrations-and-system-health" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">sync_alt</span><span>Integrations &amp; System Health</span></div><span class="w-2 h-2 rounded-full bg-primary-fixed"></span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="administration-and-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">tune</span><span>Administration &amp; Settings</span></div></a></nav></div><div class="p-space-md m-space-sm rounded-xl bg-surface-container-lowest/10 backdrop-blur-xl"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps uppercase text-surface-dim">Environment</span><span class="font-data-mono-md text-data-mono-md text-secondary-fixed">BoT Staging v2.4</span></div><div class="flex items-center gap-space-xs"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span><span class="font-micro text-micro text-surface-dim">Realtime Telemetry Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Supervision Engine</span><span class="text-outline">/</span><span>Bank of Tanzania</span><span class="text-outline">/</span><span class="text-primary font-medium">Prudential Return Monitoring</span></div></div><div class="flex-1 max-w-md mx-margin"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-full h-8 pl-9 pr-14 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest" placeholder="Quick search institution, indicator, licence, exception ID..." type="text"/><span class="absolute right-space-sm px-space-xs py-0.5 rounded-sm bg-surface-container font-data-mono-md text-data-mono-md text-on-surface-variant pointer-events-none">Ctrl+K</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-md h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm"><span class="material-symbols-outlined text-[16px] text-outline">event</span><span>2026 Q3 — Oct Cycle</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="flex items-center gap-space-xs px-space-sm h-8 rounded-lg bg-primary-fixed/20 text-on-primary-fixed-variant font-data-mono-md text-data-mono-md"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span><span>Live Stream • 24ms</span></div><div class="relative flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md flex items-center justify-center text-[10px]">3</span></div><div class="flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">help_outline</span></div><div class="flex items-center gap-space-sm pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_MLxFzv9C_m29Rehhcl9BNiBJCc_EZGvIRcVi4FzeDb3r3HoL0XQHv-REKzIK2vPqomezFmkbfhUFVuOXzsUp5uhz7I233ZhMSmwYEzKXoxo0AOBgDbhbe7mSo1pdfliKgdiqaXViieRYdpDW4yeHfyeF69QlY9P5sLs4LIwWZKpTPI1y1UIt4Fy_BRUlGqO0IuEeAmgZA_V3qMAOwQZpy6sbeRZXoXGNJNZZZyKn"/><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-headline-sm leading-tight text-on-surface">Dr. M. Kimei</span><span class="font-micro text-micro text-on-surface-variant leading-tight">Chief Supervisory Analyst • BoT - BSD</span></div><span class="material-symbols-outlined text-[18px] text-outline">expand_more</span></div></div></header><main class="relative pt-16 w-full bg-surface px-gutter min-h-screen"><div class="flex flex-col w-full pb-10">
+<!-- PAGE HEADER & ACTION CONTROLS -->
+<div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs font-label-caps text-label-caps uppercase text-tertiary tracking-wider mb-1">
+<span class="text-primary font-semibold">Directorate of Banking Supervision</span>
+<span>•</span>
+<span>Statutory Enforcement Branch</span>
+<span>•</span>
+<span class="text-error font-semibold">Active Cycle 2026-Q3</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+        Exceptions &amp; Regulatory Breaches Register
+      </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 max-w-4xl">
+        Automated econometric outlier detection, statutory threshold breaches, and inspector investigation workflows for the 2026 Q3 reporting cycle.
+      </p>
+</div>
+<!-- Top Action Buttons -->
+<div class="flex items-center flex-wrap gap-space-sm self-start xl:self-auto">
+<button class="h-8 px-space-md rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-body-sm text-body-sm flex items-center gap-1.5 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">download</span>
+<span>Batch Export Dossier (PDF/XLSX)</span>
+</button>
+<button class="h-8 px-space-md rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-body-sm text-body-sm flex items-center gap-1.5 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">gavel</span>
+<span>Schedule Bilateral Hearing</span>
+</button>
+<button class="h-8 px-space-md rounded-lg bg-primary-container text-on-primary-container hover:brightness-105 active:scale-95 font-body-sm text-body-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span>+ Log Supervisory Note</span>
+</button>
+</div>
+</div>
+<!-- KPI SUMMARY CARDS (5 METRICS) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md mb-space-lg">
+<!-- 1. Total Open Exceptions -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Total Open Exceptions</span>
+<div class="w-7 h-7 rounded-lg bg-error-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-[18px]">crisis_alert</span>
+</div>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-display text-display text-on-surface leading-none font-semibold">14</span>
+<div class="flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-error-container text-on-error-container font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>
+<span>+3 new</span>
+</div>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-low/40 rounded flex items-center justify-between px-1.5">
+<span class="font-micro text-micro text-tertiary">Current 24h intake</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface-variant font-medium">9.2% of submissions</span>
+</div>
+</div>
+<!-- 2. Critical Breaches -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Critical Breaches</span>
+<div class="w-7 h-7 rounded-lg bg-error-container text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-display text-display text-error leading-none font-semibold">4</span>
+<span class="px-2 py-0.5 rounded-sm bg-error text-on-error font-micro text-micro font-medium uppercase tracking-wide">
+          Immediate Action
+        </span>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-low/40 rounded flex items-center justify-between px-1.5">
+<span class="font-micro text-micro text-tertiary">Statutory Floor Violations</span>
+<span class="font-data-mono-md text-data-mono-md text-error font-medium">Cap 342 Breach</span>
+</div>
+</div>
+<!-- 3. High Risk Early Warning -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">High Risk / Watchlist</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[18px]">visibility</span>
+</div>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-display text-display text-on-surface leading-none font-semibold">5</span>
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-high text-on-surface font-micro text-micro font-medium uppercase tracking-wide">
+          Watchlist Active
+        </span>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-low/40 rounded flex items-center justify-between px-1.5">
+<span class="font-micro text-micro text-tertiary">Outlier Z-score &gt; 2.5</span>
+<span class="font-data-mono-md text-data-mono-md text-secondary font-medium">Econometric Alert</span>
+</div>
+</div>
+<!-- 4. Under Supervisory Review -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">In Examiner Review</span>
+<div class="w-7 h-7 rounded-lg bg-secondary-fixed/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[18px]">assignment_ind</span>
+</div>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-display text-display text-secondary leading-none font-semibold">3</span>
+<span class="px-2 py-0.5 rounded-sm bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-medium uppercase tracking-wide">
+          Allocated
+        </span>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-low/40 rounded flex items-center justify-between px-1.5">
+<span class="font-micro text-micro text-tertiary">Examiner Pool</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface-variant font-medium">BSD Senior Desk</span>
+</div>
+</div>
+<!-- 5. Cleared Cycle Q3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Resolved / Cleared</span>
+<div class="w-7 h-7 rounded-lg bg-primary-fixed/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+</div>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-display text-display text-primary leading-none font-semibold">18</span>
+<span class="px-2 py-0.5 rounded-sm bg-primary-fixed text-on-primary-fixed font-micro text-micro font-medium uppercase tracking-wide">
+          Cleared
+        </span>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-low/40 rounded flex items-center justify-between px-1.5">
+<span class="font-micro text-micro text-tertiary">Resolution Rate</span>
+<span class="font-data-mono-md text-data-mono-md text-primary font-medium">56.2% Cycle Avg</span>
+</div>
+</div>
+</div>
+<!-- CONTROL & FILTER TOOLBAR (FIXED 36PX RHYTHM) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm mb-space-md shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-sm">
+<div class="flex items-center flex-wrap flex-1 gap-space-sm">
+<!-- Search Input -->
+<div class="relative flex-1 min-w-[240px] max-w-md h-9">
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[18px] text-tertiary pointer-events-none">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-tertiary focus:bg-surface-container-lowest focus:outline-none transition-colors" id="table-search" placeholder="Filter by Institution, Breach Rule ID, Indicator..." type="text"/>
+</div>
+<!-- Severity Filter -->
+<div class="relative h-9">
+<select class="h-9 pl-2.5 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none appearance-none cursor-pointer">
+<option>All Severities (4 Critical, 5 High, 5 Moderate)</option>
+<option>Critical Only (4)</option>
+<option>High Risk Only (5)</option>
+<option>Moderate Only (5)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2.5 text-[16px] text-tertiary pointer-events-none">expand_more</span>
+</div>
+<!-- Supervised Entities Filter -->
+<div class="relative h-9">
+<select class="h-9 pl-2.5 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none appearance-none cursor-pointer">
+<option>All Supervised Entities (54)</option>
+<option>Commercial Banks - Tier 1 &amp; D-SIBs (12)</option>
+<option>Commercial Banks - Tier 2 (24)</option>
+<option>Development Finance / Non-Bank (8)</option>
+<option>Microfinance Institutions (10)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2.5 text-[16px] text-tertiary pointer-events-none">expand_more</span>
+</div>
+<!-- Category Filter -->
+<div class="relative h-9 hidden xl:block">
+<select class="h-9 pl-2.5 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none appearance-none cursor-pointer">
+<option>All Categories (Capital, Liquidity, FX, Reporting)</option>
+<option>Prudential Large Exposures</option>
+<option>Capital Adequacy &amp; Headroom</option>
+<option>Asset Quality &amp; NPLs</option>
+<option>Net FX Exposure &amp; Limits</option>
+<option>Submission Timeliness</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2.5 text-[16px] text-tertiary pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Active vs Archive Segment Toggle & Bulk Action -->
+<div class="flex items-center gap-space-sm self-end lg:self-auto">
+<div class="flex items-center bg-surface-container-low p-0.5 rounded-lg h-9">
+<button class="px-space-md h-7 rounded-md bg-surface-container-lowest font-body-sm text-body-sm font-semibold text-on-surface shadow-xs flex items-center gap-1.5 transition-all">
+<span>Active Exceptions</span>
+<span class="px-1.5 py-0.2 rounded-full bg-error text-on-error font-data-mono-md text-[10px]">14</span>
+</button>
+<button class="px-space-md h-7 rounded-md font-body-sm text-body-sm text-tertiary hover:text-on-surface flex items-center gap-1.5 transition-all">
+<span>Resolved Archive</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container text-on-surface-variant font-data-mono-md text-[10px]">18</span>
+</button>
+</div>
+<button class="h-9 px-space-md rounded-lg bg-surface-container-low text-tertiary hover:bg-surface-container hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1.5 transition-colors cursor-not-allowed opacity-70" disabled="" id="bulk-acknowledge-btn">
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+<span>Acknowledge (0)</span>
+</button>
+</div>
+</div>
+<!-- MAIN SPLIT WORKSPACE: DATA TABLE (65%) + DIAGNOSTIC DRAWER (35%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
+<!-- LEFT 65%: COMPREHENSIVE BREACH DATA TABLE (7 of 12 cols desktop, or 8 cols depending on view) -->
+<div class="lg:col-span-7 xl:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Table Header Status Strip -->
+<div class="px-space-md py-space-sm bg-surface-container-low/70 flex items-center justify-between">
+<div class="flex items-center gap-space-xs font-label-caps text-label-caps uppercase text-tertiary">
+<span>Exception Register View</span>
+<span>•</span>
+<span class="text-on-surface font-semibold">14 Active Breaches</span>
+<span>•</span>
+<span>Ordered by Severity &amp; Materiality</span>
+</div>
+<div class="flex items-center gap-space-xs text-tertiary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span class="font-micro text-micro uppercase tracking-wider">Columns: 8 of 12 Active</span>
+</div>
+</div>
+<!-- Scroller Table Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead>
+<tr class="h-8 bg-surface-container-low text-tertiary font-label-caps text-label-caps uppercase tracking-wider select-none">
+<th class="w-8 px-space-md text-center">
+<input class="rounded text-primary focus:ring-0 cursor-pointer" id="select-all-exceptions" type="checkbox"/>
+</th>
+<th class="px-space-sm">Exception ID</th>
+<th class="px-space-sm">Supervised Entity</th>
+<th class="px-space-sm">Prudential Rule</th>
+<th class="px-space-sm text-right">Observed / Limit</th>
+<th class="px-space-sm text-center">Severity</th>
+<th class="px-space-sm">Logged</th>
+<th class="px-space-sm">Status</th>
+<th class="px-space-sm text-center w-12">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<!-- ROW 1: EXP-2026-089 (CRDB - ACTIVE SELECTION) -->
+<tr class="h-11 bg-primary-fixed/15 transition-colors cursor-pointer group" id="row-089">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input checked="" class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-primary font-bold">
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+<span>EXP-2026-089</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-inverse-surface text-surface-container-lowest font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    CR
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">CRDB Bank Plc</span>
+<span class="font-micro text-micro text-tertiary">D-SIB 1 • BOT-CB-002</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">PRUD-EXP-04</span>
+<span class="font-micro text-micro text-tertiary truncate block">Single Borrower Group &gt;25%</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-error font-bold block">26.4%</span>
+<span class="font-micro text-micro text-tertiary">Cap: ≤25.0%</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps font-bold">
+                  CRITICAL
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Today 08:14 EAT</span>
+<span class="font-micro text-micro text-tertiary">2h 18m ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-medium">
+                  In Review - Dr. Kimei
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- ROW 2: EXP-2026-074 (Mwanga Hakika - Capital) -->
+<tr class="h-11 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-on-surface font-semibold">
+<span>EXP-2026-074</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-secondary text-surface-container-lowest font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    MH
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">Mwanga Hakika Bank</span>
+<span class="font-micro text-micro text-tertiary">Tier 2 Commercial • BOT-CB-031</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">PRU-CAR-01</span>
+<span class="font-micro text-micro text-tertiary truncate block">CAR Headroom &lt;12% Statutory Floor</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-error font-bold block">11.2%</span>
+<span class="font-micro text-micro text-tertiary">Min: ≥12.0%</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps font-bold">
+                  CRITICAL
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Yesterday 16:30</span>
+<span class="font-micro text-micro text-tertiary">18h ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-micro text-micro font-medium">
+                  Hearing Scheduled
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- ROW 3: EXP-2026-062 (Access Microfinance - NPL) -->
+<tr class="h-11 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-on-surface font-semibold">
+<span>EXP-2026-062</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-tertiary text-surface-container-lowest font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    AM
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">Access Microfinance</span>
+<span class="font-micro text-micro text-tertiary">Tier 1 MFI • BOT-MF-004</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">PRU-NPL-04</span>
+<span class="font-micro text-micro text-tertiary truncate block">Gross NPL Ceiling Breach &gt;5.0%</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-tertiary-container font-bold block">6.2%</span>
+<span class="font-micro text-micro text-tertiary">Ceiling: ≤5.0%</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-caps text-label-caps font-semibold">
+                  HIGH
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Oct 19, 14:10</span>
+<span class="font-micro text-micro text-tertiary">1d ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-surface-container text-tertiary font-micro text-micro font-medium">
+                  Unassigned
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- ROW 4: EXP-2026-051 (NMB Bank - FX Open Position) -->
+<tr class="h-11 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-on-surface font-semibold">
+<span>EXP-2026-051</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-primary-container text-on-primary-container font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    NM
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">NMB Bank Plc</span>
+<span class="font-micro text-micro text-tertiary">D-SIB 1 • BOT-CB-001</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">PRU-FX-01</span>
+<span class="font-micro text-micro text-tertiary truncate block">Net FX Open Position &gt;7.5%</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-on-surface font-bold block">8.4%</span>
+<span class="font-micro text-micro text-tertiary">Ceiling: ≤7.5%</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-caps text-label-caps font-semibold">
+                  HIGH
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Oct 19, 09:22</span>
+<span class="font-micro text-micro text-tertiary">1d ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-medium">
+                  Explanation Submitted
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- ROW 5: EXP-2026-048 (Exim Bank Tanzania - LCR Watch) -->
+<tr class="h-11 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-on-surface font-semibold">
+<span>EXP-2026-048</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-inverse-surface text-surface-container-lowest font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    EX
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">Exim Bank Tanzania</span>
+<span class="font-micro text-micro text-tertiary">Tier 1 • BOT-CB-008</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">PRU-LIQ-02</span>
+<span class="font-micro text-micro text-tertiary truncate block">Liquidity Coverage Ratio (LCR) &lt;100%</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-on-surface font-bold block">94.8%</span>
+<span class="font-micro text-micro text-tertiary">Min: ≥100.0%</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-caps text-label-caps font-semibold">
+                  MODERATE
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Oct 18, 17:45</span>
+<span class="font-micro text-micro text-tertiary">2d ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-medium">
+                  In Review - S. Mwamba
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- ROW 6: EXP-2026-033 (TIB Development Bank - Overdue Return) -->
+<tr class="h-11 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-space-md text-center" onclick="event.stopPropagation();">
+<input class="rounded text-primary focus:ring-0 cursor-pointer row-checkbox" type="checkbox"/>
+</td>
+<td class="px-space-sm font-data-mono-md text-data-mono-md text-on-surface font-semibold">
+<span>EXP-2026-033</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-md bg-tertiary-container text-on-tertiary-container font-headline-sm text-[10px] flex items-center justify-center font-bold">
+                    TB
+                  </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight font-semibold">TIB Development Bank</span>
+<span class="font-micro text-micro text-tertiary">DFI Sovereign • BOT-DF-001</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm max-w-[200px] truncate">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-medium block truncate">STAT-SUB-10</span>
+<span class="font-micro text-micro text-tertiary truncate block">Statutory Return 08 Overdue &gt;24h</span>
+</td>
+<td class="px-space-sm text-right font-data-mono-md text-data-mono-md">
+<span class="text-error font-bold block">+36h Overdue</span>
+<span class="font-micro text-micro text-tertiary">Due: Oct 15</span>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps font-bold">
+                  CRITICAL
+                </span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="font-micro text-micro text-on-surface block font-medium">Oct 17, 00:01</span>
+<span class="font-micro text-micro text-tertiary">3d ago</span>
+</td>
+<td class="px-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 rounded-md bg-error-container text-on-error-container font-micro text-micro font-medium">
+                  Notice Issued
+                </span>
+</td>
+<td class="px-space-sm text-center" onclick="event.stopPropagation();">
+<button class="w-7 h-7 rounded hover:bg-surface-container text-tertiary hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Table Telemetry Footer -->
+<div class="px-space-md py-space-sm bg-surface-container-low/50 flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-tertiary">
+          Showing <span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">1 - 6</span> of 14 active supervisory exceptions
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="w-7 h-7 rounded bg-surface-container-lowest text-tertiary flex items-center justify-center shadow-xs cursor-not-allowed opacity-50" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-2 font-data-mono-md text-data-mono-md text-on-surface font-medium">Page 1 of 3</span>
+<button class="w-7 h-7 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- RIGHT 35%: HIGH-FIDELITY EXCEPTION INSPECTION DRAWER (EXP-2026-089) -->
+<div class="lg:col-span-5 xl:col-span-4 bg-surface-container-lowest rounded-xl shadow-md flex flex-col overflow-hidden">
+<!-- Drawer Top Bar -->
+<div class="p-space-md bg-inverse-surface text-inverse-on-surface flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-sm bg-error text-on-error font-label-caps text-label-caps font-bold">
+              CRITICAL BREACH
+            </span>
+<span class="font-data-mono-md text-data-mono-md text-primary-fixed">EXP-2026-089</span>
+</div>
+<span class="font-micro text-micro text-tertiary-fixed-dim">Detected: Oct 20, 08:14 EAT</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-surface-container-lowest font-semibold mt-1">
+            CRDB Bank Plc (BOT-CB-002)
+          </h2>
+<p class="font-body-sm text-body-sm text-surface-dim">
+            Prudential Rule: PRUD-EXP-04 — Single Borrower Group Concentration
+          </p>
+</div>
+</div>
+<!-- Regulatory Citation Alert Banner -->
+<div class="px-space-md py-space-sm bg-error-container/40 flex items-start gap-2">
+<span class="material-symbols-outlined text-error text-[18px] mt-0.5 shrink-0">gavel</span>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-error font-bold">Statutory Capital Guideline Breach</span>
+<p class="font-micro text-micro text-on-surface leading-tight mt-0.5">
+            Banking and Financial Institutions Act (Cap 342) Section 31: Absolute aggregate credit exposure to any single consortium shall not exceed 25.0% of core Tier 1 capital.
+          </p>
+</div>
+</div>
+<!-- Scrollable Dossier Content -->
+<div class="p-space-md flex flex-col gap-space-md max-h-[calc(100vh-320px)] overflow-y-auto">
+<!-- Metric Breakdown Card & Horizontal Comparison Gauge -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Breach Analysis &amp; Capital Delta</span>
+<span class="font-data-mono-md text-data-mono-md text-error font-bold">+140 bps Deficit</span>
+</div>
+<!-- Horizontal Gauge Visual -->
+<div class="flex flex-col gap-1.5 my-1">
+<div class="flex items-center justify-between font-data-mono-md text-data-mono-md">
+<span class="text-tertiary">Statutory Ceiling: 25.0%</span>
+<span class="text-error font-bold">Observed: 26.4%</span>
+</div>
+<div class="relative w-full h-4 bg-surface-container-high rounded-full overflow-hidden">
+<!-- Safe band: 0 to 25% (normalized to 85% width of bar) -->
+<div class="absolute left-0 top-0 bottom-0 bg-primary-container" style="width: 78%;"></div>
+<!-- Breach overflow band -->
+<div class="absolute left-[78%] top-0 bottom-0 bg-error" style="width: 14%;"></div>
+<!-- Statutory limit vertical tick at 78% -->
+<div class="absolute left-[78%] top-0 bottom-0 w-0.5 bg-on-surface z-10"></div>
+</div>
+<div class="flex items-center justify-between font-micro text-micro text-tertiary">
+<span>0% Exposure</span>
+<span class="font-data-mono-md text-on-surface font-semibold">▲ Limit 25.0%</span>
+<span class="text-error font-bold">26.4%</span>
+</div>
+</div>
+<!-- Structured Key Metrics Table -->
+<div class="grid grid-cols-2 gap-space-xs pt-2">
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="font-micro text-micro text-tertiary block">Aggregate Group Exposure</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-bold">TZS 1.42 Trillion</span>
+<span class="font-micro text-micro text-on-surface-variant block mt-0.5">Mining Sector Consortium</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="font-micro text-micro text-tertiary block">Audited Core Tier 1 Base</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-bold">TZS 5.38 Trillion</span>
+<span class="font-micro text-micro text-on-surface-variant block mt-0.5">As of 2026 Q3 Return</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="font-micro text-micro text-tertiary block">Permitted Capital Limit</span>
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">TZS 1.345 Trillion</span>
+<span class="font-micro text-micro text-tertiary block mt-0.5">Maximum Ceiling (25.0%)</span>
+</div>
+<div class="bg-error-container/30 p-2 rounded">
+<span class="font-micro text-micro text-error font-semibold block">Excess Unhedged Exposure</span>
+<span class="font-data-mono-md text-data-mono-md text-error font-bold">+TZS 75.4 Billion</span>
+<span class="font-micro text-micro text-error block mt-0.5">Statutory Over-allocation</span>
+</div>
+</div>
+</div>
+<!-- Econometric Context & Outlier Score -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Econometric Telemetry</span>
+<span class="font-data-mono-md text-data-mono-md text-secondary font-semibold">Outlier Z = +2.85</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            Econometric surveillance model flagged high deviation from peer group median (17.4%). Concentration risk index heightened. Last audited ratio was 21.8% in Q2 2026. Rapid 460 bps portfolio accumulation identified in syndicated mining facility within 45 days.
+          </p>
+<div class="flex items-center gap-2 pt-1 font-micro text-micro text-tertiary">
+<span class="material-symbols-outlined text-[14px]">attachment</span>
+<span>Attached Return: <strong class="text-on-surface">Form 08-LGR (Large Exposures), Schedule 3A, Line 14</strong></span>
+</div>
+</div>
+<!-- Investigation Audit Timeline -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider">Investigation Audit Trail</span>
+<span class="font-micro text-micro text-primary font-semibold">4 Milestones</span>
+</div>
+<div class="relative pl-5 flex flex-col gap-3 py-1">
+<!-- Timeline vertical connector -->
+<div class="absolute left-1.5 top-2 bottom-2 w-0.5 bg-surface-container-high"></div>
+<!-- Event 1 -->
+<div class="relative flex flex-col">
+<div class="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-error"></div>
+<div class="flex items-center justify-between font-micro text-micro">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">Oct 20, 08:14 EAT</span>
+<span class="text-tertiary">Engine Auto-Trigger</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                Cryptographic ingestion flagged breach on automated validation of return Form 08-LGR.
+              </span>
+</div>
+<!-- Event 2 -->
+<div class="relative flex flex-col">
+<div class="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-secondary"></div>
+<div class="flex items-center justify-between font-micro text-micro">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">Oct 20, 08:39 EAT</span>
+<span class="text-tertiary">System Dispatch</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                System rule PRUD-EXP-04 auto-generated escalation notice to Chief Supervisory Analyst.
+              </span>
+</div>
+<!-- Event 3 -->
+<div class="relative flex flex-col">
+<div class="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-primary"></div>
+<div class="flex items-center justify-between font-micro text-micro">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">Oct 20, 09:15 EAT</span>
+<span class="text-tertiary">Desk Assignment</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                Dr. M. Kimei assigned dossier to Senior Bank Examiner S. Mwamba, CFA for investigation.
+              </span>
+</div>
+<!-- Event 4 -->
+<div class="relative flex flex-col">
+<div class="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-primary-container"></div>
+<div class="flex items-center justify-between font-micro text-micro">
+<span class="font-data-mono-md text-data-mono-md text-on-surface font-semibold">Oct 20, 10:20 EAT</span>
+<span class="text-tertiary">Draft Prepared</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                Formal Section 31 Query Memorandum drafted and awaiting Directorate sign-off.
+              </span>
+</div>
+</div>
+</div>
+</div>
+<!-- STICKY ACTION & DIRECTIVE FOOTER IN DRAWER -->
+<div class="p-space-md bg-surface-container-low flex flex-col gap-space-sm mt-auto">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps uppercase text-tertiary tracking-wider" for="examiner-note-input">
+            Confidential Examiner Directive / Log Note
+          </label>
+<div class="relative">
+<textarea class="w-full p-2 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface placeholder:text-tertiary focus:outline-none resize-none" id="examiner-note-input" placeholder="Add confidential supervisory note or internal examiner directive..." rows="2"></textarea>
+<button class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-surface-container-high hover:bg-surface-container text-on-surface font-micro text-micro font-semibold transition-colors">
+              Save Note
+            </button>
+</div>
+</div>
+<!-- Directive Action Button Array -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+<button class="h-8 px-2 rounded-lg bg-error text-on-error hover:brightness-105 active:scale-95 font-body-sm text-body-sm font-semibold flex items-center justify-center gap-1 transition-all text-center">
+<span class="material-symbols-outlined text-[15px]">priority_high</span>
+<span class="truncate">Issue Form 12</span>
+</button>
+<button class="h-8 px-2 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-body-sm text-body-sm font-semibold flex items-center justify-center gap-1 transition-all text-center shadow-xs">
+<span class="material-symbols-outlined text-[15px] text-tertiary">forum</span>
+<span class="truncate">Bilateral Review</span>
+</button>
+<button class="h-8 px-2 rounded-lg bg-primary-container text-on-primary-container hover:brightness-105 active:scale-95 font-body-sm text-body-sm font-semibold flex items-center justify-center gap-1 transition-all text-center shadow-xs">
+<span class="material-symbols-outlined text-[15px]">add_moderator</span>
+<span class="truncate">Capital Add-on</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- PERSISTENT SUPERVISORY TELEMETRY STATUS BAR -->
+<div class="mt-space-lg bg-inverse-surface text-inverse-on-surface rounded-xl p-space-md flex flex-col md:flex-row items-center justify-between gap-space-sm shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed animate-ping"></span>
+<span class="font-data-mono-md text-data-mono-md text-surface-container-lowest font-semibold">
+          Econometric Rule Engine v4.2 Active
+        </span>
+</div>
+<div class="hidden sm:flex items-center gap-1 font-body-sm text-body-sm text-surface-dim">
+<span>•</span>
+<span>14 Active Outlier Breaches across 54 Supervised Institutions</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md font-data-mono-md text-data-mono-md">
+<div class="flex items-center gap-1.5 text-secondary-fixed">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Next Ingestion Cycle in 11m 42s</span>
+</div>
+<div class="hidden lg:flex items-center gap-1 text-surface-dim">
+<span>Audit Ref:</span>
+<span class="text-surface-container-lowest font-bold">BSD-BOT-2026Q3-094</span>
+</div>
+</div>
+</div>
+</div>
+<!-- INTERACTION LOGIC (ROW SELECTION & BULK ACTIONS) -->
+<script>
+  (function() {
+    const selectAllCheckbox = document.getElementById('select-all-exceptions');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const bulkButton = document.getElementById('bulk-acknowledge-btn');
+
+    function updateBulkButton() {
+      const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+      if (bulkButton) {
+        if (checkedCount > 0) {
+          bulkButton.innerHTML = `<span class="material-symbols-outlined text-[16px]">done_all</span><span>Acknowledge Selected (${checkedCount})</span>`;
+          bulkButton.classList.remove('cursor-not-allowed', 'opacity-70');
+          bulkButton.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-xs');
+          bulkButton.disabled = false;
+        } else {
+          bulkButton.innerHTML = `<span class="material-symbols-outlined text-[16px]">done_all</span><span>Acknowledge (0)</span>`;
+          bulkButton.classList.add('cursor-not-allowed', 'opacity-70');
+          bulkButton.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold', 'shadow-xs');
+          bulkButton.disabled = true;
+        }
+      }
+    }
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function(e) {
+        rowCheckboxes.forEach(cb => {
+          cb.checked = e.target.checked;
+        });
+        updateBulkButton();
+      });
+    }
+
+    rowCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        updateBulkButton();
+      });
+    });
+
+    updateBulkButton();
+  })();
+</script></main></div></body></html>

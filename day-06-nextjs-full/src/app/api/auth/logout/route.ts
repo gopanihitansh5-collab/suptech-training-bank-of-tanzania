@@ -1,0 +1,14 @@
+import { NextResponse } from 'next/server';
+import { getSessionCookieName } from '@/lib/auth';
+
+export async function POST() {
+  const response = NextResponse.json({ signedOut: true });
+  response.cookies.set(getSessionCookieName(), '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 0,
+  });
+  return response;
+}

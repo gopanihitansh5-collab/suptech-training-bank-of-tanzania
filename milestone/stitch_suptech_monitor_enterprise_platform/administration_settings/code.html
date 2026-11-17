@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#d2d9f4", "tertiary": "#545f74", "surface-container": "#eaedff", "on-tertiary-fixed-variant": "#3c475b", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00201c", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#4fdbc8", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#bcc7df", "primary": "#006b5f", "tertiary-container": "#99a4bc", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#faf8ff", "primary-fixed": "#71f8e4", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#004c69", "error": "#ba1a1a", "outline-variant": "#bbcac6", "inverse-primary": "#4fdbc8", "outline": "#6c7a77", "surface": "#faf8ff", "on-tertiary": "#ffffff", "surface-container-high": "#e2e7ff", "on-surface": "#131b2e", "secondary-fixed": "#c4e7ff", "on-surface-variant": "#3c4947", "on-secondary-fixed": "#001e2c", "on-tertiary-fixed": "#111c2e", "on-primary-fixed-variant": "#005048", "background": "#faf8ff", "on-primary-container": "#00423b", "on-error-container": "#93000a", "inverse-surface": "#283044", "secondary-fixed-dim": "#7bd0ff", "secondary-container": "#40c2fd", "on-secondary-container": "#004d6a", "primary-container": "#14b8a6", "secondary": "#00668a", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "tertiary-fixed": "#d8e3fc", "surface-tint": "#006b5f", "on-background": "#131b2e", "on-secondary": "#ffffff", "on-tertiary-container": "#303a4e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xs": "0.25rem", "margin": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-mobile": "1rem", "gutter-dense": "0.5rem", "space-xl": "2rem", "space-sm": "0.375rem", "gutter": "1rem" }, "fontFamily": { "body-lg": [ "Inter" ], "headline-lg": [ "Geist" ], "label-caps": [ "Geist" ], "display": [ "Geist" ], "data-mono-lg": [ "JetBrains Mono" ], "micro": [ "Inter" ], "headline-sm": [ "Geist" ], "data-mono-md": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "headline-md": [ "Geist" ], "body-sm": [ "Inter" ] }, "fontSize": { "body-lg": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "display": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "data-mono-lg": [ "14px", { "lineHeight": "18px", "letterSpacing": "-0.02em", "fontWeight": "500" } ], "micro": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "headline-sm": [ "15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "data-mono-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-md": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.08)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><img alt="SupTech Monitor Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrB1W6zcHzlb_ss0hCtCxameWhXWvbxZ5h00_XtevKfxyOoDrLuVu2TDY6pM-HnzSP4tXtqcvLX7NRctROiLzAnrO9o1otXsPAxoR0pDw6XaALF5Ix0edSGpW-ZGg0ZC1Vjop1ASaVkdLGCEZ8cdo6cMpj_J7XhVUJOfhxDQaUUu_FSgIzo8feNJNmrKL9K3IgHbnsAF_ssGfmA7Xz1JVwZ8Bmhmk72AgM62Aek1C_rXow"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-surface-container-lowest tracking-tight">SupTech Monitor</span><span class="font-micro text-micro text-secondary-container tracking-wider uppercase">Supervisory Intelligence</span></div></div><span class="px-space-xs py-0.5 rounded-sm bg-surface-variant/20 text-inverse-on-surface font-micro text-micro font-medium">PoC</span></div><div class="px-space-md py-space-xs"><div class="px-space-xs py-space-xs font-label-caps text-label-caps uppercase text-surface-dim/70 tracking-wider">Supervisory Console</div></div><nav class="flex flex-col gap-space-xs px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-headline-sm rounded-lg"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="executive-overview" href="#"><span>Overview</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="financial-institutions-directory" href="#"><span>Institutions</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="supervisory-analytics" href="#"><span>Supervisory Analytics</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="exceptions-regulatory-breaches-register" href="#"><span>Exceptions &amp; Alerts</span><span class="px-space-xs py-0.5 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md">14</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="custom-report-builder" href="#"><span>Custom Reports</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="data-explorer-regulatory-ingestion-workspace" href="#"><span>Data Explorer</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="ai-supervisory-assistant" href="#"><span>AI Supervisory Assistant</span><span class="px-space-xs py-0.5 rounded-lg bg-primary text-on-primary font-micro text-micro">Copilot</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="integrations-system-health" href="#"><span>Integrations &amp; System Health</span><span class="w-2 h-2 rounded-full bg-primary-fixed"></span></a><a class="flex items-center justify-between px-space-md py-space-sm font-headline-sm rounded-lg bg-primary-container text-on-primary-container transition-colors" data-path="administration-settings" href="#"><span>Administration &amp; Settings</span></a></nav></div><div class="p-space-md m-space-sm rounded-xl bg-surface-container-lowest/10 backdrop-blur-xl"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps uppercase text-surface-dim">Environment</span><span class="font-data-mono-md text-data-mono-md text-secondary-fixed">BoT Staging v2.4</span></div><div class="flex items-center gap-space-xs"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span><span class="font-micro text-micro text-surface-dim">Realtime Telemetry Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Supervision Engine</span><span class="text-outline">/</span><span>Bank of Tanzania</span><span class="text-outline">/</span><span class="text-outline">Directorate of Banking Supervision</span><span class="text-outline">/</span><span class="text-primary font-medium">Prudential Return Monitoring</span></div></div><div class="flex-1 max-w-md mx-margin"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-full h-8 pl-9 pr-14 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest" placeholder="Quick search institution, indicator, licence, exception ID..." type="text"/><span class="absolute right-space-sm px-space-xs py-0.5 rounded-sm bg-surface-container font-data-mono-md text-data-mono-md text-on-surface-variant pointer-events-none">Ctrl+K</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-md h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm"><span class="material-symbols-outlined text-[16px] text-outline">event</span><span>2026 Q3 — Oct Cycle</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="flex items-center gap-space-xs px-space-sm h-8 rounded-lg bg-primary-fixed/20 text-on-primary-fixed-variant font-data-mono-md text-data-mono-md"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span><span>Live Stream • 24ms</span></div><div class="relative flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md flex items-center justify-center text-[10px]">3</span></div><div class="flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">help_outline</span></div><div class="flex items-center gap-space-sm pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_MLxFzv9C_m29Rehhcl9BNiBJCc_EZGvIRcVi4FzeDb3r3HoL0XQHv-REKzIK2vPqomezFmkbfhUFVuOXzsUp5uhz7I233ZhMSmwYEzKXoxo0AOBgDbhbe7mSo1pdfliKgdiqaXViieRYdpDW4yeHfyeF69QlY9P5sLs4LIwWZKpTPI1y1UIt4Fy_BRUlGqO0IuEeAmgZA_V3qMAOwQZpy6sbeRZXoXGNJNZZZyKn"/><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-headline-sm leading-tight text-on-surface">Dr. M. Kimei</span><span class="font-micro text-micro text-on-surface-variant leading-tight">Chief Supervisory Analyst • BoT - BSD</span></div><span class="material-symbols-outlined text-[18px] text-outline">expand_more</span></div></div></header><main class="relative pt-16 w-full bg-surface px-gutter min-h-screen"><div class="flex flex-col w-full pb-margin">
+<!-- Top Breadcrumb & Page Command Strip -->
+<div class="flex flex-col gap-space-xs pt-space-md pb-space-lg">
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span>Directorate of Banking Supervision</span>
+<span class="text-outline-variant">/</span>
+<span>System Governance &amp; Compliance</span>
+<span class="text-outline-variant">/</span>
+<span class="text-primary font-medium">Administration &amp; Settings</span>
+</div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mt-space-xs">
+<div class="flex flex-col max-w-3xl">
+<h1 class="font-display text-display text-on-surface tracking-tight">Administration &amp; Supervisory Governance</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+          Manage supervisory role-based access control (RBAC), prudential threshold parameters, algorithm calibration, and tamper-evident cryptographic audit logs under statutory dual-control.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<button class="h-8 px-space-md bg-surface-container-lowest text-on-surface font-body-sm text-body-sm font-medium rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">download</span>
+<span>Export Compliance Audit (PDF/JSON)</span>
+</button>
+<button class="h-8 px-space-md bg-primary-container text-on-primary-container font-body-sm text-body-sm font-semibold rounded-lg shadow-sm hover:bg-primary hover:text-on-primary transition-all flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[16px]">person_add</span>
+<span>+ Provision New Supervisory User</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Supervisory Workspace Sub-Tabs -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-sm mb-space-lg bg-surface-container-low/60 p-1 rounded-xl">
+<button class="px-space-md py-space-xs rounded-lg font-headline-sm text-headline-sm bg-surface-container-lowest text-on-surface shadow-sm flex items-center gap-space-xs whitespace-nowrap" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">admin_panel_settings</span>
+<span>1. User &amp; Access Governance</span>
+<span class="px-1.5 py-0.2 rounded-sm bg-primary/10 text-primary font-data-mono-md text-micro">38</span>
+</button>
+<button class="px-space-md py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest/60 transition-colors flex items-center gap-space-xs whitespace-nowrap" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">tune</span>
+<span>2. Prudential Thresholds &amp; CAMELS Rules</span>
+<span class="px-1.5 py-0.2 rounded-sm bg-surface-container text-tertiary font-data-mono-md text-micro">24</span>
+</button>
+<button class="px-space-md py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest/60 transition-colors flex items-center gap-space-xs whitespace-nowrap" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">smart_toy</span>
+<span>3. Supervisory AI &amp; Algorithm Safeguards</span>
+</button>
+<button class="px-space-md py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest/60 transition-colors flex items-center gap-space-xs whitespace-nowrap" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">lock_clock</span>
+<span>4. Immutable Cryptographic Audit Log</span>
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim"></span>
+</button>
+<button class="px-space-md py-space-xs rounded-lg font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest/60 transition-colors flex items-center gap-space-xs whitespace-nowrap" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">dns</span>
+<span>5. System Configuration &amp; Maintenance</span>
+</button>
+</div>
+<!-- Operational Governance KPI Metrics Row (5 Cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md mb-space-lg">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary">Supervisory Users</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-surface-container-high text-primary font-micro text-micro font-semibold uppercase tracking-wider">MFA 100% Enforced</span>
+</div>
+<div class="my-space-xs">
+<div class="font-display text-display text-on-surface font-semibold tracking-tight">38 <span class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Active</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">5 Roles Across BSD &amp; FIU</p>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs text-primary font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>Zero policy bypass</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary">Prudential Rules</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-semibold uppercase tracking-wider">In Sync</span>
+</div>
+<div class="my-space-xs">
+<div class="font-display text-display text-on-surface font-semibold tracking-tight">24 <span class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Monitored</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cap 342 &amp; Basel III Statutory</p>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs text-on-surface-variant font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[14px] text-tertiary">verified</span>
+<span>All engines validated</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary">Maker-Checker Queue</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-semibold uppercase tracking-wider">Action Req</span>
+</div>
+<div class="my-space-xs">
+<div class="font-display text-display text-secondary font-semibold tracking-tight">2 <span class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Pending</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Dual-Control Co-Sign Required</p>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs text-secondary font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[14px]">pending_actions</span>
+<span>Awaiting Examiner Chief</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary">Audit Hash Integrity</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-primary-fixed-dim/20 text-on-primary-fixed-variant font-micro text-micro font-semibold uppercase tracking-wider">Zero Drift</span>
+</div>
+<div class="my-space-xs">
+<div class="font-display text-display text-on-surface font-semibold tracking-tight">100% <span class="font-headline-sm text-headline-sm text-primary font-normal">Verified</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">SHA-256 Merkle Tree Intact</p>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs text-tertiary font-data-mono-md text-data-mono-md">
+<span class="material-symbols-outlined text-[14px]">tag</span>
+<span>Block #142,904 Verified</span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-tertiary">Session &amp; mTLS</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-surface-container text-on-surface-variant font-micro text-micro font-semibold uppercase tracking-wider">Airgapped VPC</span>
+</div>
+<div class="my-space-xs">
+<div class="font-display text-display text-on-surface font-semibold tracking-tight">42 <span class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Sessions</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Session Timeout: 15m idle</p>
+</div>
+<div class="flex items-center gap-space-xs pt-space-xs text-on-surface-variant font-data-mono-md text-data-mono-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+<span>TLS 1.3 Strict Enforced</span>
+</div>
+</div>
+</div>
+<!-- Main Split Architecture Canvas (65% / 35%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- LEFT COLUMN (65% = 8 cols on 12-col grid) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Module A: Supervisory Access Control (RBAC Directory Table) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col">
+<!-- Module Header & Controls -->
+<div class="p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">badge</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Supervisory Examiner Directory &amp; RBAC Entitlements</h2>
+</div>
+<span class="font-data-mono-md text-data-mono-md text-tertiary">38 Accounts Registered • 35 Online</span>
+</div>
+<!-- Filter / Action Strip -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
+<div class="relative flex-1 min-w-[260px]">
+<span class="material-symbols-outlined absolute left-space-sm text-[16px] text-tertiary pointer-events-none top-2">search</span>
+<input class="w-full h-8 pl-8 pr-3 bg-surface-container-low text-on-surface placeholder:text-tertiary rounded-lg font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest shadow-sm" placeholder="Search by examiner name, BoT badge ID, department or role..." type="text"/>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<select class="h-8 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none shadow-sm">
+<option>All Roles (Chief, Senior, Inspector, Modeler, Audit)</option>
+<option>Chief Supervisory Analyst</option>
+<option>Senior Off-Site Examiner</option>
+<option>Supervisory System Admin</option>
+<option>Prudential Risk Modeler</option>
+<option>External Statutory Auditor</option>
+</select>
+<select class="h-8 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none shadow-sm">
+<option>Status: All Personnel</option>
+<option>Active</option>
+<option>Restricted</option>
+<option>Suspended</option>
+</select>
+<button class="h-8 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg hover:bg-surface-container hover:text-on-surface flex items-center gap-1 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span>Columns</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Directory Table (Compact Institutional Density) -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-md text-body-md border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-tertiary font-label-caps text-label-caps uppercase tracking-wider h-8">
+<th class="py-space-sm px-space-md">Examiner &amp; ID</th>
+<th class="py-space-sm px-space-md">Supervisory Role</th>
+<th class="py-space-sm px-space-md">Department / Desk</th>
+<th class="py-space-sm px-space-md">Entitlements</th>
+<th class="py-space-sm px-space-md">MFA / Auth</th>
+<th class="py-space-sm px-space-md">Status</th>
+<th class="py-space-sm px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<!-- Row 1: Dr. M. Kimei -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 group">
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-6 h-6 rounded-full bg-primary/20 text-primary font-headline-sm text-micro flex items-center justify-center font-bold">MK</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Dr. M. Kimei</span>
+<span class="font-data-mono-md text-micro text-tertiary">BoT-BSD-001</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="font-medium text-on-surface">Chief Supervisory Analyst</span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">Commercial Banks Desk</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="px-space-xs py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-medium">Full Supervisory &amp; Override</span>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">key</span>
+<span>FIDO2 Hardware Key</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-surface-container text-primary font-micro text-micro font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>ACTIVE</span>
+</span>
+</td>
+<td class="py-space-sm px-space-md text-right font-body-sm text-body-sm">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-tertiary hover:text-on-surface" title="Edit Privileges">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-error hover:text-on-error-container" title="Revoke Key">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Sarah Mwamba -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 group bg-surface-container-lowest">
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-6 h-6 rounded-full bg-secondary/20 text-secondary font-headline-sm text-micro flex items-center justify-center font-bold">SM</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Sarah Mwamba, CFA</span>
+<span class="font-data-mono-md text-micro text-tertiary">BoT-BSD-014</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="font-medium text-on-surface">Senior Off-Site Examiner</span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">D-SIBs &amp; Foreign Exchange</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="px-space-xs py-0.5 rounded-sm bg-surface-container text-tertiary font-micro text-micro font-medium">Read, Form 12 Drafting, Triage</span>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">phonelink_lock</span>
+<span>TOTP Verified</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-surface-container text-primary font-micro text-micro font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>ACTIVE</span>
+</span>
+</td>
+<td class="py-space-sm px-space-md text-right font-body-sm text-body-sm">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-tertiary hover:text-on-surface" title="Edit Privileges">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-error hover:text-on-error-container" title="Revoke Key">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Eng. Josephat Temba -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 group">
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary font-headline-sm text-micro flex items-center justify-center font-bold">JT</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Eng. Josephat Temba</span>
+<span class="font-data-mono-md text-micro text-tertiary">BoT-DIT-008</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="font-medium text-on-surface">Supervisory System Admin</span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">Infrastructure &amp; Telemetry</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="px-space-xs py-0.5 rounded-sm bg-surface-container text-tertiary font-micro text-micro font-medium">Cluster &amp; Pipeline Ops (No Financial)</span>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">key</span>
+<span>FIDO2 Hardware Key</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-surface-container text-primary font-micro text-micro font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>ACTIVE</span>
+</span>
+</td>
+<td class="py-space-sm px-space-md text-right font-body-sm text-body-sm">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-tertiary hover:text-on-surface" title="Edit Privileges">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-error hover:text-on-error-container" title="Revoke Key">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Amina Rashid -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 group bg-surface-container-lowest">
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-6 h-6 rounded-full bg-primary/20 text-primary font-headline-sm text-micro flex items-center justify-center font-bold">AR</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Amina Rashid</span>
+<span class="font-data-mono-md text-micro text-tertiary">BoT-BSD-029</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="font-medium text-on-surface">Prudential Risk Modeler</span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">Stress Testing &amp; Econometrics</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="px-space-xs py-0.5 rounded-sm bg-surface-container text-tertiary font-micro text-micro font-medium">Model Parameter &amp; XBRL Calibration</span>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">phonelink_lock</span>
+<span>TOTP Verified</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-surface-container text-primary font-micro text-micro font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>ACTIVE</span>
+</span>
+</td>
+<td class="py-space-sm px-space-md text-right font-body-sm text-body-sm">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-tertiary hover:text-on-surface" title="Edit Privileges">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-error hover:text-on-error-container" title="Revoke Key">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Emmanuel Ndege -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 group">
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-6 h-6 rounded-full bg-surface-container text-on-surface font-headline-sm text-micro flex items-center justify-center font-bold">EN</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Emmanuel Ndege</span>
+<span class="font-data-mono-md text-micro text-tertiary">BoT-AUD-003</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="font-medium text-on-surface">External Statutory Auditor</span>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface-variant">National Audit Office / FIU</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="px-space-xs py-0.5 rounded-sm bg-surface-container text-on-surface-variant font-micro text-micro font-medium">Read-Only Audit Ledger Access</span>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">sms</span>
+<span>SMS + Hardware</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-surface-container text-secondary font-micro text-micro font-semibold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>RESTRICTED</span>
+</span>
+</td>
+<td class="py-space-sm px-space-md text-right font-body-sm text-body-sm">
+<div class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-tertiary hover:text-on-surface" title="Edit Privileges">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+<button class="w-7 h-7 rounded hover:bg-surface-container flex items-center justify-center text-error hover:text-on-error-container" title="Revoke Key">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Footer -->
+<div class="p-space-md bg-surface-container-low/40 rounded-b-xl flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>Showing <strong class="font-data-mono-md text-on-surface">1 - 5</strong> of <strong class="font-data-mono-md text-on-surface">38</strong> supervisory personnel</span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1 bg-surface-container-lowest rounded-lg shadow-sm font-data-mono-md text-data-mono-md hover:bg-surface-container text-tertiary cursor-not-allowed" disabled="">Prev</button>
+<button class="px-space-sm py-1 bg-primary text-on-primary rounded-lg shadow-sm font-data-mono-md text-data-mono-md">1</button>
+<button class="px-space-sm py-1 bg-surface-container-lowest rounded-lg shadow-sm font-data-mono-md text-data-mono-md hover:bg-surface-container text-on-surface">2</button>
+<button class="px-space-sm py-1 bg-surface-container-lowest rounded-lg shadow-sm font-data-mono-md text-data-mono-md hover:bg-surface-container text-on-surface">3</button>
+<button class="px-space-sm py-1 bg-surface-container-lowest rounded-lg shadow-sm font-data-mono-md text-data-mono-md hover:bg-surface-container text-on-surface">Next</button>
+</div>
+</div>
+</div>
+<!-- Module B: Prudential Thresholds & Statutory Trigger Rules -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">gavel</span>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Prudential Thresholds &amp; Statutory Triggers</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Statutory rules triggering automated supervisor alert exceptions under Banking and Financial Institutions Act (Cap 342).</p>
+</div>
+</div>
+<button class="h-8 px-space-md bg-surface-container text-on-surface font-body-sm text-body-sm rounded-lg hover:bg-surface-container-high transition-colors flex items-center gap-1 self-start sm:self-auto" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">add_circle</span>
+<span>Draft Rule Modification</span>
+</button>
+</div>
+<!-- Rules Matrix -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-md text-body-md border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-tertiary font-label-caps text-label-caps uppercase tracking-wider h-8">
+<th class="py-space-sm px-space-md">Statutory Rule &amp; Legal Ref</th>
+<th class="py-space-sm px-space-md">Ceiling / Floor</th>
+<th class="py-space-sm px-space-md">Early Warning</th>
+<th class="py-space-sm px-space-md">Status</th>
+<th class="py-space-sm px-space-md">Dual-Control State</th>
+<th class="py-space-sm px-space-md text-right">Audit Trail</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<!-- Rule 1: Single Borrower -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10">
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Single Borrower Exposure Limit</span>
+<span class="font-micro text-micro text-tertiary">Cap 342, Sec 31 • Circular No. 04/2021</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold text-error">25.0% Max</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">22.0% Core Cap</td>
+<td class="py-space-sm px-space-md">
+<span class="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-semibold uppercase">ENFORCED</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-tertiary">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span>Locked</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-micro text-on-surface-variant">
+<span>12 Jan 2026 • Dr. Kimei</span>
+</td>
+</tr>
+<!-- Rule 2: Minimum CAR -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 bg-surface-container-lowest">
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Minimum Capital Adequacy Ratio (CAR)</span>
+<span class="font-micro text-micro text-tertiary">Basel III Accord • BoT Prudential Guideline 02</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold text-primary">12.0% Floor</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">13.5% Buffer</td>
+<td class="py-space-sm px-space-md">
+<span class="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-semibold uppercase">ENFORCED</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-tertiary">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span>Locked</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-micro text-on-surface-variant">
+<span>04 Jan 2026 • BoT Council</span>
+</td>
+</tr>
+<!-- Rule 3: LCR -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10">
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Liquidity Coverage Ratio (LCR)</span>
+<span class="font-micro text-micro text-tertiary">BoT Liquidity Regulations 2024</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold text-primary">100.0% Min</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">105.0% Trigger</td>
+<td class="py-space-sm px-space-md">
+<span class="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-semibold uppercase">ENFORCED</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-tertiary">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span>Locked</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-micro text-on-surface-variant">
+<span>18 Nov 2025 • Policy Desk</span>
+</td>
+</tr>
+<!-- Rule 4: Gross NPL Ceiling -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 bg-surface-container-lowest">
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Gross Non-Performing Loans (NPL) Ceiling</span>
+<span class="font-micro text-micro text-tertiary">BoT Supervisory Guideline 14 on Asset Quality</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold text-error">5.0% Max</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-secondary">4.2% Amber Line</td>
+<td class="py-space-sm px-space-md">
+<span class="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-micro text-micro font-semibold uppercase">ENFORCED</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-tertiary">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span>Locked</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-micro text-on-surface-variant">
+<span>02 Feb 2026 • BSD On-Site</span>
+</td>
+</tr>
+<!-- Rule 5: Net Open FX Position -->
+<tr class="hover:bg-surface-container-low/60 transition-colors h-10 bg-secondary-fixed/10">
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Net Open FX Position Ratio</span>
+<span class="font-micro text-micro text-secondary font-medium">Proposed Tightening to 7.0%</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md font-semibold text-secondary">7.5% Core Cap</td>
+<td class="py-space-sm px-space-md font-data-mono-md text-data-mono-md text-tertiary">6.0% Proposed</td>
+<td class="py-space-sm px-space-md">
+<span class="px-1.5 py-0.5 rounded-sm bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-semibold uppercase">MAKER-CHECKER</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-secondary font-medium">
+<span class="material-symbols-outlined text-[14px]">history_edu</span>
+<span>Amber Review</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-data-mono-md text-micro text-secondary font-medium">
+<span>Pending Dr. Kimei PKI</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (35% = 4 cols on 12-col grid) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Module C: Maker-Checker Dual-Control Approval Queue -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">verified_user</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Dual-Control Queue</h2>
+</div>
+<span class="px-2 py-0.5 rounded-sm bg-secondary-fixed text-on-secondary-fixed font-micro text-micro font-bold uppercase tracking-wider">2 Pending Signature</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant -mt-space-xs">
+          Statutory safeguard requiring cryptographic co-signing from Chief Supervisory Analyst or Board delegate before engine parameter activation.
+        </p>
+<!-- Queue Item 1 -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-1.5 py-0.2 rounded-sm bg-secondary-fixed text-on-secondary-fixed font-data-mono-md text-micro font-bold uppercase">PRU-RULE-MOD #088</span>
+<span class="font-data-mono-md text-micro text-tertiary">Today 08:30 EAT</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-1">Tighten FX Net Open Position Ceiling from 7.5% to 7.0%</h3>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-tertiary">person</span>
+<span>Initiator: <strong>Amina Rashid</strong> (Risk Modeler)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-lowest p-space-xs rounded-lg mt-1">
+<strong>Rationale:</strong> Macroprudential volatility mitigation following USD/TZS quarterly FX fluctuation and interbank spread widening.
+          </p>
+<div class="flex items-center justify-between pt-space-xs mt-1">
+<span class="font-data-mono-md text-micro text-secondary font-medium">Awaiting Chief Approval</span>
+<div class="flex items-center gap-space-xs">
+<button class="h-7 px-space-sm bg-surface-container text-tertiary hover:text-error font-body-sm text-micro font-medium rounded-md transition-colors" type="button">
+                Reject
+              </button>
+<button class="h-7 px-space-sm bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary font-body-sm text-micro font-semibold rounded-md shadow-sm transition-all flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[13px]">key</span>
+<span>Approve &amp; Sign</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Queue Item 2 -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-1.5 py-0.2 rounded-sm bg-surface-container text-tertiary font-data-mono-md text-micro font-bold uppercase">SEC-VAULT-ACCESS #014</span>
+<span class="font-data-mono-md text-micro text-tertiary">Today 07:45 EAT</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-1">Temporary Vault Decryption Key: Lead Examiner</h3>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-tertiary">person</span>
+<span>Initiator: <strong>Sarah Mwamba</strong> (Senior Examiner)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-lowest p-space-xs rounded-lg mt-1">
+<strong>Purpose:</strong> Forensic deep-dive into Form 08-LGR unhedged mining consortium syndication credit facilities. Expire: 4 hours.
+          </p>
+<div class="flex items-center justify-between pt-space-xs mt-1">
+<span class="font-data-mono-md text-micro text-secondary font-medium">Awaiting Co-Sign</span>
+<div class="flex items-center gap-space-xs">
+<button class="h-7 px-space-sm bg-surface-container text-tertiary hover:text-error font-body-sm text-micro font-medium rounded-md transition-colors" type="button">
+                Reject
+              </button>
+<button class="h-7 px-space-sm bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary font-body-sm text-micro font-semibold rounded-md shadow-sm transition-all flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[13px]">key</span>
+<span>Approve &amp; Sign</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Module D: Immutable Cryptographic Audit Log (Merkle Hash Chain) -->
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl shadow-md p-space-lg flex flex-col gap-space-md">
+<!-- Live Merkle Hash Head -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed-dim">enhanced_encryption</span>
+<h2 class="font-headline-sm text-headline-sm text-surface-container-lowest">Merkle Hash Audit Ledger</h2>
+</div>
+<div class="flex items-center gap-1 font-data-mono-md text-micro text-primary-fixed-dim">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim animate-ping"></span>
+<span>LIVE SYNC</span>
+</div>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container-lowest/10 font-data-mono-md text-micro text-surface-dim flex items-center justify-between">
+<span class="truncate">Root: <strong>0x9f82...c31b</strong></span>
+<span class="px-1 py-0.2 rounded bg-primary-fixed/20 text-primary-fixed text-micro font-bold">HEIGHT #142,904</span>
+</div>
+</div>
+<!-- Telemetry Log Stream -->
+<div class="flex flex-col gap-space-sm font-data-mono-md text-micro">
+<!-- Log Entry 1 -->
+<div class="flex flex-col gap-0.5 p-space-xs rounded bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors">
+<div class="flex items-center justify-between text-secondary-fixed">
+<span>08:42:15 EAT</span>
+<span class="text-surface-dim truncate max-w-[130px]">Dr. M. Kimei</span>
+</div>
+<span class="text-primary-fixed-dim font-bold">EXCEPTION_ACKNOWLEDGED</span>
+<p class="text-inverse-on-surface font-body-sm text-micro line-clamp-2">Breach EXP-2026-089 (CRDB Bank) marked under desk investigation.</p>
+<div class="text-surface-dim/70 truncate text-[10px]">Hash: SHA256:a4f8e02d...82c9f0</div>
+</div>
+<!-- Log Entry 2 -->
+<div class="flex flex-col gap-0.5 p-space-xs rounded bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors">
+<div class="flex items-center justify-between text-secondary-fixed">
+<span>08:30:10 EAT</span>
+<span class="text-surface-dim truncate max-w-[130px]">Amina Rashid</span>
+</div>
+<span class="text-secondary-fixed font-bold">RULE_CHANGE_PROPOSED</span>
+<p class="text-inverse-on-surface font-body-sm text-micro line-clamp-2">Proposed threshold revision for Statutory Rule PRU-FX-01.</p>
+<div class="text-surface-dim/70 truncate text-[10px]">Hash: SHA256:e31c89ba...99b2aa</div>
+</div>
+<!-- Log Entry 3 -->
+<div class="flex flex-col gap-0.5 p-space-xs rounded bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors">
+<div class="flex items-center justify-between text-secondary-fixed">
+<span>08:14:02 EAT</span>
+<span class="text-surface-dim truncate max-w-[130px]">Ingestion Engine</span>
+</div>
+<span class="text-error font-bold">BATCH_VALIDATED_QUARANTINE</span>
+<p class="text-inverse-on-surface font-body-sm text-micro line-clamp-2">Form 08-LGR (Mwanga Hakika) quarantined with code ERR_04.</p>
+<div class="text-surface-dim/70 truncate text-[10px]">Hash: SHA256:c90a421b...11f430</div>
+</div>
+<!-- Log Entry 4 -->
+<div class="flex flex-col gap-0.5 p-space-xs rounded bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors">
+<div class="flex items-center justify-between text-secondary-fixed">
+<span>07:55:40 EAT</span>
+<span class="text-surface-dim truncate max-w-[130px]">System Daemon</span>
+</div>
+<span class="text-primary-fixed-dim font-bold">MTLS_KEY_ROTATION</span>
+<p class="text-inverse-on-surface font-body-sm text-micro line-clamp-2">X.509 Certificate renewed for node-bot-gw-01 cluster mesh.</p>
+<div class="text-surface-dim/70 truncate text-[10px]">Hash: SHA256:88bad7e2...77011d</div>
+</div>
+<!-- Log Entry 5 -->
+<div class="flex flex-col gap-0.5 p-space-xs rounded bg-surface-container-lowest/5 hover:bg-surface-container-lowest/10 transition-colors">
+<div class="flex items-center justify-between text-secondary-fixed">
+<span>07:12:00 EAT</span>
+<span class="text-surface-dim truncate max-w-[130px]">Dr. M. Kimei</span>
+</div>
+<span class="text-surface-container-lowest font-bold">USER_SESSION_MFA</span>
+<p class="text-inverse-on-surface font-body-sm text-micro line-clamp-2">Hardware-bound session initiated via BoT Airgapped Terminal #04.</p>
+<div class="text-surface-dim/70 truncate text-[10px]">Hash: SHA256:12de6f33...5501ae</div>
+</div>
+</div>
+<button class="w-full py-space-xs bg-surface-container-lowest/10 hover:bg-surface-container-lowest/20 text-surface-container-lowest rounded-lg font-data-mono-md text-micro transition-colors flex items-center justify-center gap-space-xs mt-space-xs" type="button">
+<span class="material-symbols-outlined text-[14px]">download</span>
+<span>Download Cryptographic Ledger (.JSON-LD)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sovereign Institutional Compliance Footer -->
+<div class="mt-space-lg p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-primary">policy</span>
+<p class="leading-relaxed">
+<strong>Bank of Tanzania SupTech Infrastructure</strong> complies with Basel Committee on Banking Supervision (BCBS) SupTech standards, ISO 27001 Information Security, and the Tanzania Cybercrimes Act 2015. Dual-control governance enforced on all statutory rule mutations.
+      </p>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0 font-data-mono-md text-data-mono-md text-tertiary">
+<span>FIPS 140-3 HSM Active</span>
+<span>•</span>
+<span>VPC Isolated Node #04</span>
+</div>
+</div>
+</div></main></div></body></html>

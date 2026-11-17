@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#d2d9f4", "tertiary": "#545f74", "surface-container": "#eaedff", "on-tertiary-fixed-variant": "#3c475b", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00201c", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#4fdbc8", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#bcc7df", "primary": "#006b5f", "tertiary-container": "#99a4bc", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#faf8ff", "primary-fixed": "#71f8e4", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#004c69", "error": "#ba1a1a", "outline-variant": "#bbcac6", "inverse-primary": "#4fdbc8", "outline": "#6c7a77", "surface": "#faf8ff", "on-tertiary": "#ffffff", "surface-container-high": "#e2e7ff", "on-surface": "#131b2e", "secondary-fixed": "#c4e7ff", "on-surface-variant": "#3c4947", "on-secondary-fixed": "#001e2c", "on-tertiary-fixed": "#111c2e", "on-primary-fixed-variant": "#005048", "background": "#faf8ff", "on-primary-container": "#00423b", "on-error-container": "#93000a", "inverse-surface": "#283044", "secondary-fixed-dim": "#7bd0ff", "secondary-container": "#40c2fd", "on-secondary-container": "#004d6a", "primary-container": "#14b8a6", "secondary": "#00668a", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "tertiary-fixed": "#d8e3fc", "surface-tint": "#006b5f", "on-background": "#131b2e", "on-secondary": "#ffffff", "on-tertiary-container": "#303a4e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-xs": "0.25rem", "margin": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-mobile": "1rem", "gutter-dense": "0.5rem", "space-xl": "2rem", "space-sm": "0.375rem", "gutter": "1rem" }, "fontFamily": { "body-lg": [ "Inter" ], "headline-lg": [ "Geist" ], "label-caps": [ "Geist" ], "display": [ "Geist" ], "data-mono-lg": [ "JetBrains Mono" ], "micro": [ "Inter" ], "headline-sm": [ "Geist" ], "data-mono-md": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "headline-md": [ "Geist" ], "body-sm": [ "Inter" ] }, "fontSize": { "body-lg": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "display": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "data-mono-lg": [ "14px", { "lineHeight": "18px", "letterSpacing": "-0.02em", "fontWeight": "500" } ], "micro": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "headline-sm": [ "15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "data-mono-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-md": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.08)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between bg-inverse-surface"><div class="flex items-center gap-space-sm"><img alt="SupTech Monitor Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrB1W6zcHzlb_ss0hCtCxameWhXWvbxZ5h00_XtevKfxyOoDrLuVu2TDY6pM-HnzSP4tXtqcvLX7NRctROiLzAnrO9o1otXsPAxoR0pDw6XaALF5Ix0edSGpW-ZGg0ZC1Vjop1ASaVkdLGCEZ8cdo6cMpj_J7XhVUJOfhxDQaUUu_FSgIzo8feNJNmrKL9K3IgHbnsAF_ssGfmA7Xz1JVwZ8Bmhmk72AgM62Aek1C_rXow"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-surface-container-lowest tracking-tight">SupTech Monitor</span><span class="font-micro text-micro text-secondary-container tracking-wider uppercase">Supervisory Intelligence</span></div></div><span class="px-space-xs py-0.5 rounded-sm bg-surface-variant/20 text-inverse-on-surface font-micro text-micro font-medium">PoC</span></div><div class="px-space-md py-space-xs"><div class="px-space-xs py-space-xs font-label-caps text-label-caps uppercase text-surface-dim/70 tracking-wider">Supervisory Console</div></div><nav class="flex flex-col gap-space-xs px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-headline-sm rounded-lg"><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span>Overview</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="institutions" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Institutions</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-colors bg-primary-container text-on-primary-container font-headline-sm rounded-lg" data-path="supervisory-analytics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Supervisory Analytics</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="exceptions-and-alerts" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">crisis_alert</span><span>Exceptions &amp; Alerts</span></div><span class="px-space-xs py-0.5 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md">14</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="custom-reports" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">description</span><span>Custom Reports</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="data-explorer" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">table_chart</span><span>Data Explorer</span></div></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="ai-supervisory-assistant" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">psychology</span><span>AI Supervisory Assistant</span></div><span class="px-space-xs py-0.5 rounded-lg bg-primary text-on-primary font-micro text-micro">Copilot</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="integrations-and-system-health" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">sync_alt</span><span>Integrations &amp; System Health</span></div><span class="w-2 h-2 rounded-full bg-primary-fixed"></span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg font-body-md text-body-md text-surface-dim hover:bg-surface-variant/20 hover:text-surface-container-lowest transition-colors" data-path="administration-and-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">tune</span><span>Administration &amp; Settings</span></div></a></nav></div><div class="p-space-md m-space-sm rounded-xl bg-surface-container-lowest/10 backdrop-blur-xl"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps uppercase text-surface-dim">Environment</span><span class="font-data-mono-md text-data-mono-md text-secondary-fixed">BoT Staging v2.4</span></div><div class="flex items-center gap-space-xs"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span><span class="font-micro text-micro text-surface-dim">Realtime Telemetry Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Supervision Engine</span><span class="text-outline">/</span><span>Bank of Tanzania</span><span class="text-outline">/</span><span class="text-primary font-medium">Prudential Return Monitoring</span></div></div><div class="flex-1 max-w-md mx-margin"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-full h-8 pl-9 pr-14 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest" placeholder="Quick search institution, indicator, licence, exception ID..." type="text"/><span class="absolute right-space-sm px-space-xs py-0.5 rounded-sm bg-surface-container font-data-mono-md text-data-mono-md text-on-surface-variant pointer-events-none">Ctrl+K</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-md h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm"><span class="material-symbols-outlined text-[16px] text-outline">event</span><span>2026 Q3 — Oct Cycle</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="flex items-center gap-space-xs px-space-sm h-8 rounded-lg bg-primary-fixed/20 text-on-primary-fixed-variant font-data-mono-md text-data-mono-md"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span><span>Live Stream • 24ms</span></div><div class="relative flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-error text-on-error font-data-mono-md text-data-mono-md flex items-center justify-center text-[10px]">3</span></div><div class="flex items-center justify-center w-8 h-8 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined text-[20px]">help_outline</span></div><div class="flex items-center gap-space-sm pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_MLxFzv9C_m29Rehhcl9BNiBJCc_EZGvIRcVi4FzeDb3r3HoL0XQHv-REKzIK2vPqomezFmkbfhUFVuOXzsUp5uhz7I233ZhMSmwYEzKXoxo0AOBgDbhbe7mSo1pdfliKgdiqaXViieRYdpDW4yeHfyeF69QlY9P5sLs4LIwWZKpTPI1y1UIt4Fy_BRUlGqO0IuEeAmgZA_V3qMAOwQZpy6sbeRZXoXGNJNZZZyKn"/><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-headline-sm leading-tight text-on-surface">Dr. M. Kimei</span><span class="font-micro text-micro text-on-surface-variant leading-tight">Chief Supervisory Analyst • BoT - BSD</span></div><span class="material-symbols-outlined text-[18px] text-outline">expand_more</span></div></div></header><main class="relative pt-16 w-full bg-surface px-gutter min-h-screen"><div class="flex flex-col w-full">
+<!-- Analytics Control Header -->
+<div class="flex flex-col gap-space-md py-space-md">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs font-label-caps text-label-caps uppercase tracking-wider text-primary font-semibold mb-1">
+<span class="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
+          Supervisory Intelligence Canvas • Sectoral Pulse
+        </div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">Supervisory Analytics &amp; Stress Indicators</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">Prudential ratios, sector-wide liquidity distribution, and automated anomaly detection models across 54 regulated financial institutions.</p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-sm self-start lg:self-auto">
+<button class="h-8 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-body-sm text-body-sm font-medium shadow-sm transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">file_download</span>
+          Export Analytical Workbook (XLSX)
+        </button>
+<button class="h-8 px-space-md rounded-lg bg-primary-container hover:bg-primary text-on-primary font-body-sm text-body-sm font-semibold shadow-sm transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">assignment_turned_in</span>
+          Generate Supervisory Memorandum
+        </button>
+</div>
+</div>
+<!-- Global Analytical Filter Bar -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-sm flex-1">
+<!-- Institution Selector -->
+<div class="flex items-center gap-1.5 px-space-sm h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">account_balance</span>
+<span class="font-medium">Institutions:</span>
+<span class="font-semibold text-primary">All Supervised (54)</span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-pointer">arrow_drop_down</span>
+</div>
+<!-- Supervisory Cluster -->
+<div class="flex items-center gap-1.5 px-space-sm h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">hub</span>
+<span class="font-medium">Cluster:</span>
+<span class="font-semibold text-on-surface">Commercial Banks (D-SIBs &amp; Peers)</span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-pointer">arrow_drop_down</span>
+</div>
+<!-- Prudential Category -->
+<div class="flex items-center gap-1.5 px-space-sm h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">shield</span>
+<span class="font-medium">Category:</span>
+<span class="font-semibold text-on-surface">Capital &amp; Asset Quality (CAMELS)</span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-pointer">arrow_drop_down</span>
+</div>
+<!-- Period -->
+<div class="flex items-center gap-1.5 px-space-sm h-8 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">date_range</span>
+<span class="font-medium">Horizon:</span>
+<span class="font-data-mono-md text-data-mono-md text-secondary font-medium">2025 Q1 — 2026 Q3 (7Q)</span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-pointer">arrow_drop_down</span>
+</div>
+</div>
+<!-- View Toggle Mode -->
+<div class="flex items-center bg-surface-container-low p-0.5 rounded-lg shrink-0">
+<button class="px-space-sm py-1 rounded-md bg-surface-container-lowest shadow-sm font-headline-sm text-headline-sm text-primary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">dashboard_customize</span>
+<span>Composite</span>
+</button>
+<button class="px-space-sm py-1 rounded-md font-body-sm text-body-sm text-tertiary hover:text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">grid_view</span>
+<span>Matrix</span>
+</button>
+<button class="px-space-sm py-1 rounded-md font-body-sm text-body-sm text-tertiary hover:text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">table_rows</span>
+<span>Tabular</span>
+</button>
+<button class="px-space-sm py-1 rounded-md font-body-sm text-body-sm text-tertiary hover:text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">storm</span>
+<span>Stress Test</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sector Top-line Macro Kpis Banner -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter mb-gutter">
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Sector Total Assets</span>
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</div>
+<div class="my-space-xs">
+<div class="font-data-mono-lg text-headline-lg font-semibold text-on-surface">TZS 52.41<span class="text-tertiary text-body-sm font-normal ml-0.5">T</span></div>
+<div class="flex items-center gap-1 mt-0.5 font-micro text-micro text-primary">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="font-semibold">+8.4%</span>
+<span class="text-tertiary">Y-o-Y expansion</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[78%]"></div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Aggregate CAR Buffer</span>
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div class="my-space-xs">
+<div class="font-data-mono-lg text-headline-lg font-semibold text-primary">17.2%<span class="text-tertiary text-body-sm font-normal ml-1">vs 12.0% Min</span></div>
+<div class="flex items-center gap-1 mt-0.5 font-micro text-micro text-primary">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+<span class="font-semibold">+520 bps</span>
+<span class="text-tertiary">over regulatory floor</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[84%]"></div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Gross NPL Ratio</span>
+<span class="material-symbols-outlined text-[18px]">report_problem</span>
+</div>
+<div class="my-space-xs">
+<div class="font-data-mono-lg text-headline-lg font-semibold text-on-surface">4.62%<span class="text-error text-body-sm font-normal ml-1">Ceiling 5.0%</span></div>
+<div class="flex items-center gap-1 mt-0.5 font-micro text-micro text-primary">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+<span class="font-semibold">-18 bps</span>
+<span class="text-tertiary">improving from Q2</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%]"></div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Weighted LCR Ratio</span>
+<span class="material-symbols-outlined text-[18px]">water_drop</span>
+</div>
+<div class="my-space-xs">
+<div class="font-data-mono-lg text-headline-lg font-semibold text-secondary">142.5%<span class="text-tertiary text-body-sm font-normal ml-1">Baseline 100%</span></div>
+<div class="flex items-center gap-1 mt-0.5 font-micro text-micro text-primary">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-semibold">Robust</span>
+<span class="text-tertiary">49/54 institutions compliant</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[91%]"></div>
+</div>
+</div>
+</div>
+<!-- Analytical Visualizations 2x2 Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter mb-gutter">
+<!-- Chart A: Sector Total Deposits vs Gross Loans Trajectory -->
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col">
+<div class="flex items-start justify-between mb-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Sector Total Deposits vs Gross Loans Trajectory</h2>
+<span class="px-1.5 py-0.5 rounded-sm bg-surface-container text-tertiary font-label-caps text-label-caps uppercase">TZS Trillions</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deposit mobilization vs credit growth &amp; Loan-to-Deposit Ratio (LDR) statutory band (70% - 85%).</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 font-micro text-micro text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span> Deposits
+            <span class="w-2.5 h-2.5 rounded-sm bg-secondary-container ml-2"></span> Loans
+            <span class="w-2 h-0.5 bg-error ml-2"></span> LDR
+          </div>
+</div>
+</div>
+<!-- Chart Canvas Inline SVG -->
+<div class="relative w-full h-64 pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 540 220">
+<!-- Grid Lines -->
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3,3" x1="30" x2="510" y1="20" y2="20"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3,3" x1="30" x2="510" y1="65" y2="65"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3,3" x1="30" x2="510" y1="110" y2="110"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3,3" x1="30" x2="510" y1="155" y2="155"></line>
+<line class="text-surface-variant" stroke="currentColor" x1="30" x2="510" y1="195" y2="195"></line>
+<!-- Y-Axis Labels -->
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="24" y="24">36T</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="24" y="69">32T</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="24" y="114">28T</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="24" y="159">24T</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="24" y="198">20T</text>
+<!-- 7-Quarter Clustered Bars (Deposits & Loans) -->
+<!-- Q1 2025 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="91" rx="2" width="16" x="55" y="104"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="53" rx="2" width="16" x="73" y="142"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="72" y="210">Q1 '25</text>
+<!-- Q2 2025 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="101" rx="2" width="16" x="120" y="94"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="63" rx="2" width="16" x="138" y="132"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="137" y="210">Q2 '25</text>
+<!-- Q3 2025 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="113" rx="2" width="16" x="185" y="82"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="75" rx="2" width="16" x="203" y="120"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="202" y="210">Q3 '25</text>
+<!-- Q4 2025 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="127" rx="2" width="16" x="250" y="68"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="90" rx="2" width="16" x="268" y="105"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="267" y="210">Q4 '25</text>
+<!-- Q1 2026 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="140" rx="2" width="16" x="315" y="55"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="102" rx="2" width="16" x="333" y="93"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="332" y="210">Q1 '26</text>
+<!-- Q2 2026 -->
+<rect class="fill-primary/80 hover:fill-primary transition-all" height="151" rx="2" width="16" x="380" y="44"></rect>
+<rect class="fill-secondary-container/80 hover:fill-secondary-container transition-all" height="115" rx="2" width="16" x="398" y="80"></rect>
+<text class="fill-tertiary text-[10px] font-data-mono-md" text-anchor="middle" x="397" y="210">Q2 '26</text>
+<!-- Q3 2026 -->
+<rect class="fill-primary hover:brightness-110 transition-all" height="163" rx="2" width="16" x="445" y="32"></rect>
+<rect class="fill-secondary-container hover:brightness-110 transition-all" height="127" rx="2" width="16" x="463" y="68"></rect>
+<text class="fill-primary font-semibold text-[10px] font-data-mono-md" text-anchor="middle" x="462" y="210">Q3 '26</text>
+<!-- LDR Trend Line (Secondary Axis: 77.5% -> 81.3%) -->
+<path class="text-error" d="M 72 135 L 137 131 L 202 127 L 267 122 L 332 118 L 397 114 L 462 109" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+<circle class="fill-surface-container-lowest stroke-error" cx="72" cy="135" r="3.5" stroke-width="2"></circle>
+<circle class="fill-surface-container-lowest stroke-error" cx="137" cy="131" r="3.5" stroke-width="2"></circle>
+<circle class="fill-surface-container-lowest stroke-error" cx="202" cy="127" r="3.5" stroke-width="2"></circle>
+<circle class="fill-surface-container-lowest stroke-error" cx="267" cy="122" r="3.5" stroke-width="2"></circle>
+<circle class="fill-surface-container-lowest stroke-error" cx="332" cy="118" r="3.5" stroke-width="2"></circle>
+<circle class="fill-surface-container-lowest stroke-error" cx="397" cy="114" r="3.5" stroke-width="2"></circle>
+<circle class="fill-error stroke-surface-container-lowest" cx="462" cy="109" r="4.5" stroke-width="1.5"></circle>
+<!-- Value Tag at latest point -->
+<rect class="fill-inverse-surface" height="18" rx="3" width="44" x="440" y="85"></rect>
+<text class="fill-inverse-on-surface text-[9px] font-data-mono-md font-semibold" text-anchor="middle" x="462" y="97">81.3%</text>
+</svg>
+</div>
+<!-- Footer Micro-Metrics -->
+<div class="pt-space-sm mt-space-xs flex items-center justify-between font-micro text-micro text-tertiary">
+<span>Deposits: <b class="text-on-surface font-data-mono-md">TZS 34.22T</b> (+19.9% 7Q)</span>
+<span>Gross Credit: <b class="text-on-surface font-data-mono-md">TZS 27.81T</b> (+25.8% 7Q)</span>
+<span>LDR Ceiling: <b class="text-error font-data-mono-md">85.0%</b> (Safe range)</span>
+</div>
+</div>
+<!-- Chart B: CAR & Tier 1 Capital Distribution (Top 10 D-SIBs & Peers) -->
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col">
+<div class="flex items-start justify-between mb-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Capital Adequacy Ratio (CAR) &amp; Tier 1 Capital</h2>
+<span class="px-1.5 py-0.5 rounded-sm bg-primary-fixed/30 text-on-primary-fixed-variant font-label-caps text-label-caps uppercase">10 D-SIBs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Statutory Minimum 12.0% | Supervisory Comfort Benchmark 14.5%.</p>
+</div>
+<div class="flex items-center gap-2 font-micro text-micro text-tertiary">
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-primary"></span> CAR Total</span>
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-primary-fixed-dim"></span> Tier 1</span>
+</div>
+</div>
+<div class="relative w-full h-64 pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 540 220">
+<!-- Guide lines -->
+<line class="text-surface-variant" stroke="currentColor" x1="60" x2="520" y1="185" y2="185"></line>
+<!-- Statutory Line 12% (Y = 125) -->
+<line class="text-error" stroke="currentColor" stroke-dasharray="4,3" stroke-width="1.5" x1="60" x2="520" y1="125" y2="125"></line>
+<text class="fill-error text-[9px] font-data-mono-md font-semibold" x="525" y="128">12.0% Min</text>
+<!-- Comfort Line 14.5% (Y = 95) -->
+<line class="text-primary-container" stroke="currentColor" stroke-dasharray="4,3" stroke-width="1.5" x1="60" x2="520" y1="95" y2="95"></line>
+<text class="fill-primary text-[9px] font-data-mono-md font-semibold" x="525" y="98">14.5% Benchmark</text>
+<!-- Y ticks -->
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="52" y="188">8%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="52" y="128">12%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="52" y="68">16%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="52" y="28">20%</text>
+<!-- Bank Bars (CRDB, NMB, NBC, Stanbic, DTB, SCB, Exim, KCB, Absa, Diamond) -->
+<!-- 1. CRDB (19.4%) -->
+<rect class="fill-primary" height="153" rx="1.5" width="13" x="75" y="32"></rect>
+<rect class="fill-primary-fixed-dim" height="120" rx="1.5" width="13" x="90" y="65"></rect>
+<text class="fill-on-surface text-[9px] font-semibold" text-anchor="middle" x="89" y="198">CRDB</text>
+<!-- 2. NMB (21.2%) -->
+<rect class="fill-primary" height="167" rx="1.5" width="13" x="118" y="18"></rect>
+<rect class="fill-primary-fixed-dim" height="137" rx="1.5" width="13" x="133" y="48"></rect>
+<text class="fill-on-surface text-[9px] font-semibold" text-anchor="middle" x="132" y="198">NMB</text>
+<!-- 3. NBC (16.8%) -->
+<rect class="fill-primary" height="117" rx="1.5" width="13" x="161" y="68"></rect>
+<rect class="fill-primary-fixed-dim" height="93" rx="1.5" width="13" x="176" y="92"></rect>
+<text class="fill-on-surface text-[9px] font-semibold" text-anchor="middle" x="175" y="198">NBC</text>
+<!-- 4. STANBIC (15.5%) -->
+<rect class="fill-primary" height="103" rx="1.5" width="13" x="204" y="82"></rect>
+<rect class="fill-primary-fixed-dim" height="77" rx="1.5" width="13" x="219" y="108"></rect>
+<text class="fill-on-surface text-[9px]" text-anchor="middle" x="218" y="198">STNB</text>
+<!-- 5. DTB (14.8%) -->
+<rect class="fill-primary" height="94" rx="1.5" width="13" x="247" y="91"></rect>
+<rect class="fill-primary-fixed-dim" height="70" rx="1.5" width="13" x="262" y="115"></rect>
+<text class="fill-on-surface text-[9px]" text-anchor="middle" x="261" y="198">DTB</text>
+<!-- 6. SCB (17.5%) -->
+<rect class="fill-primary" height="123" rx="1.5" width="13" x="290" y="62"></rect>
+<rect class="fill-primary-fixed-dim" height="97" rx="1.5" width="13" x="305" y="88"></rect>
+<text class="fill-on-surface text-[9px]" text-anchor="middle" x="304" y="198">SCB</text>
+<!-- 7. EXIM (13.4% - Buffer alert) -->
+<rect class="fill-on-secondary-fixed-variant" height="78" rx="1.5" width="13" x="333" y="107"></rect>
+<rect class="fill-surface-dim" height="53" rx="1.5" width="13" x="348" y="132"></rect>
+<text class="fill-error font-semibold text-[9px]" text-anchor="middle" x="347" y="198">EXIM*</text>
+<!-- 8. KCB (15.9%) -->
+<rect class="fill-primary" height="107" rx="1.5" width="13" x="376" y="78"></rect>
+<rect class="fill-primary-fixed-dim" height="83" rx="1.5" width="13" x="391" y="102"></rect>
+<text class="fill-on-surface text-[9px]" text-anchor="middle" x="390" y="198">KCB</text>
+<!-- 9. ABSA (16.2%) -->
+<rect class="fill-primary" height="111" rx="1.5" width="13" x="419" y="74"></rect>
+<rect class="fill-primary-fixed-dim" height="86" rx="1.5" width="13" x="434" y="99"></rect>
+<text class="fill-on-surface text-[9px]" text-anchor="middle" x="433" y="198">ABSA</text>
+<!-- 10. TCB (12.4% - Critical Threshold) -->
+<rect class="fill-error" height="65" rx="1.5" width="13" x="462" y="120"></rect>
+<rect class="fill-error-container" height="40" rx="1.5" width="13" x="477" y="145"></rect>
+<text class="fill-error font-bold text-[9px]" text-anchor="middle" x="476" y="198">TCB*</text>
+</svg>
+</div>
+<div class="pt-space-sm mt-space-xs flex items-center justify-between font-micro text-micro">
+<span class="text-tertiary">Top 10 concentration: <b class="text-on-surface font-data-mono-md">76.8% of sector capital</b></span>
+<span class="text-error flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+          2 entities near/in buffer zone (EXIM 13.4%, TCB 12.4%)
+        </span>
+</div>
+</div>
+<!-- Chart C: NPL Ratio Trajectory vs Sector Ceiling (5.0%) -->
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col">
+<div class="flex items-start justify-between mb-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Non-Performing Loans (NPL) Ratio Trajectory</h2>
+<span class="px-1.5 py-0.5 rounded-sm bg-error-container text-on-error-container font-label-caps text-label-caps uppercase">Statutory Ceiling 5.0%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Asset quality progression across 24 rolling months with interquartile dispersion bands.</p>
+</div>
+<div class="flex items-center gap-2 font-micro text-micro text-tertiary">
+<span class="flex items-center gap-1"><span class="w-2.5 h-2 bg-primary/20 rounded"></span> P25-P75 Band</span>
+<span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-primary"></span> Weighted Avg</span>
+</div>
+</div>
+<div class="relative w-full h-64 pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 540 220">
+<defs>
+<lineargradient id="nplBandGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#14b8a6" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#14b8a6" stop-opacity="0.03"></stop>
+</lineargradient>
+</defs>
+<!-- Grid -->
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="2,2" x1="40" x2="520" y1="30" y2="30"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="2,2" x1="40" x2="520" y1="75" y2="75"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="2,2" x1="40" x2="520" y1="120" y2="120"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="2,2" x1="40" x2="520" y1="165" y2="165"></line>
+<line class="text-surface-variant" stroke="currentColor" x1="40" x2="520" y1="195" y2="195"></line>
+<!-- Regulatory Ceiling 5.0% (Y = 110) -->
+<line class="text-error" stroke="currentColor" stroke-dasharray="6,3" stroke-width="1.75" x1="40" x2="520" y1="110" y2="110"></line>
+<rect class="fill-error-container" height="18" rx="2" width="75" x="445" y="98"></rect>
+<text class="fill-on-error-container text-[9px] font-data-mono-md font-bold" text-anchor="middle" x="482" y="110">5.0% MAX CEILING</text>
+<!-- Y-axis -->
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="34" y="33">8.0%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="34" y="78">6.5%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="34" y="113">5.0%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="34" y="158">3.5%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="34" y="198">2.0%</text>
+<!-- Dispersion Range Area (P75 top path, P25 bottom path reversed) -->
+<path d="M 50 82 L 120 86 L 190 92 L 260 98 L 330 102 L 400 107 L 470 114 L 510 116 L 510 186 L 470 184 L 400 181 L 330 178 L 260 175 L 190 171 L 120 168 L 50 166 Z" fill="url(#nplBandGradient)"></path>
+<!-- Top Vulnerable Quartile line (P75) -->
+<path class="text-tertiary" d="M 50 82 L 120 86 L 190 92 L 260 98 L 330 102 L 400 107 L 470 114 L 510 116" fill="none" stroke="currentColor" stroke-dasharray="3,2" stroke-width="1.2"></path>
+<!-- Best Performing Decile line (P10) -->
+<path class="text-primary-fixed-dim" d="M 50 176 L 120 179 L 190 182 L 260 185 L 330 186 L 400 187 L 470 188 L 510 189" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+<!-- Sector Weighted Average Main Curve (6.4% -> 4.62%) -->
+<path class="text-primary" d="M 50 94 Q 120 102 190 112 T 330 122 T 470 128 T 510 130" fill="none" stroke="currentColor" stroke-width="3"></path>
+<!-- Points on line -->
+<circle class="fill-primary" cx="50" cy="94" r="3"></circle>
+<circle class="fill-primary" cx="120" cy="102" r="3"></circle>
+<circle class="fill-primary" cx="190" cy="112" r="3"></circle>
+<circle class="fill-primary" cx="260" cy="118" r="3"></circle>
+<circle class="fill-primary" cx="330" cy="122" r="3"></circle>
+<circle class="fill-primary" cx="400" cy="125" r="3"></circle>
+<circle class="fill-primary" cx="470" cy="128" r="3"></circle>
+<circle class="fill-primary stroke-surface-container-lowest" cx="510" cy="130" r="4.5" stroke-width="2"></circle>
+<!-- Callout Tag on latest point -->
+<rect class="fill-inverse-surface" height="20" rx="3" width="60" x="460" y="142"></rect>
+<text class="fill-inverse-on-surface text-[10px] font-data-mono-md font-semibold" text-anchor="middle" x="490" y="156">4.62% Avg</text>
+<!-- Timeline labels -->
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="50" y="210">Oct '24</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="142" y="210">Feb '25</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="234" y="210">Jun '25</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="326" y="210">Oct '25</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="418" y="210">Feb '26</text>
+<text class="fill-primary font-semibold text-[9px] font-data-mono-md" text-anchor="middle" x="505" y="210">Oct '26</text>
+</svg>
+</div>
+<div class="pt-space-sm mt-space-xs flex items-center justify-between font-micro text-micro">
+<span class="text-tertiary">Dispersion: <b class="text-on-surface font-data-mono-md">2.4% (Top Decile) — 6.8% (Vulnerable)</b></span>
+<span class="text-primary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+          Sector compliance restored (-178 bps over 24M)
+        </span>
+</div>
+</div>
+<!-- Chart D: LCR vs NSFR Liquidity Stress Distribution Quadrant -->
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col">
+<div class="flex items-start justify-between mb-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">LCR &amp; NSFR Liquidity Resilience Matrix</h2>
+<span class="px-1.5 py-0.5 rounded-sm bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps uppercase">Basel III Standards</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">X-Axis: Liquidity Coverage (LCR) | Y-Axis: Net Stable Funding (NSFR).</p>
+</div>
+<div class="flex items-center gap-2 font-micro text-micro text-tertiary">
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span> D-SIBs</span>
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Tier 2</span>
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-error"></span> Outliers</span>
+</div>
+</div>
+<div class="relative w-full h-64 pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 540 220">
+<!-- Quadrant Shading -->
+<!-- Stress Quadrant Bottom-Left (LCR < 100% OR NSFR < 100%) -->
+<rect class="fill-error/5" height="75" width="180" x="45" y="115"></rect>
+<text class="fill-error/40 font-headline-sm text-headline-sm uppercase font-bold tracking-widest" text-anchor="middle" x="135" y="160">Stress Zone</text>
+<!-- Safe Quadrant Top-Right (LCR >= 100% AND NSFR >= 100%) -->
+<rect class="fill-primary/5" height="90" width="285" x="225" y="25"></rect>
+<text class="fill-primary/40 font-headline-sm text-headline-sm uppercase font-bold tracking-widest" text-anchor="middle" x="365" y="65">Optimal Resilience</text>
+<!-- Threshold Axes Lines (100% LCR = X: 225, 100% NSFR = Y: 115) -->
+<line class="text-error" stroke="currentColor" stroke-dasharray="4,3" stroke-width="1.5" x1="225" x2="225" y1="20" y2="190"></line>
+<line class="text-error" stroke="currentColor" stroke-dasharray="4,3" stroke-width="1.5" x1="45" x2="510" y1="115" y2="115"></line>
+<!-- X and Y ticks -->
+<text class="fill-error text-[9px] font-data-mono-md font-bold" text-anchor="end" x="40" y="118">100%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="40" y="45">140%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="end" x="40" y="185">60%</text>
+<text class="fill-error text-[9px] font-data-mono-md font-bold" text-anchor="middle" x="225" y="202">100% LCR Min</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="110" y="202">50%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="360" y="202">150%</text>
+<text class="fill-tertiary text-[9px] font-data-mono-md" text-anchor="middle" x="480" y="202">200%</text>
+<!-- Bubble Clusters: Safe Quadrant -->
+<!-- CRDB: LCR 155, NSFR 122 -->
+<circle class="fill-primary/80 stroke-primary-fixed" cx="370" cy="62" r="14" stroke-width="1.5"></circle>
+<text class="fill-on-primary text-[8px] font-bold" text-anchor="middle" x="370" y="65">CRDB</text>
+<!-- NMB: LCR 182, NSFR 130 -->
+<circle class="fill-primary/80 stroke-primary-fixed" cx="430" cy="45" r="16" stroke-width="1.5"></circle>
+<text class="fill-on-primary text-[8px] font-bold" text-anchor="middle" x="430" y="48">NMB</text>
+<!-- NBC: LCR 138, NSFR 112 -->
+<circle class="fill-primary/70" cx="330" cy="85" r="10"></circle>
+<text class="fill-on-primary text-[7px] font-semibold" text-anchor="middle" x="330" y="88">NBC</text>
+<!-- DTB: LCR 125, NSFR 118 -->
+<circle class="fill-secondary/70" cx="300" cy="76" r="9"></circle>
+<text class="fill-on-secondary text-[7px]" text-anchor="middle" x="300" y="79">DTB</text>
+<!-- STANBIC: LCR 145, NSFR 115 -->
+<circle class="fill-secondary/70" cx="350" cy="80" r="10"></circle>
+<text class="fill-on-secondary text-[7px]" text-anchor="middle" x="350" y="83">STNB</text>
+<!-- Multiple smaller Tier 2 institutions -->
+<circle class="fill-secondary/60" cx="280" cy="95" r="6"></circle>
+<circle class="fill-secondary/60" cx="260" cy="70" r="7"></circle>
+<circle class="fill-secondary/60" cx="390" cy="90" r="6.5"></circle>
+<circle class="fill-secondary/60" cx="450" cy="80" r="7.5"></circle>
+<circle class="fill-secondary/60" cx="310" cy="45" r="6"></circle>
+<!-- Outliers in Warning/Stress quadrants -->
+<!-- Outlier A: Mwanga Community Bank (LCR 88%, NSFR 105%) -->
+<circle class="fill-error/90 stroke-surface-container-lowest" cx="190" cy="102" r="7" stroke-width="1"></circle>
+<text class="fill-error text-[8px] font-data-mono-md font-bold" text-anchor="middle" x="190" y="92">MCB</text>
+<!-- Outlier B: Uchumi Com Bank (LCR 92%, NSFR 89%) -->
+<circle class="fill-error/90 stroke-surface-container-lowest" cx="205" cy="145" r="7.5" stroke-width="1"></circle>
+<text class="fill-error text-[8px] font-data-mono-md font-bold" text-anchor="middle" x="205" y="160">UCB</text>
+<!-- Outlier C: Yetu Microfinance (LCR 112%, NSFR 93%) -->
+<circle class="fill-error/90 stroke-surface-container-lowest" cx="265" cy="135" r="6" stroke-width="1"></circle>
+<text class="fill-error text-[8px] font-data-mono-md font-bold" text-anchor="middle" x="265" y="150">YETU</text>
+</svg>
+</div>
+<div class="pt-space-sm mt-space-xs flex items-center justify-between font-micro text-micro">
+<span class="text-tertiary">Safe Quadrant: <b class="text-primary font-data-mono-md">51 / 54 (94.4%)</b></span>
+<span class="text-error font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">crisis_alert</span>
+          3 institutions in Basel III liquidity stress zone
+        </span>
+</div>
+</div>
+</div>
+<!-- Detailed Quantitative Indicator Register Table -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm mb-gutter overflow-hidden flex flex-col">
+<!-- Table Header & Controls -->
+<div class="px-space-lg py-space-md bg-surface-container-lowest flex flex-col md:flex-row md:items-center justify-between gap-space-sm border-b border-surface-container">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Prudential Metric Register &amp; Anomaly Flagging</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active supervisory thresholds, sector distributions, and automated econometric Z-Score breaches.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="relative">
+<input class="h-8 pl-8 pr-3 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest w-48 text-[12px]" placeholder="Filter indicator code..." type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-2 text-[16px] text-outline">search</span>
+</div>
+<button class="h-8 px-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+          Filter Breaches (7)
+        </button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-md text-body-md border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase h-8 tracking-wider">
+<th class="px-space-md py-space-xs font-semibold">Indicator Code &amp; Description</th>
+<th class="px-space-md py-space-xs font-semibold text-right">Regulatory Limit</th>
+<th class="px-space-md py-space-xs font-semibold text-right">Sector Wtd. Avg</th>
+<th class="px-space-md py-space-xs font-semibold text-right">Q-o-Q Delta</th>
+<th class="px-space-md py-space-xs font-semibold">Variance &amp; Outlier Count</th>
+<th class="px-space-md py-space-xs font-semibold">Anomaly Model Flag</th>
+<th class="px-space-md py-space-xs font-semibold text-right">Supervisory Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: Capital Adequacy -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-10 group">
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">PRU-CAR-01</span>
+<span class="font-body-sm text-body-sm text-tertiary">Total Capital Adequacy Ratio (CAR)</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-medium text-on-surface">≥ 12.0%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-semibold text-primary">17.2%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md text-primary font-medium">+0.4%</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-tertiary font-micro text-micro font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                2 entities below benchmark
+              </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="font-micro text-micro font-data-mono-md text-tertiary">Z-Score 1.12 (Normal Distribution)</span>
+</td>
+<td class="px-space-md py-space-xs text-right">
+<div class="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">
+<button class="h-6 px-2 rounded bg-surface-container-low hover:bg-surface-container text-primary font-body-sm text-body-sm font-medium">Deep Dive</button>
+<button class="h-6 w-6 rounded bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[15px]">scatter_plot</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Asset Quality NPL -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-10 group bg-error-container/5">
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-error">PRU-NPL-04</span>
+<span class="font-body-sm text-body-sm text-tertiary">Gross NPL to Gross Loans Ratio</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-medium text-error">≤ 5.0%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-semibold text-on-surface">4.6%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md text-primary font-medium">-0.2%</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-micro text-micro font-semibold">
+<span class="material-symbols-outlined text-[12px]">warning</span>
+                3 entities breached ceiling
+              </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="font-micro text-micro font-data-mono-md text-error font-semibold">Z-Score &gt; 2.85 (Cluster Kurtosis)</span>
+</td>
+<td class="px-space-md py-space-xs text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-6 px-2 rounded bg-error-container text-on-error-container hover:brightness-95 font-body-sm text-body-sm font-semibold">Action Plan</button>
+<button class="h-6 w-6 rounded bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[15px]">timeline</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Liquidity Coverage Ratio -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-10 group">
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">PRU-LCR-02</span>
+<span class="font-body-sm text-body-sm text-tertiary">Liquidity Coverage Ratio (LCR 30-Day)</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-medium text-on-surface">≥ 100.0%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-semibold text-secondary">142.5%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md text-primary font-medium">+5.1%</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-tertiary font-micro text-micro font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                3 entities stressed
+              </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="font-micro text-micro font-data-mono-md text-tertiary">Z-Score 0.88 (Stable Liquidity)</span>
+</td>
+<td class="px-space-md py-space-xs text-right">
+<div class="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">
+<button class="h-6 px-2 rounded bg-surface-container-low hover:bg-surface-container text-primary font-body-sm text-body-sm font-medium">Deep Dive</button>
+<button class="h-6 w-6 rounded bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[15px]">scatter_plot</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Net Open FX Position -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-10 group">
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">PRU-FX-01</span>
+<span class="font-body-sm text-body-sm text-tertiary">Net Open FX Position to Core Capital</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-medium text-on-surface">≤ 7.5%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-semibold text-on-surface">4.1%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md text-error font-medium">+0.8%</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed/20 text-on-primary-fixed-variant font-micro text-micro font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                All institutions compliant
+              </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="font-micro text-micro font-data-mono-md text-tertiary">Z-Score 1.45 (Moderate Volatility)</span>
+</td>
+<td class="px-space-md py-space-xs text-right">
+<div class="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">
+<button class="h-6 px-2 rounded bg-surface-container-low hover:bg-surface-container text-primary font-body-sm text-body-sm font-medium">Deep Dive</button>
+<button class="h-6 w-6 rounded bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[15px]">scatter_plot</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Return on Average Assets (ROA) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-10 group">
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-data-mono-md text-data-mono-md font-semibold text-on-surface">PRU-ROA-03</span>
+<span class="font-body-sm text-body-sm text-tertiary">Return on Average Assets (Annualized)</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-medium text-on-surface">≥ 1.5%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md font-semibold text-primary">2.8%</td>
+<td class="px-space-md py-space-xs text-right font-data-mono-md text-data-mono-md text-primary font-medium">+0.1%</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-tertiary font-micro text-micro font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                1 entity negative earnings
+              </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="font-micro text-micro font-data-mono-md text-tertiary">Z-Score 0.64 (High Convergence)</span>
+</td>
+<td class="px-space-md py-space-xs text-right">
+<div class="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">
+<button class="h-6 px-2 rounded bg-surface-container-low hover:bg-surface-container text-primary font-body-sm text-body-sm font-medium">Deep Dive</button>
+<button class="h-6 w-6 rounded bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[15px]">scatter_plot</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Pagination / Summary -->
+<div class="px-space-lg py-space-sm bg-surface-container-low/40 flex items-center justify-between text-tertiary font-micro text-micro">
+<div class="flex items-center gap-2">
+<span class="font-data-mono-md font-medium text-on-surface">5</span> of <span class="font-data-mono-md font-medium text-on-surface">38</span> active Basel &amp; CAMELS prudential indicators shown
+      </div>
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Automated daily validation run completed at 06:00 UTC</span>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface font-body-sm text-body-sm hover:bg-surface-container-high transition-colors">Configure Alerts</button>
+</div>
+</div>
+</div>
+<!-- Bottom Real-time Telemetry & Anomaly Stream (Dark Container per brand tokens) -->
+<div class="p-space-lg rounded-xl bg-inverse-surface text-inverse-on-surface shadow-md mb-gutter">
+<div class="flex items-center justify-between mb-space-sm pb-space-xs border-b border-tertiary/20">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-fixed animate-ping"></span>
+<span class="font-headline-sm text-headline-sm font-semibold tracking-wide">Live Econometric Telemetry &amp; Outlier Detection Engine</span>
+<span class="px-1.5 py-0.5 rounded-sm bg-surface-container-lowest/10 font-data-mono-md text-[10px] text-secondary-fixed">BSD-ML-ANOMALY-v4.1</span>
+</div>
+<div class="flex items-center gap-3 font-micro text-micro text-surface-dim">
+<span>Active Listeners: 54 Institutions</span>
+<span>Polling Rate: 300ms</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md font-data-mono-md text-data-mono-md">
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-secondary-fixed text-[11px]">
+<span>[ANOMALY_FLAG: NPL_DRIFT]</span>
+<span class="text-surface-dim">10:42:19 EAT</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-lowest my-1">Uchumi Commercial Bank: 90-day overdue agricultural loan bucket increased by +TZS 1.4B (+18.2% Q-o-Q).</p>
+<div class="flex items-center justify-between text-[11px] text-surface-dim pt-1 border-t border-surface-container-lowest/10">
+<span>Confidence: 94.2%</span>
+<span class="text-primary-fixed">Supervisory Note Drafted</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-secondary-fixed text-[11px]">
+<span>[STRESS_SIMULATION: FX_SHOCK]</span>
+<span class="text-surface-dim">10:41:04 EAT</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-lowest my-1">USD/TZS 15% currency depreciation scenario model shows CAR erosion of -114 bps across D-SIB portfolio.</p>
+<div class="flex items-center justify-between text-[11px] text-surface-dim pt-1 border-t border-surface-container-lowest/10">
+<span>Systemic Impact: MODERATE</span>
+<span class="text-primary-fixed">Buffers Intact</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-secondary-fixed text-[11px]">
+<span>[LIQUIDITY_SURVEILLANCE]</span>
+<span class="text-surface-dim">10:39:55 EAT</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-lowest my-1">Interbank money market weighted overnight rate cleared at 4.25% (Band: 3.50% - 5.00%). Sector collateral pool solid.</p>
+<div class="flex items-center justify-between text-[11px] text-surface-dim pt-1 border-t border-surface-container-lowest/10">
+<span>Volume: TZS 142.0B</span>
+<span class="text-primary-fixed">Normal Flow</span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>
