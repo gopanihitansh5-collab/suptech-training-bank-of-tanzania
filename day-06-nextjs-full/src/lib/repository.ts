@@ -145,6 +145,10 @@ function pagination(page = 1, pageSize = 25): { page: number; pageSize: number; 
   return { page, pageSize, offset: (page - 1) * pageSize };
 }
 
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$1');
+}
+
 function mapException(row: QueryResultRow): ExceptionRow {
   return {
     id: row.exception_id,
@@ -197,9 +201,9 @@ export async function getOverview(requestedPeriod?: string): Promise<OverviewDat
        (SELECT avg(report_completeness_percent)::float8
         FROM institution_reports WHERE reporting_period = $1) AS completeness,
        (SELECT count(*)::int FROM supervisory_exceptions
-        WHERE reporting_period = $1 AND status != 'resolved') AS open_exceptions,
+        WHERE reporting_period = $1 AND status = 'open') AS open_exceptions,
        (SELECT count(*)::int FROM supervisory_exceptions
-        WHERE reporting_period = $1 AND status != 'resolved' AND severity = 'critical')
+        WHERE reporting_period = $1 AND status = 'open' AND severity = 'critical')
         AS critical_exceptions`,
     [period],
   );
@@ -246,7 +250,7 @@ export async function getOverview(requestedPeriod?: string): Promise<OverviewDat
     `SELECT e.*, i.institution_name
      FROM supervisory_exceptions e
      JOIN institutions i USING (institution_id)
-     WHERE e.reporting_period = $1 AND e.status != 'resolved'
+     WHERE e.reporting_period = $1 AND e.status = 'open'
      ORDER BY CASE e.severity
        WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
        e.created_at DESC
@@ -287,7 +291,7 @@ export async function listInstitutions(
   if (status && !['active', 'monitoring'].includes(status)) {
     throw new RequestValidationError('Status must be active or monitoring.');
   }
-  const values = [`%${search}%`, region, status];
+  const values = [`%${escapeLike(search)}%`, region, status];
 
   const countResult = await query<{ total: number }>(
     `SELECT count(*)::int AS total
@@ -445,7 +449,7 @@ export async function listReports(
     }
     add(
       (parameter) => `(r.report_id ILIKE ${parameter} OR i.institution_id ILIKE ${parameter} OR i.institution_name ILIKE ${parameter})`,
-      `%${search}%`,
+      `%${escapeLike(search)}%`,
     );
   }
   if (filters.institutionId?.trim()) {
@@ -510,7 +514,7 @@ export async function listExceptions(
     if (search.length > 100) {
       throw new RequestValidationError('Search must be 100 characters or fewer.');
     }
-    add((p) => `(e.exception_id ILIKE ${p} OR i.institution_name ILIKE ${p} OR e.message ILIKE ${p})`, `%${search}%`);
+    add((p) => `(e.exception_id ILIKE ${p} OR i.institution_name ILIKE ${p} OR e.message ILIKE ${p})`, `%${escapeLike(search)}%`);
   }
   if (filters.institutionId?.trim()) {
     const institutionId = filters.institutionId.trim();
@@ -590,14 +594,22 @@ export async function getAnalytics(
   if (!period) return { period: null, indicators: [], trend: [] };
   const definitions = await query(
     `SELECT d.indicator_id, d.label, d.unit, d.formula,
-       avg(s.indicator_value)::float8 AS value
+       COALESCE(sec.indicator_value, inst.avg_value)::float8 AS value
      FROM indicator_definitions d
-     LEFT JOIN supervisory_indicators s
-       ON s.indicator_id = d.indicator_id
-       AND s.reporting_period = $1
-       AND s.grain = 'institution'
+     LEFT JOIN LATERAL (
+       SELECT s.indicator_value
+       FROM supervisory_indicators s
+       WHERE s.indicator_id = d.indicator_id AND s.reporting_period = $1
+         AND s.grain = 'sector' AND s.subject_key = 'SECTOR'
+       LIMIT 1
+     ) sec ON true
+     LEFT JOIN LATERAL (
+       SELECT avg(s2.indicator_value)::float8 AS avg_value
+       FROM supervisory_indicators s2
+       WHERE s2.indicator_id = d.indicator_id AND s2.reporting_period = $1
+         AND s2.grain = 'institution'
+     ) inst ON true
      WHERE ($2 = '' OR d.indicator_id = $2)
-     GROUP BY d.indicator_id, d.label, d.unit, d.formula
      ORDER BY d.label`,
     [period, selectedIndicator],
   );

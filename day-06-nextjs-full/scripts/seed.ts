@@ -13,6 +13,7 @@ async function main(): Promise<void> {
   const { institutions, reports } = buildDemoData();
   const { indicators, exceptions } = computeAnalytics(institutions, reports);
   const pool = getPool();
+  let reconciledCount = 0;
 
   await withTransaction(async (client) => {
     for (const institution of institutions) {
@@ -172,6 +173,27 @@ async function main(): Promise<void> {
       );
     }
 
+    const exceptionIds = exceptions.map((exception) => exception.id);
+    const reconciled = await client.query(
+      `UPDATE supervisory_exceptions
+       SET status = 'resolved',
+         message = message || ' · reconciled: breach no longer holds',
+         updated_at = now()
+       WHERE status = 'open' AND exception_id <> ALL($1::text[])`,
+      [exceptionIds],
+    );
+    reconciledCount = reconciled.rowCount ?? 0;
+
+    const demoUsername = process.env.DEMO_USERNAME?.trim() || 'demo.supervisor';
+    const demoRoleRaw = process.env.DEMO_ROLE?.trim() || 'supervisor';
+    const demoRole = ['viewer', 'supervisor', 'admin'].includes(demoRoleRaw) ? demoRoleRaw : 'supervisor';
+    await client.query(
+      `INSERT INTO users (user_id, role_id, enabled)
+       VALUES ($1, $2, true)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [demoUsername, demoRole],
+    );
+
     await client.query(
       `INSERT INTO audit_events (actor_id, action, entity_type, entity_id, details)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -185,6 +207,7 @@ async function main(): Promise<void> {
           reports: reports.length,
           indicators: indicators.length,
           exceptions: exceptions.length,
+          reconciled: reconciledCount,
           synthetic: true,
         }),
       ],
@@ -200,7 +223,7 @@ async function main(): Promise<void> {
   });
 
   console.info(
-    `Seeded ${institutions.length} synthetic institutions, ${reports.length} reports, ${indicators.length} indicators and ${exceptions.length} illustrative exceptions.`,
+    `Seeded ${institutions.length} synthetic institutions, ${reports.length} reports, ${indicators.length} indicators and ${exceptions.length} illustrative exceptions, and resolved ${reconciledCount} stale open exception(s) during reconciliation.`,
   );
   await pool.query('SELECT 1');
 }
