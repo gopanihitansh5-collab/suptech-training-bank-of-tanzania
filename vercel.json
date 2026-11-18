@@ -5,5 +5,8 @@
       "root": "day-06-nextjs-full",
       "framework": "nextjs"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "frontend" } }
+  ]
 }
