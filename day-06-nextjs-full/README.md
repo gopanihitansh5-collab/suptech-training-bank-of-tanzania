@@ -14,6 +14,18 @@ their runtime or proxy API requests to FastAPI.
 > express official regulatory policy, and must not be used with confidential
 > supervisory data.
 
+## Demo sign-in
+
+| Field | Value |
+| --- | --- |
+| Username | `demo.supervisor` |
+| Password | `SuptechDemo#2026` |
+
+These are demo-only training credentials, overridable via the `DEMO_USERNAME`
+and `DEMO_PASSWORD` environment variables. The hosted training deployment at
+<https://suptech-monitor.vercel.app> is pre-seeded and accepts them, as does a
+locally started instance with a seeded database.
+
 ## Local setup
 
 Requirements: Node.js 22+, npm, Docker with Compose, and a local `.env` file.
