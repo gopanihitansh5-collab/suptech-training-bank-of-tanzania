@@ -7,6 +7,11 @@ export default defineConfig({
   },
   auth: true,
   aiGateway: true,
+  buckets: {
+    uploads: {
+      access: "private",
+    },
+  },
   functions: {
     hello: { name: "Hello World", source: "./hello.ts" },
   },
