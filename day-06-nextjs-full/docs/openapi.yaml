@@ -1,0 +1,643 @@
+openapi: 3.1.0
+info:
+  title: Day 6 — SupTech Monitor API
+  version: 0.1.0
+  description: |
+    Read-only supervisory monitoring endpoints for the Day 6 training
+    application. All data is synthetic training data. Authentication is a
+    local demo boundary. This is not a real supervisory system and expresses
+    no Bank of Tanzania policy; exceptions are review signals, never findings
+    of misconduct or non-compliance.
+servers:
+  - url: http://127.0.0.1:3000
+    description: Local demo only; never expose publicly.
+tags:
+  - name: auth
+    description: Local demo sign-in and sign-out.
+  - name: overview
+    description: Portfolio summary, trend and recent exceptions.
+  - name: analytics
+    description: Indicator catalog values and portfolio trend.
+  - name: institutions
+    description: Institution register and per-institution detail.
+  - name: exceptions
+    description: Supervisory exception register (review signals).
+security:
+  - cookieAuth: []
+paths:
+  /api/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Sign in with the local demo identity
+      security: []
+      description: |
+        Validates the env-configured demo credentials and issues the
+        `suptech_demo_session` cookie (httpOnly, sameSite=strict, path=/,
+        8-hour TTL, `secure` in production) via `Set-Cookie` on the 200
+        response. Rate limited per username: 5 failed attempts within a
+        5-minute window returns 429 with a `Retry-After` header (demo
+        in-memory fixed window, not a production control).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: demo.supervisor
+              password: value-from-local-.env
+      responses:
+        '200':
+          description: Signed in. `Set-Cookie` establishes the demo session cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetCookieSession'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Body must be JSON with a username (1-100 chars) and password (1-200 chars).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/AuthMisconfigured'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Sign out and clear the demo session cookie
+      security: []
+      description: |
+        Clears `suptech_demo_session` by returning an empty cookie with
+        `max-age=0` via `Set-Cookie`. No session check is performed.
+      responses:
+        '200':
+          description: Signed out. `Set-Cookie` clears the session cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetCookieSession'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/overview:
+    get:
+      tags: [overview]
+      operationId: getOverview
+      summary: Portfolio summary, 12-month trend and recent open exceptions
+      description: |
+        Defaults to the latest seeded period (`MAX(reporting_period)`) when
+        no `period` is supplied. `openExceptions`, `criticalExceptions` and
+        `recentExceptions` count exceptions with `status = 'open'` only
+        (`under_review` and `resolved` are excluded), matching the register
+        default. Returns empty structures when no data is seeded.
+      parameters:
+        - $ref: '#/components/parameters/PeriodParam'
+      responses:
+        '200':
+          description: Overview for the resolved period.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OverviewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/analytics:
+    get:
+      tags: [analytics]
+      operationId: getAnalytics
+      summary: Indicator values for the selected period and portfolio trend
+      description: |
+        Indicator values come from sector-grain rollups
+        (`grain='sector'`, `subject_key='SECTOR'`) and fall back to the
+        average across institution grain when no sector row exists for the
+        period. `indicator` filters the returned list; unknown ids are
+        rejected with 400. The trend covers the last 12 periods up to the
+        resolved period, ascending.
+      parameters:
+        - $ref: '#/components/parameters/PeriodParam'
+        - name: indicator
+          in: query
+          required: false
+          description: Restrict the response to a single catalog indicator.
+          schema:
+            type: string
+            enum: [deposits, loans, loan_to_deposit, deposit_growth, loan_growth, capital_adequacy, npl_ratio, liquidity, completeness, quality_failure_rate, late_submission]
+      responses:
+        '200':
+          description: Indicator values and portfolio trend.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/institutions:
+    get:
+      tags: [institutions]
+      operationId: listInstitutions
+      summary: Paginated institution register
+      description: |
+        Filters combine with AND. `search` matches institution id or name
+        (case-insensitive contains); `region` is an exact match. Each item
+        carries the latest report snapshot and the count of open exceptions
+        (`status = 'open'`).
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, monitoring]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: One page of the register.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/institutions/{institutionId}:
+    get:
+      tags: [institutions]
+      operationId: getInstitutionDetail
+      summary: Institution detail with recent reports and exceptions
+      description: |
+        Returns the institution snapshot, its 12 most recent reports
+        (descending by period, with the source record ids that back each
+        report) and its 20 most recent exceptions of any status.
+      parameters:
+        - name: institutionId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]{2,24}$'
+          example: BTC-001
+      responses:
+        '200':
+          description: Institution detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/exceptions:
+    get:
+      tags: [exceptions]
+      operationId: listExceptions
+      summary: Paginated exception register (review signals)
+      description: |
+        Returns exceptions of all statuses unless filtered; the dashboard
+        register applies `status=open` as its default view. Filters combine
+        with AND. `search` matches exception id, institution name or message.
+        Results are ordered by severity rank, then period descending, then
+        creation time descending.
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: institutionId
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]{2,24}$'
+        - $ref: '#/components/parameters/PeriodParam'
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [open, under_review, resolved]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: One page of the exception register.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: suptech_demo_session
+  parameters:
+    PeriodParam:
+      name: period
+      in: query
+      required: false
+      description: Reporting month filter (YYYY-MM). Invalid formats are rejected with 400.
+      schema:
+        type: string
+        pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+    PageParam:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 25
+  headers:
+    SetCookieSession:
+      description: >-
+        Sets (sign-in) or clears (sign-out) the `suptech_demo_session` cookie.
+        Sign-in attributes: httpOnly, sameSite=strict, path=/, max-age=28800,
+        secure in production. Sign-out: empty value with max-age=0.
+      schema:
+        type: string
+    RetryAfter:
+      description: Seconds to wait before retrying sign-in for that username.
+      schema:
+        type: string
+        example: '60'
+  responses:
+    BadRequest:
+      description: 'Validation failed (period format, unknown indicator, invalid filter or out-of-bounds pagination). Body is {"error": string}.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: 'Unauthenticated or incorrect demo credentials; body is {"error": string}.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: 'Resource not found; body is {"error": string}.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: 'Sign-in rate limited (5 failed attempts per username per 5 minutes, demo in-memory window); body is {"error": string}.'
+      headers:
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    AuthMisconfigured:
+      description: 'Local demo auth is misconfigured (missing DEMO_USERNAME/DEMO_PASSWORD or AUTH_SECRET shorter than 32 characters); body is {"error": string}.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: 'Unexpected failure; body is {"error": string} with a generic message that never exposes internals.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 100
+        password:
+          type: string
+          minLength: 1
+          maxLength: 200
+    LoginResponse:
+      type: object
+      required: [userId, role]
+      properties:
+        userId:
+          type: string
+        role:
+          type: string
+          enum: [viewer, supervisor, admin]
+    LogoutResponse:
+      type: object
+      required: [signedOut]
+      properties:
+        signedOut:
+          type: boolean
+    Exception:
+      type: object
+      required: [id, institutionId, institutionName, reportId, period, indicatorId, observedValue, thresholdValue, severity, status, message, createdAt]
+      properties:
+        id:
+          type: string
+          description: 'Deterministic id: EXC-{threshold_id}-{institution_id}-{period}.'
+        institutionId:
+          type: string
+        institutionName:
+          type: string
+        reportId:
+          type: string
+        period:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        indicatorId:
+          type: string
+        observedValue:
+          type: number
+        thresholdValue:
+          type: number
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        status:
+          type: string
+          enum: [open, under_review, resolved]
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    OverviewSummary:
+      type: object
+      required: [institutions, reportsReceived, reportsExpected, openExceptions, criticalExceptions, depositsTzsBillions, loansTzsBillions, completenessPercent]
+      properties:
+        institutions:
+          type: integer
+        reportsReceived:
+          type: integer
+        reportsExpected:
+          type: integer
+        openExceptions:
+          type: integer
+          description: Exceptions with status = 'open' for the period.
+        criticalExceptions:
+          type: integer
+          description: Exceptions with status = 'open' and severity 'critical' for the period.
+        depositsTzsBillions:
+          type: number
+        loansTzsBillions:
+          type: number
+        completenessPercent:
+          type: [number, 'null']
+    OverviewTrendPoint:
+      type: object
+      required: [period, depositsTzsBillions, loansTzsBillions, completenessPercent, exceptions]
+      properties:
+        period:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        depositsTzsBillions:
+          type: number
+        loansTzsBillions:
+          type: number
+        completenessPercent:
+          type: [number, 'null']
+        exceptions:
+          type: integer
+          description: Open exceptions recorded for the period.
+    OverviewResponse:
+      type: object
+      required: [period, summary, trend, recentExceptions]
+      properties:
+        period:
+          type: [string, 'null']
+          description: Resolved period (requested or latest), null when nothing is seeded.
+        summary:
+          $ref: '#/components/schemas/OverviewSummary'
+        trend:
+          type: array
+          items:
+            $ref: '#/components/schemas/OverviewTrendPoint'
+        recentExceptions:
+          type: array
+          maxItems: 6
+          items:
+            $ref: '#/components/schemas/Exception'
+    IndicatorValue:
+      type: object
+      required: [id, label, unit, value, formula]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        unit:
+          type: string
+          enum: ['TZS bn', '%', 'count']
+        value:
+          type: [number, 'null']
+          description: Sector-grain rollup value, or the institution-grain average as fallback; null when no data.
+        formula:
+          type: string
+    AnalyticsTrendPoint:
+      type: object
+      required: [period, deposits, loans, completeness]
+      properties:
+        period:
+          type: string
+        deposits:
+          type: number
+        loans:
+          type: number
+        completeness:
+          type: [number, 'null']
+    AnalyticsResponse:
+      type: object
+      required: [period, indicators, trend]
+      properties:
+        period:
+          type: [string, 'null']
+        indicators:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndicatorValue'
+        trend:
+          type: array
+          maxItems: 12
+          items:
+            $ref: '#/components/schemas/AnalyticsTrendPoint'
+    Institution:
+      type: object
+      required: [institutionId, name, type, region, tier, status, latestPeriod, depositsTzsBillions, capitalAdequacyRatioPercent, nplRatioPercent, openExceptions]
+      properties:
+        institutionId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        region:
+          type: string
+        tier:
+          type: string
+          enum: ['Tier 1', 'Tier 2', 'Tier 3']
+        status:
+          type: string
+          enum: [active, monitoring]
+        latestPeriod:
+          type: [string, 'null']
+        depositsTzsBillions:
+          type: [number, 'null']
+        capitalAdequacyRatioPercent:
+          type: [number, 'null']
+        nplRatioPercent:
+          type: [number, 'null']
+        openExceptions:
+          type: integer
+          description: Exceptions with status = 'open' for this institution.
+    InstitutionPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Institution'
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 50
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+    InstitutionReport:
+      type: object
+      required: [reportId, period, depositsTzsBillions, loansTzsBillions, capitalAdequacyRatioPercent, liquidityRatioPercent, nplRatioPercent, completenessPercent, sourceRecordIds]
+      properties:
+        reportId:
+          type: string
+        period:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        depositsTzsBillions:
+          type: number
+        loansTzsBillions:
+          type: number
+        capitalAdequacyRatioPercent:
+          type: number
+        liquidityRatioPercent:
+          type: number
+        nplRatioPercent:
+          type: number
+        completenessPercent:
+          type: number
+        sourceRecordIds:
+          type: array
+          items:
+            type: string
+    InstitutionDetail:
+      type: object
+      required: [institution, reports, exceptions]
+      properties:
+        institution:
+          $ref: '#/components/schemas/Institution'
+        reports:
+          type: array
+          maxItems: 12
+          items:
+            $ref: '#/components/schemas/InstitutionReport'
+        exceptions:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/Exception'
+    ExceptionPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exception'
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 50
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0

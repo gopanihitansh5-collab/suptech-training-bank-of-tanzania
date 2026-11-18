@@ -16,3 +16,16 @@
   and report/institution provenance.
 - Added report preview, Data Explorer, assistant capability, local health and
   read-only settings screens; all nine modules now share protected navigation.
+- Hardened the Phase 1–3 business logic after a full scan (see
+  `docs/FINDINGS_LOG.md`): gap-aware growth indicators, sector-grain indicator
+  rollups with canonical aggregation rules, a `late_submission` indicator and
+  review threshold, exception reconciliation during re-seeding, a seeded demo
+  user so Phase 4 ingestion can satisfy the `uploaded_by` foreign key, and a
+  consistent `open` exception definition across overview and register.
+- Hardened auth and observability: login rate limiting with `Retry-After`,
+  runtime audit events on sign-in, and escaped ILIKE search patterns.
+- Added the coordination and contract set: `docs/SOURCE_OF_TRUTH.md` (single
+  source of truth for decisions, vocabulary and agent rules),
+  `docs/openapi.yaml` (OpenAPI 3.1 contract for all seven API routes),
+  `docs/REMEDIATION_PLAN.md` (wave-based plan) and `docs/FINDINGS_LOG.md`
+  (timestamped findings register).
