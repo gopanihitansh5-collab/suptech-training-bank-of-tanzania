@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RequestValidationError } from './api-errors';
 import { query } from './db';
-import { getAnalytics, listExceptions } from './repository';
+import { getAnalytics, listExceptions, listReports } from './repository';
 
 vi.mock('./db', () => ({ query: vi.fn() }));
 
@@ -30,6 +30,18 @@ describe('repository input validation', () => {
     await expect(listExceptions({ search: 'x'.repeat(101) }))
       .rejects.toBeInstanceOf(RequestValidationError);
     await expect(listExceptions({ institutionId: '%%' }))
+      .rejects.toBeInstanceOf(RequestValidationError);
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it('validates report filters and pagination before querying', async () => {
+    await expect(listReports({ period: '2026-13' }))
+      .rejects.toBeInstanceOf(RequestValidationError);
+    await expect(listReports({ institutionId: 'TZ/004' }))
+      .rejects.toBeInstanceOf(RequestValidationError);
+    await expect(listReports({ search: 'x'.repeat(101) }))
+      .rejects.toBeInstanceOf(RequestValidationError);
+    await expect(listReports({ page: Number.MAX_SAFE_INTEGER + 1 }))
       .rejects.toBeInstanceOf(RequestValidationError);
     expect(query).not.toHaveBeenCalled();
   });

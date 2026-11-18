@@ -8,14 +8,11 @@ const navigation = [
   { label: 'Institutions', href: '/institutions', icon: '▦' },
   { label: 'Supervisory analytics', href: '/analytics', icon: '↗' },
   { label: 'Exceptions & alerts', href: '/exceptions', icon: '!' },
-];
-
-const plannedNavigation = [
-  'Custom reports',
-  'Data explorer',
-  'AI supervisory assistant',
-  'Integrations & health',
-  'Administration',
+  { label: 'Custom reports', href: '/reports', icon: '▤' },
+  { label: 'Data explorer', href: '/data-explorer', icon: '⌕' },
+  { label: 'AI supervisory assistant', href: '/assistant', icon: '✳' },
+  { label: 'Integrations & health', href: '/system-health', icon: '◇' },
+  { label: 'Administration', href: '/settings', icon: '⚙' },
 ];
 
 export function DashboardNavigation() {
@@ -38,13 +35,6 @@ export function DashboardNavigation() {
           </Link>
         );
       })}
-      {plannedNavigation.map((label) => (
-        <span className="nav-disabled" aria-disabled="true" key={label}>
-          <span aria-hidden="true">○</span>
-          {label}
-          <span className="nav-tag">Planned</span>
-        </span>
-      ))}
     </nav>
   );
 }

@@ -40,6 +40,17 @@
 | Server-rendered page smoke | Render analytics and filtered exception pages with training notices. | **Passed:** `/analytics`, `/exceptions`, and filtered `/exceptions` returned 200 and included the synthetic/training notice. |
 | Service/API error handling | Surface validation and service failures; do not disguise failures as empty data. | **Passed by code-path inspection:** validation maps to 400; generic service failures are logged and return 500. No live database-outage injection was performed. |
 
+### Stitch workspace — 2026-11-18
+
+| Command / check | Expected | Actual |
+| --- | --- | --- |
+| `npm test` | Focused tests pass for report-list validation. | **Passed:** 4 files, 13 tests. |
+| `npm run build` | All nine workspace modules compile. | **Passed:** Next.js generated the five added routes and all existing routes. |
+| Authenticated route smoke | All nine navigation destinations render inside the shared shell. | **Passed:** `/`, `/institutions`, `/analytics`, `/exceptions`, `/reports`, `/data-explorer`, `/assistant`, `/system-health`, and `/settings` returned 200. |
+| Report preview and explorer filters | Query the seeded report set and preserve institution provenance. | **Passed:** filtered `TZ004` / `2026-10` queries returned the matching report ID on both pages. |
+| Invalid filters | Reject invalid periods and unsafe page numbers explicitly. | **Passed:** both pages rendered an explicit invalid-filter response; repository tests cover validation before database access. |
+| Capability disclosure | Do not imply unfinished chat, uploads, export, settings writes or external integrations. | **Passed:** assistant/settings pages are explicit; the health page showed the live Day 6 database as connected and models/external systems as not connected. |
+
 ### Known demo authentication limitation
 
 A copied stateless signed token remains valid until its eight-hour expiry even

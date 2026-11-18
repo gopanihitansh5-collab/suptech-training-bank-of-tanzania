@@ -14,3 +14,5 @@
 - Added protected database-backed analytics and a read-only exception
   register, with validated filters, bounded pagination, synthetic notices,
   and report/institution provenance.
+- Added report preview, Data Explorer, assistant capability, local health and
+  read-only settings screens; all nine modules now share protected navigation.

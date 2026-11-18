@@ -40,6 +40,15 @@ export interface ExceptionRow {
   createdAt: string;
 }
 
+export interface ReportRow {
+  reportId: string;
+  institutionId: string;
+  institutionName: string;
+  period: string;
+  submittedAt: string;
+  completenessPercent: number;
+}
+
 export interface OverviewData {
   period: string | null;
   summary: {
@@ -96,6 +105,14 @@ export interface InstitutionFilters {
   pageSize?: number;
 }
 
+export interface ReportFilters {
+  search?: string;
+  institutionId?: string;
+  period?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 function numeric(value: string | number | null): number | null {
   if (value === null) return null;
   const parsed = Number(value);
@@ -119,7 +136,7 @@ function normalizePeriod(period: string | undefined): string | undefined {
 }
 
 function pagination(page = 1, pageSize = 25): { page: number; pageSize: number; offset: number } {
-  if (!Number.isInteger(page) || page < 1) {
+  if (!Number.isSafeInteger(page) || page < 1) {
     throw new RequestValidationError('Page must be a positive integer.');
   }
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) {
@@ -407,6 +424,73 @@ export async function getInstitutionDetail(
       sourceRecordIds: row.source_record_ids,
     })),
     exceptions: exceptions.rows.map(mapException),
+  };
+}
+
+export async function listReports(
+  filters: ReportFilters = {},
+): Promise<Page<ReportRow>> {
+  const { page, pageSize, offset } = pagination(filters.page, filters.pageSize);
+  const clauses: string[] = [];
+  const values: unknown[] = [];
+  const add = (clause: (parameter: string) => string, value: unknown): void => {
+    values.push(value);
+    clauses.push(clause(`$${values.length}`));
+  };
+
+  if (filters.search?.trim()) {
+    const search = filters.search.trim();
+    if (search.length > 100) {
+      throw new RequestValidationError('Search must be 100 characters or fewer.');
+    }
+    add(
+      (parameter) => `(r.report_id ILIKE ${parameter} OR i.institution_id ILIKE ${parameter} OR i.institution_name ILIKE ${parameter})`,
+      `%${search}%`,
+    );
+  }
+  if (filters.institutionId?.trim()) {
+    const institutionId = filters.institutionId.trim();
+    if (!/^[A-Z0-9-]{2,24}$/i.test(institutionId)) {
+      throw new RequestValidationError('Institution identifier has an invalid format.');
+    }
+    add((parameter) => `r.institution_id = ${parameter}`, institutionId.toUpperCase());
+  }
+  const period = normalizePeriod(filters.period);
+  if (period) add((parameter) => `r.reporting_period = ${parameter}`, period);
+
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const countResult = await query<{ total: number }>(
+    `SELECT count(*)::int AS total
+     FROM institution_reports r
+     JOIN institutions i USING (institution_id)
+     ${where}`,
+    values,
+  );
+  const total = numericValue(countResult.rows[0].total);
+  const result = await query(
+    `SELECT r.report_id, r.institution_id, i.institution_name,
+       r.reporting_period, r.submitted_at, r.report_completeness_percent
+     FROM institution_reports r
+     JOIN institutions i USING (institution_id)
+     ${where}
+     ORDER BY r.reporting_period DESC, r.institution_id
+     LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
+    [...values, pageSize, offset],
+  );
+
+  return {
+    items: result.rows.map((row) => ({
+      reportId: row.report_id,
+      institutionId: row.institution_id,
+      institutionName: row.institution_name,
+      period: row.reporting_period,
+      submittedAt: new Date(row.submitted_at).toISOString(),
+      completenessPercent: numericValue(row.report_completeness_percent),
+    })),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.ceil(total / pageSize),
   };
 }
 

@@ -2,8 +2,9 @@
 
 Day 6 is a standalone, full-stack Next.js training PoC. Next.js App Router
 pages and route handlers are the application boundary; TypeScript services
-perform analytics, ingestion, retrieval and reporting; PostgreSQL stores the
-demo records and audit trail.
+currently provide persisted analytics and report exploration. PostgreSQL
+stores the synthetic training records. Ingestion, retrieval, exports and
+assistant workflows remain planned.
 
 The earlier Python training days remain unchanged. Day 6 does not depend on
 their runtime or proxy API requests to FastAPI.
@@ -39,9 +40,8 @@ Open <http://127.0.0.1:3000>. Sign in with the local demo username and password
 from `.env`. The database container binds only to `127.0.0.1:5433`; it does not
 reuse or modify the unrelated PostgreSQL instance on port 5432.
 
-`ENABLE_DEMO_UPLOADS=true` enables local demo uploads for the explicitly
-supported formats. Keep it disabled unless you are using synthetic training
-documents. Do not expose this PoC to the public internet.
+Document uploads are not implemented yet. Do not upload documents or
+confidential records, and do not expose this PoC to the public internet.
 
 ## Commands
 
@@ -59,10 +59,11 @@ documents. Do not expose this PoC to the public internet.
 - The application has nine modules matching the supplied Stitch references.
 - Read endpoints and all analytics use persisted demo records; values are not
   hardcoded in page components.
-- The default assistant is deterministic and uses allowlisted tools. It never
-  generates or executes SQL. Optional local LM Studio models are configurable
-  through `.env`; there is no public model-provider fallback.
-- Document ingestion is limited to the formats named in the feature matrix.
+- The assistant screen is informational and is not connected to a chat or
+  retrieval workflow yet. A future assistant must use deterministic,
+  allowlisted tools and must never generate or execute SQL.
+- Document ingestion is not enabled yet. Planned formats and limits are listed
+  in the feature matrix.
 - Thresholds are training configuration, not official limits. An exception is
   a review signal, not a finding of misconduct or non-compliance.
 - Authentication is a local demonstration boundary, not a production identity

@@ -51,9 +51,14 @@ official regulatory finding.
 
 ### Active
 
-- [ ] Complete database-backed services, auth boundary and API contracts.
-- [ ] Build all nine working pages and document/search flows.
-- [ ] Verify migrations, data, APIs, build and user interactions.
+- [x] Complete database-backed services and auth boundary for current
+  overview, analytics, exception and report-exploration features.
+- [x] Build all nine reachable module pages with implemented filters/links and
+  honest later-phase capability disclosures.
+- [x] Verify migrations, seeded data, current APIs, production build and
+  authenticated route journeys.
+- [ ] Implement document ingestion, grounded assistant, export/SSE and
+  administrative writes through their planned phases.
 
 ### Planned
 
@@ -100,9 +105,9 @@ Stitch designs are visual references, not verified evidence.
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
 | Synthetic seed | 12 institutions, 288 monthly reports | Seeded | Achieved |
-| Focused domain tests | All pass | 7/7 | Achieved |
-| Nine screens | Real data, no dead active controls | In progress | At risk |
-| Build and acceptance checks | Pass with evidence | Not run | Pending |
+| Focused domain tests | All pass | 13/13 | Achieved |
+| Nine screens | Reachable shared shell, persisted data where available | 9/9 route smoke passed | Achieved |
+| Build and acceptance checks | Pass with evidence | Tests, typecheck, build and route smoke passed | Achieved |
 
 ## Tech Stack / Tools
 

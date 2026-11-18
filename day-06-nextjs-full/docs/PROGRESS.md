@@ -5,10 +5,9 @@
 The foundation overview/directory slice is verified and summarized. Its
 bounded Qwen read-only review failed before producing a response because the
 prompt exceeded the model context; no independent findings were returned.
-Phase 2 (database-backed analytics and the read-only exception register) is
-implemented and has passed focused tests, typecheck, production build, and
-authenticated API/page smoke tests. No changes were made to the existing
-Python training days or PostgreSQL port-5432 cluster.
+Phases 2 and 3 are implemented and have passed focused tests, typecheck,
+production builds, and authenticated API/page smoke tests. No changes were
+made to the existing Python training days or PostgreSQL port-5432 cluster.
 
 The local LM Studio endpoint on `127.0.0.1:1235` is responding. Qwen chat
 inference returned the expected readiness response and Nomic produced a
@@ -37,8 +36,9 @@ branch was clean at resume. Do not amend the existing commits.
 - Added deterministic fictional data and training-only thresholds. The pages
   visibly state that records are synthetic and not official BoT data or
   regulatory determinations.
-- Added a responsive shared shell. Later Stitch modules are visibly marked
-  Planned rather than linked to non-existent pages.
+- Added a responsive shared shell; all nine workspace modules now have
+  reachable routes. Later-phase features are clearly labeled rather than
+  exposed as nonfunctional controls.
 - Added exact-ID institution lookup and separated overview aggregates from
   exception counts to prevent join-driven duplication of deposit/loan totals.
 - Installed the PAUL framework locally under `.claude/`; its MIT license is
@@ -50,6 +50,10 @@ branch was clean at resume. Do not amend the existing commits.
   and indicator filters, bounded exception search/pagination, and traceable
   synthetic report/institution details. No exception mutation workflow was
   added.
+- Added a filtered report preview and Data Explorer over persisted reports,
+  plus assistant capability, local database health and read-only settings
+  pages. Assistant chat, ingestion, export, settings writes and external
+  integrations remain unimplemented.
 
 ## Foundation verification — 2026-11-18
 
@@ -100,6 +104,25 @@ branch was clean at resume. Do not amend the existing commits.
   error code; no success-shaped empty fallback is used. A live outage was not
   injected.
 
+## Phase 3 verification — 2026-11-18
+
+- `npm test`: passed, 4 files / 13 tests.
+- `npm run build`: passed; all nine workspace page routes were generated.
+- Authenticated smoke: `/`, `/institutions`, `/analytics`, `/exceptions`,
+  `/reports`, `/data-explorer`, `/assistant`, `/system-health`, and `/settings`
+  returned 200 within the shared shell.
+- The report preview and Data Explorer returned the persisted
+  `TZ004` / `2026-10` report when filtered.
+- Invalid period and unsafe page values produced explicit filter errors.
+- The health page reported the local Day 6 database as connected and clearly
+  stated that optional models and external systems are not connected by the
+  application.
+- Assistant and settings pages accurately disclose that chat/retrieval and
+  configuration writes are unavailable. Responsive CSS rules were added for
+  narrow screens; a visual mobile-browser check was not completed.
+- Stitch screenshots were used only as layout reference. Their identities,
+  figures, thresholds and operational claims were not copied.
+
 ## Current sub-agent workflow
 
 - Main Copilot agent: orchestrates PAUL plan, app integration, verification,
@@ -113,11 +136,10 @@ branch was clean at resume. Do not amend the existing commits.
 
 ## Exact next steps
 
-1. Review the complete diff, then commit and push the verified Day 6 work with
-   the required co-author trailer.
-2. Continue remaining Stitch modules as separate tested slices. Do not claim
-   uploads, RAG, generated reports, SSE, admin, or system health are
-   implemented until they exist and are verified.
+1. Commit and push the verified Phase 3 workspace slice.
+2. Plan and implement Phase 4 ingestion as a separate tested slice. Do not
+   claim uploads, RAG/chat, CSV export, SSE, admin writes, or external system
+   integrations are implemented until they exist and are verified.
 
 ## Boundaries and cautions
 
@@ -129,16 +151,17 @@ branch was clean at resume. Do not amend the existing commits.
   credentials, `.env`, dependency directories, or generated build output.
 - Do not send confidential records, credentials, or user files to a model.
   Current model probes and the delegated review use local LM Studio only.
-- Do not claim that planned navigation items, uploads, AI/RAG, reports,
-  administration, or system health are implemented.
+- Do not claim that uploads, AI/RAG, CSV export, SSE, administration writes,
+  or external system health are implemented.
 - The existing Python test baseline remains blocked at collection because
   `fastapi` is missing from the repository's `.venv`; no Python dependencies
   were installed or changed.
 
 ## Last known repository state
 
-- Branch: `main`, at `c89d637` (`progress`), matching `origin/main`.
-- At resume, the tracked worktree was clean. Build output and `node_modules`
-  remain ignored under Day 6.
-- The Stitch design inputs were already included in the repository history;
-  no new changes to those assets were made.
+- Branch: `main`, at `86de783` (Phase 2 milestone), matching `origin/main`
+  before the pending Phase 3 commit.
+- Phase 3 changes are limited to Day 6 source and documentation. Build output
+  and `node_modules` remain ignored under Day 6.
+- The Stitch design inputs were not modified; they were used only as visual
+  references.
