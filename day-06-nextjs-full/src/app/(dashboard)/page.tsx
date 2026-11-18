@@ -1,16 +1,40 @@
 import Link from 'next/link';
 import { PortfolioChart } from '@/components/portfolio-chart';
 import { getOverview } from '@/lib/repository';
+import { RequestValidationError } from '@/lib/api-errors';
 
 const numberFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 const moneyFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 
-export default async function OverviewPage() {
-  const overview = await getOverview();
+type SearchParams = Promise<{ period?: string | string[] }>;
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
+  const requestedPeriod = first(params.period);
+  let overview;
+  try {
+    overview = await getOverview(requestedPeriod);
+  } catch (error) {
+    if (error instanceof RequestValidationError) {
+      return <FilterError message={error.message} />;
+    }
+    throw error;
+  }
   const { summary } = overview;
   const completionRate = summary.reportsExpected
     ? (summary.reportsReceived / summary.reportsExpected) * 100
     : 0;
+  const periodQuery = overview.period
+    ? `?${new URLSearchParams({ period: overview.period })}`
+    : '';
 
   return (
     <main className="page-content">
@@ -31,15 +55,30 @@ export default async function OverviewPage() {
             {overview.period ?? 'the available reporting cycle'}.
           </p>
         </div>
-        {overview.period && <span className="period-chip">Reporting period · {overview.period}</span>}
+        <div className="page-heading-actions">
+          {overview.period && (
+            <form className="filter-form compact-filter" method="get" action="/">
+              <label>
+                Reporting period
+                <select name="period" defaultValue={overview.period}>
+                  {overview.trend.map((point) => (
+                    <option key={point.period} value={point.period}>{point.period}</option>
+                  ))}
+                </select>
+              </label>
+              <button className="button-primary" type="submit">Apply</button>
+            </form>
+          )}
+          {overview.period && <span className="period-chip">Selected · {overview.period}</span>}
+        </div>
       </section>
 
       <section className="metric-grid" aria-label="Portfolio summary">
-        <MetricCard label="Fictional institutions" value={numberFormat.format(summary.institutions)} foot="Synthetic training register" />
-        <MetricCard label="Reports received" value={`${summary.reportsReceived} / ${summary.reportsExpected}`} foot={`${numberFormat.format(completionRate)}% of expected reports`} tone="teal" />
-        <MetricCard label="Open review signals" value={numberFormat.format(summary.openExceptions)} foot={`${summary.criticalExceptions} critical training signal(s)`} tone={summary.criticalExceptions ? 'amber' : 'teal'} />
-        <MetricCard label="Deposits reported" value={`${moneyFormat.format(summary.depositsTzsBillions)} bn`} foot="TZS · synthetic amounts" />
-        <MetricCard label="Average completeness" value={summary.completenessPercent === null ? '—' : `${numberFormat.format(summary.completenessPercent)}%`} foot="Across submitted reports" />
+        <MetricCard href="/institutions" label="Fictional institutions" value={numberFormat.format(summary.institutions)} foot="Open the synthetic register" />
+        <MetricCard href={`/reports${periodQuery}`} label="Reports received" value={`${summary.reportsReceived} / ${summary.reportsExpected}`} foot={`${numberFormat.format(completionRate)}% of expected reports`} tone="teal" />
+        <MetricCard href={`/exceptions${periodQuery}`} label="Open review signals" value={numberFormat.format(summary.openExceptions)} foot={`${summary.criticalExceptions} critical training signal(s)`} tone={summary.criticalExceptions ? 'amber' : 'teal'} />
+        <MetricCard href={`/analytics${periodQuery}`} label="Deposits reported" value={`${moneyFormat.format(summary.depositsTzsBillions)} bn`} foot="TZS · view portfolio analytics" />
+        <MetricCard href={`/analytics${periodQuery}`} label="Average completeness" value={summary.completenessPercent === null ? '—' : `${numberFormat.format(summary.completenessPercent)}%`} foot="Across submitted reports" />
       </section>
 
       {summary.reportsReceived === 0 && (
@@ -96,21 +135,38 @@ export default async function OverviewPage() {
 }
 
 function MetricCard({
+  href,
   label,
   value,
   foot,
   tone,
 }: {
+  href: string;
   label: string;
   value: string;
   foot: string;
   tone?: 'teal' | 'amber';
 }) {
   return (
-    <article className="metric-card">
-      <div className="metric-label">{label}</div>
-      <div className="metric-value">{value}</div>
-      <div className={`metric-foot${tone ? ` ${tone}` : ''}`}>{foot}</div>
-    </article>
+    <Link className="metric-card-link" href={href} aria-label={`${label}: ${value}. ${foot}`}>
+      <article className="metric-card">
+        <div className="metric-label">{label}</div>
+        <div className="metric-value">{value}</div>
+        <div className={`metric-foot${tone ? ` ${tone}` : ''}`}>{foot}</div>
+      </article>
+    </Link>
+  );
+}
+
+function FilterError({ message }: { message: string }) {
+  return (
+    <main className="page-content">
+      <section className="error-panel" role="alert">
+        <div className="eyebrow">Invalid filter</div>
+        <h1>Overview could not be filtered</h1>
+        <p>{message}</p>
+        <Link className="table-link" href="/">Reset period</Link>
+      </section>
+    </main>
   );
 }

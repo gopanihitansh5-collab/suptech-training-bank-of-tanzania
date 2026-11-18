@@ -26,9 +26,19 @@
   runtime audit events on sign-in, and escaped ILIKE search patterns.
 - Added the coordination and contract set: `docs/SOURCE_OF_TRUTH.md` (single
   source of truth for decisions, vocabulary and agent rules),
-  `docs/openapi.yaml` (OpenAPI 3.1 contract for all seven API routes),
+  `docs/openapi.yaml` (OpenAPI 3.1 contract for documented API routes),
   `docs/REMEDIATION_PLAN.md` (wave-based plan) and `docs/FINDINGS_LOG.md`
   (timestamped findings register).
 - Extended the database connection guard so managed PostgreSQL providers that
   explicitly require TLS (`?sslmode=require`) are accepted for cloud
   deployment while the local loopback port-5433 isolation rule is unchanged.
+- Completed the frontend MVP interactions: filtered overview navigation,
+  report CSV download, persisted dataset counts/schema, keyboard-operable
+  chart series toggles, searchable source citations and bounded document
+  previews.
+- Added the deterministic assistant plan/review/confirm/execute workflow with
+  strict allowlisted read-only tools, and completed the optional loopback-only
+  LM Studio Agents interface and truthful model health probe.
+- Bounded JSON request bodies by actual streamed bytes, including requests
+  without a `Content-Length` header; documented remaining ingestion,
+  retrieval, report-template, event and integration limitations.

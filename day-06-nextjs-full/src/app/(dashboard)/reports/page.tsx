@@ -22,6 +22,9 @@ export default async function ReportsPage({
     institutionId: first(params.institutionId)?.trim() ?? '',
     period: first(params.period) ?? '',
   };
+  const exportParams = new URLSearchParams();
+  if (filters.institutionId) exportParams.set('institutionId', filters.institutionId);
+  if (filters.period) exportParams.set('period', filters.period);
   const requestedPage = first(params.page);
   const page = requestedPage ? Number(requestedPage) : 1;
   let result;
@@ -40,8 +43,9 @@ export default async function ReportsPage({
         <span aria-hidden="true">ⓘ</span>
         <div>
           <strong>Synthetic report preview.</strong> Results come from the
-          persisted training dataset. Saved templates, export and dispatch are
-          not available in this phase.
+          persisted training dataset. CSV export uses the selected filters and
+          is limited to 1,000 records. Saved templates and dispatch are not
+          available.
         </div>
       </div>
       <section className="page-heading">
@@ -58,6 +62,12 @@ export default async function ReportsPage({
             <h2 className="panel-title">Preview filters</h2>
             <p className="panel-caption">Choose a period or institution, then apply to the persisted report set.</p>
           </div>
+          <a
+            className="button-primary button-link"
+            href={`/api/reports/export${exportParams.size ? `?${exportParams}` : ''}`}
+          >
+            Download CSV
+          </a>
         </div>
         <form className="filter-form report-filters" method="get" action="/reports">
           <label>

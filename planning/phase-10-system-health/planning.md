@@ -41,4 +41,8 @@ connection.
 
 ## Status
 
-Planned.
+Partially implemented: the application probes the isolated Day 6 database
+and configured loopback model endpoint, while external integrations and
+unavailable measurements are labeled explicitly. Processing/event-stream
+health, durable diagnostics, response-time measurements and Java/FastAPI
+integration examples remain incomplete.

@@ -3,11 +3,12 @@ info:
   title: Day 6 — SupTech Monitor API
   version: 0.1.0
   description: |
-    Read-only supervisory monitoring endpoints for the Day 6 training
-    application. All data is synthetic training data. Authentication is a
-    local demo boundary. This is not a real supervisory system and expresses
-    no Bank of Tanzania policy; exceptions are review signals, never findings
-    of misconduct or non-compliance.
+    Read-only supervisory monitoring and assistant endpoints for the Day 6
+    training application. All data is synthetic training data. Authentication
+    is a local demo boundary. Optional agent calls use only the configured
+    loopback LM Studio endpoint. This is not a real supervisory system and
+    expresses no Bank of Tanzania policy; exceptions are review signals,
+    never findings of misconduct or non-compliance.
 servers:
   - url: http://127.0.0.1:3000
     description: Local demo only; never expose publicly.
@@ -22,6 +23,10 @@ tags:
     description: Institution register and per-institution detail.
   - name: exceptions
     description: Supervisory exception register (review signals).
+  - name: assistant
+    description: Deterministic plan review and confirmed allowlisted read-only operations.
+  - name: agents
+    description: Optional bounded requests to locally hosted LM Studio agents.
 security:
   - cookieAuth: []
 paths:
@@ -277,6 +282,120 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalError'
+  /api/assistant/plan:
+    post:
+      tags: [assistant]
+      operationId: planAssistantQuestion
+      summary: Create a deterministic read-only query plan
+      description: |
+        Does not execute a query. The planner supports a bounded set of
+        overview, exception, institution and indicator questions; unsupported
+        intents return 400. The client must show the plan and obtain explicit
+        user confirmation before calling `/api/assistant/execute`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantPlanRequest'
+      responses:
+        '200':
+          description: Proposed operation and confirmation text.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistantPlanResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/assistant/execute:
+    post:
+      tags: [assistant]
+      operationId: executeAssistantTool
+      summary: Execute one allowlisted read-only operation
+      description: |
+        The client must call this only after the user confirms the displayed
+        plan. Tool arguments are validated against the operation's allowlist;
+        extra fields and arbitrary SQL are rejected. This endpoint never
+        performs a write.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantExecuteRequest'
+      responses:
+        '200':
+          description: Structured tool result and evidence summary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistantExecuteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/orchestration:
+    get:
+      tags: [agents]
+      operationId: listLocalAgents
+      summary: List available local analysis roles
+      responses:
+        '200':
+          description: Agent IDs and UI-safe descriptions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [agents]
+      operationId: runLocalAgents
+      summary: Run bounded prompts through selected local agents
+      description: |
+        Accepts 1–5 unique roles and 2–2,000 character prompts. Conversation
+        history is not supported. Requests use the configured loopback LM
+        Studio endpoint, have a bounded timeout, and do not query or attach
+        database records.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunRequest'
+      responses:
+        '200':
+          description: All selected agents completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '502':
+          description: One or more local model calls failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
 components:
   securitySchemes:
     cookieAuth:
@@ -350,6 +469,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    PayloadTooLarge:
+      description: Request body exceeds the endpoint's byte limit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     AuthMisconfigured:
       description: 'Local demo auth is misconfigured (missing DEMO_USERNAME/DEMO_PASSWORD or AUTH_SECRET shorter than 32 characters); body is {"error": string}.'
       content:
@@ -397,6 +522,145 @@ components:
       properties:
         signedOut:
           type: boolean
+    AssistantToolName:
+      type: string
+      enum:
+        - get_portfolio_overview
+        - list_exceptions
+        - get_institution
+        - get_analytics
+        - list_institutions
+    AssistantPlanRequest:
+      type: object
+      required: [question]
+      properties:
+        question:
+          type: string
+          minLength: 2
+          maxLength: 200
+    AssistantPlan:
+      type: object
+      required: [tool, arguments, purpose, source, confirmation]
+      properties:
+        tool:
+          $ref: '#/components/schemas/AssistantToolName'
+        arguments:
+          type: object
+          additionalProperties: true
+        purpose:
+          type: string
+        source:
+          type: string
+        confirmation:
+          type: string
+    AssistantPlanResponse:
+      type: object
+      required: [plan]
+      properties:
+        plan:
+          $ref: '#/components/schemas/AssistantPlan'
+    AssistantExecuteRequest:
+      type: object
+      required: [tool, arguments]
+      properties:
+        tool:
+          $ref: '#/components/schemas/AssistantToolName'
+        arguments:
+          type: object
+          additionalProperties: true
+    AssistantExecuteResponse:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: object
+          required: [tool, arguments, result, summary]
+          properties:
+            tool:
+              $ref: '#/components/schemas/AssistantToolName'
+            arguments:
+              type: object
+              additionalProperties: true
+            result:
+              type: object
+              additionalProperties: true
+            summary:
+              type: string
+    AgentId:
+      type: string
+      enum:
+        - data-ingestion
+        - prudential-analysis
+        - exception-classifier
+        - report-synthesizer
+        - anomaly-detector
+    AgentListResponse:
+      type: object
+      required: [agents]
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            required: [id, name, description]
+            properties:
+              id:
+                $ref: '#/components/schemas/AgentId'
+              name:
+                type: string
+              description:
+                type: string
+    AgentRunRequest:
+      type: object
+      required: [requests]
+      properties:
+        requests:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: object
+            required: [agentId, userMessage]
+            properties:
+              agentId:
+                $ref: '#/components/schemas/AgentId'
+              userMessage:
+                type: string
+                minLength: 2
+                maxLength: 2000
+        parallel:
+          type: boolean
+          default: true
+    AgentRunResponse:
+      type: object
+      required: [success, agents, totalLatencyMs]
+      properties:
+        success:
+          type: boolean
+        agents:
+          type: array
+          items:
+            type: object
+            required: [success, agentId, agentName]
+            properties:
+              success:
+                type: boolean
+              agentId:
+                $ref: '#/components/schemas/AgentId'
+              agentName:
+                type: string
+              response:
+                type: string
+              error:
+                type: string
+              latencyMs:
+                type: number
+                minimum: 0
+        totalLatencyMs:
+          type: number
+          minimum: 0
+        error:
+          type: string
     Exception:
       type: object
       required: [id, institutionId, institutionName, reportId, period, indicatorId, observedValue, thresholdValue, severity, status, message, createdAt]

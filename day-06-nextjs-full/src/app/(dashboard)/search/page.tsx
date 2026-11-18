@@ -12,7 +12,12 @@ function first(value: string | string[] | undefined): string | undefined {
 }
 
 function hitHref(hit: SearchHit): string {
-  if (hit.kind === 'document') return '/uploads';
+  if (hit.kind === 'document') {
+    const { documentId, chunkIndex } = hit.citation;
+    return documentId && chunkIndex !== undefined
+      ? `/documents/${encodeURIComponent(documentId)}?chunk=${chunkIndex}`
+      : '/data-explorer';
+  }
   if (hit.kind === 'report') {
     return hit.citation.period
       ? `/reports?period=${encodeURIComponent(hit.citation.period)}`
@@ -24,7 +29,7 @@ function hitHref(hit: SearchHit): string {
 }
 
 function hitLinkLabel(hit: SearchHit): string {
-  if (hit.kind === 'document') return 'Ingestion';
+  if (hit.kind === 'document') return 'Open source chunk';
   if (hit.kind === 'report') return 'View reports';
   return 'View institution';
 }

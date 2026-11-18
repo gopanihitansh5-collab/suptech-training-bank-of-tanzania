@@ -71,6 +71,14 @@ export interface OverviewData {
   recentExceptions: ExceptionRow[];
 }
 
+export interface DataExplorerStats {
+  institutions: number;
+  reports: number;
+  indicators: number;
+  reviewSignals: number;
+  latestPeriod: string | null;
+}
+
 export interface InstitutionDetail {
   institution: InstitutionRow;
   reports: Array<{
@@ -278,6 +286,34 @@ export async function getOverview(requestedPeriod?: string): Promise<OverviewDat
       exceptions: numericValue(row.exceptions),
     })),
     recentExceptions: exceptionResult.rows.map(mapException),
+  };
+}
+
+export async function getDataExplorerStats(): Promise<DataExplorerStats> {
+  const result = await query<{
+    institutions: number;
+    reports: number;
+    indicators: number;
+    review_signals: number;
+    latest_period: string | null;
+  }>(
+    `SELECT
+       (SELECT count(*)::int FROM institutions) AS institutions,
+       (SELECT count(*)::int FROM institution_reports) AS reports,
+       (SELECT count(*)::int FROM supervisory_indicators) AS indicators,
+       (SELECT count(*)::int FROM supervisory_exceptions) AS review_signals,
+       (SELECT max(reporting_period) FROM institution_reports) AS latest_period`,
+  );
+  const stats = result.rows[0];
+  if (!stats) {
+    throw new Error('The data explorer summary query returned no result.');
+  }
+  return {
+    institutions: Number(stats.institutions),
+    reports: Number(stats.reports),
+    indicators: Number(stats.indicators),
+    reviewSignals: Number(stats.review_signals),
+    latestPeriod: stats.latest_period,
   };
 }
 

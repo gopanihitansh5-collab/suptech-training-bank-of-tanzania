@@ -1,101 +1,88 @@
 import { NextResponse } from 'next/server';
-import { orchestrateAgents, executeAgent, listAvailableAgents } from '@/lib/orchestration';
+import { errorResponse, readJsonBody, RequestValidationError } from '@/lib/api-errors';
 import { requireDemoSession } from '@/lib/auth';
+import {
+  AGENT_CONFIGS,
+  MAX_AGENT_MESSAGE_LENGTH,
+  MAX_AGENT_REQUESTS,
+  orchestrateAgents,
+  listAvailableAgents,
+  type AgentRequest,
+} from '@/lib/orchestration';
 
-/**
- * POST /api/orchestration
- * Execute one or more agents (parallel or sequential)
- */
-export async function POST(request: Request) {
-  try {
-    await requireDemoSession();
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseRequests(value: unknown): AgentRequest[] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > MAX_AGENT_REQUESTS) {
+    throw new RequestValidationError(
+      `Select between 1 and ${MAX_AGENT_REQUESTS} analysis roles.`,
     );
   }
 
-  let body: {
-    requests?: Array<{
-      agentId: string;
-      userMessage: string;
-      conversationHistory?: Array<{ role: string; content: string }>;
-    }>;
-    parallel?: boolean;
-  };
+  const seen = new Set<string>();
+  return value.map((entry) => {
+    if (!isRecord(entry)) {
+      throw new RequestValidationError('Each analysis request must be an object.');
+    }
 
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: 'Invalid JSON body' },
-      { status: 400 }
-    );
-  }
+    const { agentId, userMessage, conversationHistory } = entry;
+    if (typeof agentId !== 'string' || !Object.hasOwn(AGENT_CONFIGS, agentId)) {
+      throw new RequestValidationError('Each request must select an available analysis role.');
+    }
+    if (seen.has(agentId)) {
+      throw new RequestValidationError('An analysis role can only be selected once.');
+    }
+    seen.add(agentId);
 
-  const { requests, parallel = true } = body;
-
-  if (!requests || !Array.isArray(requests) || requests.length === 0) {
-    return NextResponse.json(
-      { error: 'requests must be a non-empty array' },
-      { status: 400 }
-    );
-  }
-
-  // Validate each request has required fields
-  for (const req of requests) {
-    if (!req.agentId || typeof req.agentId !== 'string') {
-      return NextResponse.json(
-        { error: `Each request must have a valid agentId string` },
-        { status: 400 }
+    if (
+      typeof userMessage !== 'string' ||
+      userMessage.trim().length < 2 ||
+      userMessage.length > MAX_AGENT_MESSAGE_LENGTH
+    ) {
+      throw new RequestValidationError(
+        `Each prompt must contain 2-${MAX_AGENT_MESSAGE_LENGTH} characters.`,
       );
     }
-    if (!req.userMessage || typeof req.userMessage !== 'string') {
-      return NextResponse.json(
-        { error: `Each request must have a valid userMessage string` },
-        { status: 400 }
-      );
+
+    if (conversationHistory !== undefined) {
+      throw new RequestValidationError('Conversation history is not supported by this workspace.');
     }
-  }
 
-  const result = await orchestrateAgents(
-    requests.map((r) => ({
-      agentId: r.agentId,
-      userMessage: r.userMessage,
-      conversationHistory: r.conversationHistory,
-    })),
-    parallel
-  );
-
-  if (!result.success) {
-    return NextResponse.json(
-      { error: result.error, agents: result.agents },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({
-    success: true,
-    agents: result.agents,
-    totalLatencyMs: result.totalLatencyMs,
+    return { agentId, userMessage: userMessage.trim() };
   });
 }
 
-/**
- * GET /api/orchestration
- * List all available agents
- */
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
     await requireDemoSession();
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+    const body = await readJsonBody(request, 32_000);
+    if (!isRecord(body)) {
+      throw new RequestValidationError('The request body must be an object.');
+    }
+    const parallel = body.parallel ?? true;
+    if (typeof parallel !== 'boolean') {
+      throw new RequestValidationError('Execution mode must be parallel or sequential.');
+    }
 
-  const agents = listAvailableAgents();
-  return NextResponse.json({ agents });
+    const result = await orchestrateAgents(parseRequests(body.requests), parallel);
+    return NextResponse.json(result, { status: result.success ? 200 : 502 });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function GET() {
+  try {
+    await requireDemoSession();
+    const agents = listAvailableAgents().map(({ id, name, description }) => ({
+      id,
+      name,
+      description,
+    }));
+    return NextResponse.json({ agents });
+  } catch (error) {
+    return errorResponse(error);
+  }
 }

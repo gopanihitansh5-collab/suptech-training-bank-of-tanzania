@@ -34,4 +34,7 @@ and analytics without exposing or modifying submitted data.
 
 ## Status
 
-Planned.
+Partially implemented: persisted dataset counts, table/schema disclosures,
+report search, bounded pagination, source links and explicit unavailable
+states are present. Validation findings, raw/rejected layers, sample previews
+and durable ingestion history are not implemented.

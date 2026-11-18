@@ -20,7 +20,7 @@ export default async function SettingsPage() {
           <p className="subtitle">Inspect the current demo boundary without changing application configuration.</p>
         </div>
       </section>
-      <section className="panel settings-panel">
+      <section className="panel">
         <div className="panel-header">
           <div>
             <h2 className="panel-title">Current session</h2>

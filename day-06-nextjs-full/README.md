@@ -2,9 +2,10 @@
 
 Day 6 is a standalone, full-stack Next.js training PoC. Next.js App Router
 pages and route handlers are the application boundary; TypeScript services
-currently provide persisted analytics and report exploration. PostgreSQL
-stores the synthetic training records. Ingestion, retrieval, exports and
-assistant workflows remain planned.
+provide persisted analytics, report exploration and a deterministic,
+read-only assistant workflow. PostgreSQL stores the synthetic training
+records. Document ingestion, semantic retrieval, saved report templates,
+durable events and administrative writes remain planned.
 
 The earlier Python training days remain unchanged. Day 6 does not depend on
 their runtime or proxy API requests to FastAPI.
@@ -52,7 +53,9 @@ Open <http://127.0.0.1:3000>. Sign in with the local demo username and password
 from `.env`. The database container binds only to `127.0.0.1:5433`; it does not
 reuse or modify the unrelated PostgreSQL instance on port 5432.
 
-Document uploads are not implemented yet. Do not upload documents or
+Document uploads are not implemented yet. The search page can search
+previously stored document chunks and open a bounded source preview, but it
+does not provide an upload or ingestion workflow. Do not upload documents or
 confidential records, and do not expose this PoC to the public internet.
 
 ## Commands
@@ -71,9 +74,15 @@ confidential records, and do not expose this PoC to the public internet.
 - The application has nine modules matching the supplied Stitch references.
 - Read endpoints and all analytics use persisted demo records; values are not
   hardcoded in page components.
-- The assistant screen is informational and is not connected to a chat or
-  retrieval workflow yet. A future assistant must use deterministic,
-  allowlisted tools and must never generate or execute SQL.
+- The assistant creates deterministic plans, shows the read-only operation
+  for review, and runs an allowlisted query only after explicit confirmation.
+  It does not use a model to plan queries, retrieve documents, or generate SQL.
+- The Agents module optionally calls the configured loopback LM Studio
+  endpoint for bounded prompts. It does not have access to database records or
+  external model providers.
+- The overview period selector, report filters/CSV download, chart series
+  toggles, dataset schema disclosures, search citations and document source
+  preview are interactive.
 - Document ingestion is not enabled yet. Planned formats and limits are listed
   in the feature matrix.
 - Thresholds are training configuration, not official limits. An exception is

@@ -2,12 +2,18 @@
 
 ## Current checkpoint — 2026-11-18
 
-The foundation overview/directory slice is verified and summarized. Its
-bounded Qwen read-only review failed before producing a response because the
-prompt exceeded the model context; no independent findings were returned.
-Phases 2 and 3 are implemented and have passed focused tests, typecheck,
-production builds, and authenticated API/page smoke tests. No changes were
-made to the existing Python training days or PostgreSQL port-5432 cluster.
+The Day 6 frontend MVP slice is implemented. Overview filtering, report CSV
+download, dataset/schema exploration, keyword citations/source previews,
+deterministic assistant plan/confirm/execute, local-agent workflows, chart
+series controls and local model health are connected to their underlying
+services. The final typecheck, unit tests and production build are recorded
+below. Document ingestion, semantic retrieval, durable events, saved report
+templates, admin writes and external integrations remain deferred.
+
+The earlier bounded Qwen read-only review failed before producing a response
+because the prompt exceeded the model context; no independent findings were
+returned. No changes were made to the existing Python training days or
+PostgreSQL port-5432 cluster.
 
 The local LM Studio endpoint on `127.0.0.1:1235` is responding. Qwen chat
 inference returned the expected readiness response and Nomic produced a
@@ -50,10 +56,33 @@ branch was clean at resume. Do not amend the existing commits.
   and indicator filters, bounded exception search/pagination, and traceable
   synthetic report/institution details. No exception mutation workflow was
   added.
-- Added a filtered report preview and Data Explorer over persisted reports,
-  plus assistant capability, local database health and read-only settings
-  pages. Assistant chat, ingestion, export, settings writes and external
-  integrations remain unimplemented.
+- Added a filtered report preview and read-only settings pages over persisted
+  records. The current assistant, CSV download, search/source preview,
+  Data Explorer and local-model details are documented in the frontend MVP
+  checkpoint below.
+
+## Frontend MVP verification — 2026-11-18
+
+- `npm run typecheck`: passed.
+- `npm test`: passed, 9 files / 53 tests, including bounded JSON request-body
+  handling with and without `Content-Length`.
+- `npm run build`: passed; all dashboard pages and API routes, including
+  assistant planning/execution, orchestration, reports export, search and
+  document source preview, were generated.
+- The static build's health-page probe logged the expected database
+  `ECONNREFUSED` because the local Day 6 database was not running during the
+  build. The build completed successfully; an authenticated runtime health
+  check still requires the isolated database and optional local model.
+- Assistant requests use validated allowlisted tools, explicit user
+  confirmation and byte-bounded JSON bodies; no model-generated SQL or
+  arbitrary query path is enabled.
+- The local Agents module sends only bounded user prompts to the configured
+  loopback LM Studio endpoint. It does not query or include database records.
+- The Data Explorer shows persisted dataset counts and schema fields, and
+  clearly marks validation findings and ingestion history as unavailable.
+- OpenAPI documentation parses successfully as YAML. Browser smoke confirmed
+  the sign-in page renders; dashboard visual inspection was blocked because
+  the Docker daemon was unavailable and the local database was stopped.
 
 ## Foundation verification — 2026-11-18
 
@@ -136,10 +165,13 @@ branch was clean at resume. Do not amend the existing commits.
 
 ## Exact next steps
 
-1. Commit and push the verified Phase 3 workspace slice.
-2. Plan and implement Phase 4 ingestion as a separate tested slice. Do not
-   claim uploads, RAG/chat, CSV export, SSE, admin writes, or external system
-   integrations are implemented until they exist and are verified.
+1. Rerun typecheck, tests and production build after the bounded JSON-body
+   parser tests and documentation updates.
+2. Complete a browser visual smoke test when the local app/database are
+   available; inspect responsive layouts and interactive states.
+3. Implement upload/ingestion, semantic retrieval, persisted event replay,
+   report templates, admin writes or external integrations only as separately
+   scoped and verified work. Keep their unavailable states explicit.
 
 ## Boundaries and cautions
 
@@ -151,8 +183,8 @@ branch was clean at resume. Do not amend the existing commits.
   credentials, `.env`, dependency directories, or generated build output.
 - Do not send confidential records, credentials, or user files to a model.
   Current model probes and the delegated review use local LM Studio only.
-- Do not claim that uploads, AI/RAG, CSV export, SSE, administration writes,
-  or external system health are implemented.
+- Do not claim that document uploads, semantic retrieval, SSE, administration
+  writes or external system integrations are implemented.
 - The existing Python test baseline remains blocked at collection because
   `fastapi` is missing from the repository's `.venv`; no Python dependencies
   were installed or changed.

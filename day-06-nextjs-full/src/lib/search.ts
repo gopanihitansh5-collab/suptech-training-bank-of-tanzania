@@ -92,34 +92,30 @@ export async function searchDocuments(
   const search = queryText.trim();
   if (!search || !hasLexeme(search)) return [];
   const limit = boundedLimit(options.limit, DEFAULT_DOCUMENT_LIMIT);
-  try {
-    const result = await query(
-      `SELECT c.document_id, c.chunk_index, c.content, d.original_filename,
-         ts_rank_cd(c.content_search, websearch_to_tsquery('simple', $1)) AS search_rank
-       FROM document_chunks c
-       JOIN uploaded_documents d ON d.document_id = c.document_id
-       WHERE d.status = 'completed'
-         AND c.content_search @@ websearch_to_tsquery('simple', $1)
-       ORDER BY search_rank DESC, d.original_filename, c.chunk_index
-       LIMIT $2`,
-      [search, limit],
-    );
+  const result = await query(
+    `SELECT c.document_id, c.chunk_index, c.content, d.original_filename,
+       ts_rank_cd(c.content_search, websearch_to_tsquery('simple', $1)) AS search_rank
+     FROM document_chunks c
+     JOIN uploaded_documents d ON d.document_id = c.document_id
+     WHERE d.status = 'completed'
+       AND c.content_search @@ websearch_to_tsquery('simple', $1)
+     ORDER BY search_rank DESC, d.original_filename, c.chunk_index
+     LIMIT $2`,
+    [search, limit],
+  );
 
-    return result.rows.map((row) => {
-      const documentId = String(row.document_id);
-      const chunkIndex = numeric(row.chunk_index);
-      return {
-        kind: 'document',
-        id: `${documentId}:${chunkIndex}`,
-        title: String(row.original_filename),
-        excerpt: truncateExcerpt(String(row.content)),
-        citation: { documentId, chunkIndex },
-        rank: numeric(row.search_rank),
-      };
-    });
-  } catch {
-    return [];
-  }
+  return result.rows.map((row) => {
+    const documentId = String(row.document_id);
+    const chunkIndex = numeric(row.chunk_index);
+    return {
+      kind: 'document',
+      id: `${documentId}:${chunkIndex}`,
+      title: String(row.original_filename),
+      excerpt: truncateExcerpt(String(row.content)),
+      citation: { documentId, chunkIndex },
+      rank: numeric(row.search_rank),
+    };
+  });
 }
 
 export async function searchReports(

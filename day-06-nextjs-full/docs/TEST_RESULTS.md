@@ -51,6 +51,17 @@
 | Invalid filters | Reject invalid periods and unsafe page numbers explicitly. | **Passed:** both pages rendered an explicit invalid-filter response; repository tests cover validation before database access. |
 | Capability disclosure | Do not imply unfinished chat, uploads, export, settings writes or external integrations. | **Passed:** assistant/settings pages are explicit; the health page showed the live Day 6 database as connected and models/external systems as not connected. |
 
+### Frontend MVP — 2026-11-18
+
+| Command / check | Expected | Actual |
+| --- | --- | --- |
+| `npm run typecheck` | Strict TypeScript check passes for frontend and API changes. | **Passed.** |
+| `npm test` | Focused Day 6 tests pass, including tool argument and request-size validation. | **Passed:** 9 files, 53 tests. |
+| `npm run build` | Optimized Next.js build includes all dashboard and API routes. | **Passed:** all pages and routes generated. The build-time health probe logged `ECONNREFUSED` because the local Day 6 database was not running; this did not fail the build. |
+| Bounded JSON body parser | Reject malformed JSON and bodies larger than the endpoint byte limit even without `Content-Length`. | **Passed:** focused tests cover valid JSON, malformed JSON, missing-header oversize rejection and HTTP 413 mapping. |
+| OpenAPI contract | API documentation remains valid YAML. | **Passed:** `docs/openapi.yaml` parsed with Ruby's YAML parser. |
+| Browser visual review | Check responsive appearance and interactive states in a browser. | **Partial:** the sign-in page rendered and was visually inspected. Dashboard inspection was blocked because Docker was unavailable and the local database was stopped. |
+
 ### Known demo authentication limitation
 
 A copied stateless signed token remains valid until its eight-hour expiry even

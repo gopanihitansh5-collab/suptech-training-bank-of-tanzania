@@ -10,6 +10,8 @@ export interface AgentConfig {
   id: string;
   /** Agent name and role */
   name: string;
+  /** Short, non-sensitive description shown in the UI */
+  description: string;
   /** System prompt defining agent capabilities */
   systemPrompt: string;
   /** Maximum tokens for response */
@@ -41,108 +43,98 @@ export interface OrchestrationResult {
   error?: string;
 }
 
-const LM_STUDIO_URL = process.env.LM_STUDIO_BASE_URL || 'http://127.0.0.1:1235/v1';
 const CHAT_MODEL = process.env.LM_STUDIO_CHAT_MODEL || 'qwen/qwen3.6-35b-a3b';
+export const MAX_AGENT_REQUESTS = 5;
+export const MAX_AGENT_MESSAGE_LENGTH = 2000;
 
-// Pre-defined agent configurations
 export const AGENT_CONFIGS: Record<string, AgentConfig> = {
   'data-ingestion': {
     id: 'data-ingestion',
     name: 'Data Ingestion Agent',
-    systemPrompt: `You are a Data Ingestion Agent for a banking supervision system.
-Your role is to validate, parse, and catalog regulatory submissions from financial institutions.
-You handle:
-- Schema validation for forms (01-CAR, 08-LGR, 09-FX, etc.)
-- Record-level quality checks
-- Exception classification (critical, high, moderate)
-- Batch processing status tracking
-
-Rules:
-- Only work with synthetic training data
-- Never process real institutional data
-- Return structured validation results
-- Flag records that exceed statutory thresholds`,
+    description: 'Explain synthetic record validation and data-quality checks.',
+    systemPrompt: `You explain data-quality concepts for a synthetic supervisory training demo.
+Only analyze fictional values explicitly supplied in the prompt. Do not claim to validate or ingest files.
+Training thresholds are illustrative, not official rules. Never invent records or missing values.
+State when the supplied evidence is insufficient. Do not produce SQL or perform actions.`,
     maxTokens: 1024,
     temperature: 0.3,
   },
   'prudential-analysis': {
     id: 'prudential-analysis',
     name: 'Prudential Analysis Agent',
-    systemPrompt: `You are a Prudential Analysis Agent for banking supervision.
-Your role is to analyze capital adequacy, liquidity, and risk metrics.
-You handle:
-- Capital Adequacy Ratio (CAR) analysis
-- Liquidity Coverage Ratio (LCR) monitoring
-- Non-Performing Loan (NPL) ratio trends
-- Concentration risk assessment
-- Stress testing scenarios
-
-Rules:
-- Compare metrics against statutory thresholds
-- Flag breaches with specific rule references
-- Provide quantitative analysis only
-- Never make regulatory decisions - only flag anomalies`,
+    description: 'Explain supplied synthetic prudential indicators and their limits.',
+    systemPrompt: `You explain prudential indicators for a synthetic supervisory training demo.
+Only analyze fictional values and formulas explicitly supplied in the prompt. Do not infer real-world compliance.
+Training thresholds are illustrative, not official rules or statutory limits.
+State calculations and evidence limits clearly. Never invent data, SQL, or recommendations.`,
     maxTokens: 1024,
     temperature: 0.2,
   },
   'exception-classifier': {
     id: 'exception-classifier',
     name: 'Exception Classifier Agent',
-    systemPrompt: `You are an Exception Classifier Agent for banking supervision.
-Your role is to classify and prioritize regulatory exceptions.
-You handle:
-- Severity classification (critical, high, moderate)
-- Priority assignment for examiner review
-- Categorization by rule type (PRUD, STAT, LIQ)
-- Escalation recommendations
-
-Rules:
-- Base classification on quantitative thresholds
-- Reference specific prudential rules
-- Provide clear reasoning for severity
-- Never override examiner decisions`,
+    description: 'Summarize synthetic review signals without treating them as findings.',
+    systemPrompt: `You summarize synthetic training review signals.
+Only classify using values and illustrative thresholds explicitly supplied in the prompt.
+A signal is not a confirmed violation, official finding, or proof of non-compliance.
+Do not cite real laws or policies, invent evidence, or recommend enforcement actions.`,
     maxTokens: 512,
     temperature: 0.1,
   },
   'report-synthesizer': {
     id: 'report-synthesizer',
     name: 'Report Synthesizer Agent',
-    systemPrompt: `You are a Report Synthesizer Agent for banking supervision.
-Your role is to compile supervisory findings into structured reports.
-You handle:
-- Monthly supervisory overviews
-- Institution-specific dossiers
-- Sector-wide risk summaries
-- Statutory compliance summaries
-
-Rules:
-- Use only verified, validated data
-- Include synthetic data disclaimers
-- Structure reports with clear sections
-- Reference source reports by ID`,
+    description: 'Organize supplied fictional records into a concise, cited summary.',
+    systemPrompt: `You organize only the fictional records included in the prompt.
+Do not imply that records were independently verified or that a live data source was queried.
+Include a synthetic-data disclaimer and preserve provided source IDs exactly.
+Do not invent facts, provide statutory compliance conclusions, or generate SQL.`,
     maxTokens: 2048,
     temperature: 0.4,
   },
   'anomaly-detector': {
     id: 'anomaly-detector',
     name: 'Anomaly Detection Agent',
-    systemPrompt: `You are an Anomaly Detection Agent for banking supervision.
-Your role is to identify statistical outliers and unusual patterns.
-You handle:
-- Z-Score analysis for prudential metrics
-- Trend deviation detection
-- Cross-institution comparison
-- Time-series anomaly flagging
-
-Rules:
-- Use statistical methods (Z-Score > 2.5)
-- Reference specific indicators
-- Provide confidence levels
-- Never flag without quantitative basis`,
+    description: 'Describe notable patterns only when the prompt contains enough data.',
+    systemPrompt: `You describe possible patterns in synthetic values explicitly provided in the prompt.
+Do not claim to run statistical tests unless the necessary values and calculations are shown.
+Do not invent confidence levels, records, or evidence. A pattern is not a regulatory finding.
+State when the supplied history is too small or incomplete for a conclusion.`,
     maxTokens: 768,
     temperature: 0.2,
   },
 };
+
+function getChatCompletionsUrl(): string {
+  const configured = process.env.LM_STUDIO_BASE_URL?.trim() || 'http://127.0.0.1:1235/v1';
+  let url: URL;
+  try {
+    url = new URL(configured);
+  } catch {
+    throw new Error('The local model endpoint URL is invalid.');
+  }
+  const loopbackHosts = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
+  if (!loopbackHosts.has(url.hostname) || !['http:', 'https:'].includes(url.protocol)) {
+    throw new Error('The local model endpoint must use loopback; external providers are disabled.');
+  }
+  return `${url.toString().replace(/\/+$/, '')}/chat/completions`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export async function isLocalModelAvailable(): Promise<boolean> {
+  try {
+    const modelsUrl = getChatCompletionsUrl().replace(/\/chat\/completions$/, '/models');
+    const response = await fetch(modelsUrl, { signal: AbortSignal.timeout(2500) });
+    if (!response.ok) return false;
+    const data: unknown = await response.json();
+    return isRecord(data) && Array.isArray(data.data) && data.data.length > 0;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Call LM Studio API for a single agent
@@ -161,7 +153,7 @@ async function callLMStudio(
       { role: 'user', content: userMessage },
     ];
 
-    const response = await fetch(`${LM_STUDIO_URL}/chat/completions`, {
+    const response = await fetch(getChatCompletionsUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -170,20 +162,30 @@ async function callLMStudio(
         max_tokens: agentConfig.maxTokens || 512,
         temperature: agentConfig.temperature || 0.3,
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
-      throw new Error(`LM Studio API error: ${response.status} ${response.statusText}`);
+      throw new Error(`The local model returned HTTP ${response.status}.`);
     }
 
-    const data = await response.json();
+    const data: unknown = await response.json();
+    const choices = isRecord(data) && Array.isArray(data.choices) ? data.choices : [];
+    const firstChoice = choices[0];
+    const message = isRecord(firstChoice) && isRecord(firstChoice.message)
+      ? firstChoice.message
+      : null;
+    const content = message?.content;
+    if (typeof content !== 'string' || content.trim().length === 0) {
+      throw new Error('The local model returned an empty or invalid response.');
+    }
     const latencyMs = Date.now() - startTime;
 
     return {
       success: true,
       agentId: agentConfig.id,
       agentName: agentConfig.name,
-      response: data.choices?.[0]?.message?.content || 'No response generated',
+      response: content,
       latencyMs,
     };
   } catch (error) {
@@ -192,7 +194,9 @@ async function callLMStudio(
       success: false,
       agentId: agentConfig.id,
       agentName: agentConfig.name,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error
+        ? error.message
+        : 'The local model request failed.',
       latencyMs,
     };
   }
@@ -209,6 +213,49 @@ export async function orchestrateAgents(
   requests: AgentRequest[],
   parallel = true
 ): Promise<OrchestrationResult> {
+  if (!Array.isArray(requests) || requests.length === 0) {
+    return {
+      success: false,
+      agents: [],
+      totalLatencyMs: 0,
+      error: 'Select at least one analysis role.',
+    };
+  }
+  if (requests.length > MAX_AGENT_REQUESTS) {
+    return {
+      success: false,
+      agents: [],
+      totalLatencyMs: 0,
+      error: `Select no more than ${MAX_AGENT_REQUESTS} analysis roles.`,
+    };
+  }
+  const seenAgentIds = new Set<string>();
+  for (const request of requests) {
+    if (
+      !request ||
+      typeof request.agentId !== 'string' ||
+      typeof request.userMessage !== 'string' ||
+      request.userMessage.trim().length < 2 ||
+      request.userMessage.length > MAX_AGENT_MESSAGE_LENGTH
+    ) {
+      return {
+        success: false,
+        agents: [],
+        totalLatencyMs: 0,
+        error: `Each request must include a 2-${MAX_AGENT_MESSAGE_LENGTH} character prompt.`,
+      };
+    }
+    if (seenAgentIds.has(request.agentId)) {
+      return {
+        success: false,
+        agents: [],
+        totalLatencyMs: 0,
+        error: 'An analysis role can only be selected once.',
+      };
+    }
+    seenAgentIds.add(request.agentId);
+  }
+
   const startTime = Date.now();
   const results: AgentResponse[] = [];
 
@@ -263,6 +310,18 @@ export async function executeAgent(request: AgentRequest): Promise<AgentResponse
       agentId: request.agentId,
       agentName: 'Unknown',
       error: `Unknown agent ID: ${request.agentId}`,
+    };
+  }
+  if (
+    typeof request.userMessage !== 'string' ||
+    request.userMessage.trim().length < 2 ||
+    request.userMessage.length > MAX_AGENT_MESSAGE_LENGTH
+  ) {
+    return {
+      success: false,
+      agentId: request.agentId,
+      agentName: config.name,
+      error: `The prompt must contain 2-${MAX_AGENT_MESSAGE_LENGTH} characters.`,
     };
   }
   return callLMStudio(config, request.userMessage, request.conversationHistory);

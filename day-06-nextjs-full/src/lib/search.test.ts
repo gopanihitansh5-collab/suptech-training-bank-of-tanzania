@@ -29,6 +29,11 @@ describe('search query validation', () => {
     await expect(searchDocuments('%%%')).resolves.toEqual([]);
     expect(query).not.toHaveBeenCalled();
   });
+
+  it('surfaces document search failures instead of returning an empty result', async () => {
+    vi.mocked(query).mockRejectedValueOnce(new Error('database unavailable'));
+    await expect(searchDocuments('synthetic records')).rejects.toThrow('database unavailable');
+  });
 });
 
 describe('LIKE pattern escaping', () => {

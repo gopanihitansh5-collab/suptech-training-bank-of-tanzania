@@ -1,5 +1,5 @@
 import { RequestValidationError } from '@/lib/api-errors';
-import { listReports } from '@/lib/repository';
+import { getDataExplorerStats, listReports } from '@/lib/repository';
 import { ReportTable } from '@/components/report-table';
 
 type SearchParams = Promise<{
@@ -24,6 +24,7 @@ export default async function DataExplorerPage({
   };
   const requestedPage = first(params.page);
   const page = requestedPage ? Number(requestedPage) : 1;
+  const stats = await getDataExplorerStats();
   let result;
   try {
     result = await listReports({ ...filters, page, pageSize: 25 });
@@ -39,8 +40,9 @@ export default async function DataExplorerPage({
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Read-only synthetic data explorer.</strong> Document upload,
-          ingestion jobs and validation diagnostics are not implemented yet.
+          <strong>Read-only synthetic data explorer.</strong> Counts below come
+          from persisted Day 6 tables. Row-level validation and ingestion-run
+          history are not stored by this MVP.
         </div>
       </div>
       <section className="page-heading">
@@ -50,6 +52,54 @@ export default async function DataExplorerPage({
           <p className="subtitle">Search persisted reports and follow their institution history.</p>
         </div>
         <span className="period-chip">{result.total} report(s)</span>
+      </section>
+      <section className="dataset-grid" aria-label="Persisted synthetic datasets">
+        <DatasetCard
+          name="Institutions"
+          tableName="institutions"
+          count={stats.institutions}
+          grain="One row per fictional institution"
+          layer="Reference"
+          fields={['institution_id', 'institution_name', 'institution_type', 'region', 'tier', 'status']}
+        />
+        <DatasetCard
+          name="Monthly reports"
+          tableName="institution_reports"
+          count={stats.reports}
+          grain="One report per institution and reporting period"
+          layer="Curated"
+          fields={['report_id', 'institution_id', 'reporting_period', 'deposits_tzs_billions', 'loans_tzs_billions', 'report_completeness_percent', 'source_record_ids']}
+        />
+        <DatasetCard
+          name="Supervisory indicators"
+          tableName="supervisory_indicators"
+          count={stats.indicators}
+          grain="Institution or sector indicator by period"
+          layer="Analytical"
+          fields={['indicator_id', 'grain', 'reporting_period', 'subject_key', 'indicator_value', 'unit', 'formula', 'source_report_ids']}
+        />
+        <DatasetCard
+          name="Review signals"
+          tableName="supervisory_exceptions"
+          count={stats.reviewSignals}
+          grain="One illustrative threshold comparison"
+          layer="Analytical"
+          fields={['exception_id', 'report_id', 'institution_id', 'reporting_period', 'indicator_id', 'observed_value', 'threshold_value', 'severity', 'status']}
+        />
+      </section>
+      <section className="panel data-quality-panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">Validation and processing evidence</h2>
+            <p className="panel-caption">Unavailable evidence is identified rather than shown as a successful empty run.</p>
+          </div>
+        </div>
+        <dl className="data-quality-list">
+          <div><dt>Latest persisted reporting period</dt><dd>{stats.latestPeriod ?? 'No report period available'}</dd></div>
+          <div><dt>Missing, duplicate, or rejected row counts</dt><dd>Not recorded in Day 6</dd></div>
+          <div><dt>Durable ingestion run history</dt><dd>Not available in this MVP</dd></div>
+          <div><dt>Data boundary</dt><dd>Fictional training records only</dd></div>
+        </dl>
       </section>
       <section className="panel">
         <div className="panel-header">
@@ -72,6 +122,42 @@ export default async function DataExplorerPage({
         <ReportTable result={result} filters={filters} />
       </section>
     </main>
+  );
+}
+
+function DatasetCard({
+  name,
+  tableName,
+  count,
+  grain,
+  layer,
+  fields,
+}: {
+  name: string;
+  tableName: string;
+  count: number;
+  grain: string;
+  layer: string;
+  fields: string[];
+}) {
+  return (
+    <article className="panel dataset-card">
+      <div className="dataset-card-top">
+        <div>
+          <h2 className="panel-title">{name}</h2>
+          <span className="dataset-layer">{layer} layer</span>
+        </div>
+        <strong className="dataset-count">{count.toLocaleString('en')}</strong>
+      </div>
+      <p className="panel-caption">{grain}</p>
+      <details>
+        <summary>View table and schema fields</summary>
+        <p className="dataset-table-name mono">{tableName}</p>
+        <ul className="dataset-fields">
+          {fields.map((field) => <li className="mono" key={field}>{field}</li>)}
+        </ul>
+      </details>
+    </article>
   );
 }
 

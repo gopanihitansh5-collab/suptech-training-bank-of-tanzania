@@ -1,33 +1,32 @@
 import { listAvailableAgents } from '@/lib/orchestration';
-import { AgentsDashboard } from '@/components/agents-dashboard';
+import { AgentsWorkspace } from '@/components/agents-workspace';
 
 export default async function AgentsPage() {
-  const agents = listAvailableAgents();
+  const agents = listAvailableAgents().map(({ id, name, description }) => ({
+    id,
+    name,
+    description,
+  }));
 
   return (
-    <div className="page-content">
-      <div className="page-header">
+    <main className="page-content">
+      <div className="synthetic-banner">
+        <span aria-hidden="true">ⓘ</span>
         <div>
-          <h1 className="page-title">Multi-Agentic Supervision</h1>
-          <p className="page-subtitle">
-            Coordinate multiple AI agents for complex supervisory tasks using local Qwen model
-          </p>
-        </div>
-        <div className="badge" title="Local AI">
-          <span className="badge-dot" />
-          Qwen3.6-35B Local
+          <strong>Experimental local-model workspace.</strong> Use synthetic
+          examples only. Responses are not verified findings, official policy,
+          or a substitute for checking persisted records.
         </div>
       </div>
-
-      <div className="info-banner">
-        <p>
-          <strong>Multi-Agentic Orchestration:</strong> Select one or more agents to execute
-          the same supervisory query in parallel or sequential mode. Each agent specializes
-          in a different aspect of banking supervision.
-        </p>
-      </div>
-
-      <AgentsDashboard availableAgents={agents} />
-    </div>
+      <section className="page-heading">
+        <div>
+          <div className="eyebrow">Experimental analysis</div>
+          <h1>Local model workspace</h1>
+          <p className="subtitle">Assign bounded analysis roles to the configured local Qwen service.</p>
+        </div>
+        <span className="period-chip">Local runtime · may be unavailable</span>
+      </section>
+      <AgentsWorkspace availableAgents={agents} />
+    </main>
   );
 }

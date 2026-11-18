@@ -143,6 +143,9 @@ function readString(args: Record<string, unknown>, key: string): string | undefi
     throw new RequestValidationError(`${key} must be a string.`);
   }
   const trimmed = value.trim();
+  if (trimmed.length > 200) {
+    throw new RequestValidationError(`${key} must not exceed 200 characters.`);
+  }
   return trimmed === '' ? undefined : trimmed;
 }
 
@@ -219,6 +222,17 @@ export async function runTool(name: string, rawArguments: unknown): Promise<Tool
     throw new RequestValidationError('Unknown assistant tool.');
   }
   const args = asObject(rawArguments);
+  const descriptor = ASSISTANT_TOOLS.find((tool) => tool.name === name);
+  if (!descriptor) {
+    throw new RequestValidationError('Unknown assistant tool.');
+  }
+  const allowedArguments = new Set(Object.keys(descriptor.parameters.properties));
+  if (Object.keys(args).some((key) => !allowedArguments.has(key))) {
+    throw new RequestValidationError('Tool arguments include an unsupported field.');
+  }
+  if (descriptor.parameters.required?.some((key) => args[key] === undefined)) {
+    throw new RequestValidationError('A required tool argument is missing.');
+  }
 
   switch (name) {
     case 'get_portfolio_overview': {

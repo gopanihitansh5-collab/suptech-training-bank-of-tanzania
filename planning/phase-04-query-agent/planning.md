@@ -52,5 +52,9 @@ evidence without unrestricted chatbot or SQL behavior.
 
 ## Status
 
-In progress; the mock planner and confirmation UI have been added but still
-need typecheck, production build and test verification.
+Partial MVP implemented and typecheck/test/build verified: the deterministic
+planner supports overview, exception list, institution lookup/search and
+indicator analytics; the UI presents the plan, requires explicit confirmation
+and displays structured evidence. Ranking, institution comparison, exception
+explanation, document-grounded responses, complete citation/calculation
+explanations and broader acceptance coverage remain incomplete.

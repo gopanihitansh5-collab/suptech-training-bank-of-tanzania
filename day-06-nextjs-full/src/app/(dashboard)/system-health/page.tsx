@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { isLocalModelAvailable } from '@/lib/orchestration';
 
 function errorCode(error: unknown): string {
   if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
@@ -8,13 +9,15 @@ function errorCode(error: unknown): string {
 }
 
 export default async function SystemHealthPage() {
-  let databaseAvailable = false;
-  try {
-    await query('SELECT 1');
-    databaseAvailable = true;
-  } catch (error) {
-    console.error('Day 6 database health probe failed', { errorCode: errorCode(error) });
-  }
+  const [databaseAvailable, modelAvailable] = await Promise.all([
+    query('SELECT 1')
+      .then(() => true)
+      .catch((error: unknown) => {
+        console.error('Day 6 database health probe failed', { errorCode: errorCode(error) });
+        return false;
+      }),
+    isLocalModelAvailable(),
+  ]);
 
   return (
     <main className="page-content">
@@ -41,8 +44,8 @@ export default async function SystemHealthPage() {
         </article>
         <article className="metric-card">
           <div className="metric-label">Optional local models</div>
-          <div className="metric-value">Not connected</div>
-          <div className="metric-foot">No model health request is made by this app.</div>
+          <div className="metric-value">{modelAvailable ? 'Available' : 'Unavailable'}</div>
+          <div className="metric-foot">Loopback Qwen endpoint · observed at page load</div>
         </article>
         <article className="metric-card">
           <div className="metric-label">External BoT systems</div>
