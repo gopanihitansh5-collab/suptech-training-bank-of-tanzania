@@ -20,8 +20,11 @@ recorded in `docs/FINDINGS_LOG.md`.
 - Do not use real or Stitch-sample institution values.
 - Do not send documents, records or credentials to a public model provider.
 - Do not modify the existing port-5432 PostgreSQL cluster or the Python
-  Day 1–3 sources. Day 6 owns **loopback port 5433 only** (`db-config.ts`
-  enforces this).
+  Day 1–3 sources. Local runs own **loopback port 5433 only** (`db-config.ts`
+  enforces this); managed cloud deployments (Vercel) must connect to a
+  managed PostgreSQL provider that **explicitly requires TLS**
+  (`?sslmode=require|verify-ca|verify-full`), also enforced in
+  `db-config.ts`.
 
 ## 2. Canonical vocabulary
 
@@ -149,7 +152,7 @@ boundary is compliant.
 
 | Variable | Used by | Rules |
 | --- | --- | --- |
-| `DATABASE_URL` | db.ts, scripts | Must be `postgres(ql)://…@localhost|127.0.0.1|::1:5433/…` (enforced in `db-config.ts`). |
+| `DATABASE_URL` | db.ts, scripts | **Local:** `postgres(ql)://…@localhost|127.0.0.1|::1:5433/…`. **Managed (Vercel):** a provider URL that explicitly sets `?sslmode=require` (or `verify-ca`/`verify-full`) — enforced in `db-config.ts`. |
 | `AUTH_SECRET` | auth | ≥ 32 chars; must not contain `replace-with`. |
 | `DEMO_USERNAME` / `DEMO_PASSWORD` | auth | Must not be `replace-before-use`. Username is also the seeded `users.user_id`. |
 | `DEMO_ROLE` | auth | Optional, default `supervisor`. |

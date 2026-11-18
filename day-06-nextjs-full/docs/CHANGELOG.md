@@ -29,3 +29,6 @@
   `docs/openapi.yaml` (OpenAPI 3.1 contract for all seven API routes),
   `docs/REMEDIATION_PLAN.md` (wave-based plan) and `docs/FINDINGS_LOG.md`
   (timestamped findings register).
+- Extended the database connection guard so managed PostgreSQL providers that
+  explicitly require TLS (`?sslmode=require`) are accepted for cloud
+  deployment while the local loopback port-5433 isolation rule is unchanged.

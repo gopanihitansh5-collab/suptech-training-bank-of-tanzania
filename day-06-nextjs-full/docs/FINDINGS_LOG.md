@@ -20,6 +20,7 @@ Status values: `open` → `fixing` → `fixed` → `verified` (verified = typech
 | F-11 | Low | seed | Row-by-row INSERTs (~3k statements) make reseeds slow. | Deferred: acceptable for PoC volume; revisit if seed exceeds ~30 s. | open |
 | F-12 | Medium | auth | No rate limiting on `POST /api/auth/login` (brute-force surface on local demo). | In-memory fixed-window limiter: 5 failures / 5 min per username → 429 + Retry-After. | verified |
 | F-13 | Medium | process | No API contract, no single source of truth, no multi-agent protocol. | `docs/openapi.yaml`, `docs/SOURCE_OF_TRUTH.md`, `docs/REMEDIATION_PLAN.md`, agent rules in SoT §10. | fixed |
+| F-14 | High | db-config | Connection guard rejects every managed cloud Postgres, so the Vercel deployment of Day 6 would fail on every database call. | Guard now allows managed providers that explicitly require TLS (`?sslmode=require`); local loopback:5433 rule unchanged. | verified |
 
 **Environment notes (not findings):** `node_modules` was absent after pull (fresh checkout) — `npm install` required before verification. The in-repo `AGENTS.md` Next.js doc pointer (`node_modules/next/dist/docs/`) is therefore unreadable until install; all edits reuse existing in-repo patterns only.
 
@@ -29,3 +30,4 @@ Status values: `open` → `fixing` → `fixed` → `verified` (verified = typech
 
 - 2026-11-18 05:50 UTC — scan recorded, F-01…F-13 opened.
 - 2026-11-18 06:03 UTC — remediation applied across 9 files by five scoped agents (docs, logic, data-access, pipeline, security) with disjoint file ownership (SoT §10): F-02/F-13 decisions + contract written; F-01/F-07 seed changes; F-03/F-04/F-05/F-06 metrics changes; F-08/F-10 repository changes; F-09/F-12 auth changes. `npm run typecheck` clean; `npm test` 22/22 pass (9 new tests). One integration defect caught by typecheck (out-of-scope use of `reconciledCount` in `scripts/seed.ts`) and fixed by the orchestrator. F-01/F-07/F-08/F-09/F-10 marked `fixed` pending Wave 4 live-DB smoke; F-03/F-04/F-05/F-06/F-12 marked `verified`.
+- 2026-11-18 07:10 UTC — F-14 opened during deployment review: `assertSafeDatabaseUrl` rejected all managed providers, making the planned Vercel deployment of Day 6 impossible. Guard extended: managed providers allowed only with explicit TLS (`sslmode=require|verify-ca|verify-full`); local loopback:5433 rule unchanged. `npm run typecheck` clean; `npm test` 24/24 pass (2 new guard tests). Marked `verified`. SoT §1/§8 updated with the managed-deployment boundary.
