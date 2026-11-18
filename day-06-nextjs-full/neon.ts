@@ -1,3 +1,4 @@
+// @ts-expect-error - @neon/config/v1 types may not be installed
 import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
@@ -16,7 +17,7 @@ export default defineConfig({
     hello: { name: "Hello World", source: "./hello.ts" },
   },
   // Branch policy: per-branch tuning
-  branch: (branch) => {
+  branch: (branch: { isDefault?: boolean; exists?: boolean }) => {
     if (branch.isDefault) {
       // Default branch: no overrides, uses project defaults
       return {};

@@ -11,6 +11,7 @@ const navigation = [
   { label: 'Custom reports', href: '/reports', icon: '▤' },
   { label: 'Data explorer', href: '/data-explorer', icon: '⌕' },
   { label: 'AI supervisory assistant', href: '/assistant', icon: '✳' },
+  { label: 'Multi-agentic supervision', href: '/agents', icon: '◈' },
   { label: 'Integrations & health', href: '/system-health', icon: '◇' },
   { label: 'Administration', href: '/settings', icon: '⚙' },
 ];
