@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createSessionToken, verifySessionToken } from './auth';
+import {
+  clearLoginFailures,
+  createSessionToken,
+  isLoginBlocked,
+  loginRetryAfterSeconds,
+  registerLoginFailure,
+  verifySessionToken,
+} from './auth';
 
 const secret = 'unit-test-session-secret-with-more-than-32-bytes';
 
@@ -22,5 +29,47 @@ describe('demo session tokens', () => {
     expect(verifySessionToken(tampered, secret, 1_001)).toBeNull();
     expect(verifySessionToken(token, secret, 28_801_000)).toBeNull();
     expect(verifySessionToken(token, undefined)).toBeNull();
+  });
+});
+
+describe('login rate limiter', () => {
+  it('blocks after five failures inside the window', () => {
+    clearLoginFailures('user-a');
+    for (let i = 0; i < 5; i += 1) {
+      registerLoginFailure('user-a', 1000);
+    }
+
+    expect(isLoginBlocked('user-a', 2000)).toBe(true);
+    expect(loginRetryAfterSeconds('user-a', 2000)).toBeGreaterThan(0);
+  });
+
+  it('tracks failure counts per key independently', () => {
+    clearLoginFailures('user-a');
+    clearLoginFailures('user-b');
+    for (let i = 0; i < 5; i += 1) {
+      registerLoginFailure('user-a', 1000);
+    }
+
+    expect(isLoginBlocked('user-a', 2000)).toBe(true);
+    expect(isLoginBlocked('user-b', 2000)).toBe(false);
+  });
+
+  it('unblocks once the fixed window expires', () => {
+    clearLoginFailures('user-a');
+    for (let i = 0; i < 5; i += 1) {
+      registerLoginFailure('user-a', 1000);
+    }
+
+    expect(isLoginBlocked('user-a', 1000 + 5 * 60 * 1000 + 1)).toBe(false);
+  });
+
+  it('resets the count after a successful clear', () => {
+    clearLoginFailures('user-a');
+    for (let i = 0; i < 5; i += 1) {
+      registerLoginFailure('user-a', 1000);
+    }
+    clearLoginFailures('user-a');
+
+    expect(isLoginBlocked('user-a', 2000)).toBe(false);
   });
 });

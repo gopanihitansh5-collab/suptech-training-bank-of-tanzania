@@ -157,3 +157,37 @@ export function getSessionCookieName(): string {
 export function getSessionTtlSeconds(): number {
   return SESSION_TTL_SECONDS;
 }
+
+const LOGIN_MAX_FAILURES = 5;
+const LOGIN_WINDOW_MS = 5 * 60 * 1000;
+const loginFailures = new Map<string, { count: number; windowStart: number }>();
+
+export function isLoginBlocked(key: string, now = Date.now()): boolean {
+  const entry = loginFailures.get(key);
+  if (!entry) return false;
+  if (now - entry.windowStart >= LOGIN_WINDOW_MS) {
+    loginFailures.delete(key);
+    return false;
+  }
+  return entry.count >= LOGIN_MAX_FAILURES;
+}
+
+export function registerLoginFailure(key: string, now = Date.now()): void {
+  const entry = loginFailures.get(key);
+  if (!entry || now - entry.windowStart >= LOGIN_WINDOW_MS) {
+    loginFailures.set(key, { count: 1, windowStart: now });
+    return;
+  }
+  entry.count += 1;
+}
+
+export function clearLoginFailures(key: string): void {
+  loginFailures.delete(key);
+}
+
+export function loginRetryAfterSeconds(key: string, now = Date.now()): number {
+  const entry = loginFailures.get(key);
+  if (!entry) return 0;
+  const remaining = entry.windowStart + LOGIN_WINDOW_MS - now;
+  return Math.max(1, Math.ceil(remaining / 1000));
+}
