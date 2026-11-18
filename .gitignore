@@ -38,3 +38,4 @@ gopanihitansh.txt
 
 .vercel
 .env*
+!.env.example
