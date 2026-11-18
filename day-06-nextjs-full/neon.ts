@@ -1,4 +1,3 @@
-// @ts-expect-error - @neon/config/v1 types may not be installed
 import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
