@@ -79,6 +79,21 @@ export interface DataExplorerStats {
   latestPeriod: string | null;
 }
 
+export interface SemanticCorpusRow {
+  kind: 'document' | 'report' | 'institution' | 'exception';
+  id: string;
+  title: string;
+  content: string;
+  citation: {
+    documentId?: string;
+    chunkIndex?: number;
+    reportId?: string;
+    institutionId?: string;
+    period?: string;
+    exceptionId?: string;
+  };
+}
+
 export interface InstitutionDetail {
   institution: InstitutionRow;
   reports: Array<{
@@ -119,6 +134,114 @@ export interface ReportFilters {
   period?: string;
   page?: number;
   pageSize?: number;
+}
+
+export async function getSemanticCorpus(options: {
+  institutionId?: string;
+  period?: string;
+  limit?: number;
+} = {}): Promise<SemanticCorpusRow[]> {
+  const limit = options.limit ?? 400;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+    throw new RequestValidationError('Semantic retrieval limit must be between 1 and 500.');
+  }
+  const institutionId = options.institutionId?.trim().toUpperCase() || null;
+  if (institutionId && !/^[A-Z0-9-]{2,24}$/.test(institutionId)) {
+    throw new RequestValidationError('Institution identifier has an invalid format.');
+  }
+  const period = normalizePeriod(options.period) ?? null;
+
+  const result = await query<{
+    kind: SemanticCorpusRow['kind'];
+    id: string;
+    title: string;
+    content: string;
+    document_id: string | null;
+    chunk_index: number | null;
+    report_id: string | null;
+    institution_id: string | null;
+    reporting_period: string | null;
+    exception_id: string | null;
+  }>(
+    `WITH corpus AS (
+       (SELECT 'document'::text AS kind,
+          d.document_id::text || ':' || c.chunk_index::text AS id,
+          d.original_filename AS title, left(c.content, 6000) AS content,
+          d.document_id::text AS document_id, c.chunk_index,
+          NULL::text AS report_id, d.institution_id, d.reporting_period,
+          NULL::text AS exception_id
+        FROM document_chunks c
+        JOIN uploaded_documents d ON d.document_id = c.document_id
+        WHERE d.status = 'completed'
+          AND ($1::text IS NULL OR d.institution_id = $1)
+          AND ($2::text IS NULL OR d.reporting_period = $2)
+        ORDER BY d.created_at DESC, c.chunk_index
+        LIMIT $4)
+       UNION ALL
+       (SELECT 'report'::text, r.report_id, i.institution_name,
+          concat_ws(' ',
+            'Synthetic monthly report for', r.reporting_period,
+            i.institution_name || ' (' || i.institution_id || ')',
+            'region ' || i.region,
+            'deposits ' || r.deposits_tzs_billions::text || ' TZS bn',
+            'loans ' || r.loans_tzs_billions::text || ' TZS bn',
+            'capital adequacy ' || r.capital_adequacy_ratio_percent::text || '%',
+            'liquidity ' || r.liquidity_ratio_percent::text || '%',
+            'NPL ratio ' || r.npl_ratio_percent::text || '%',
+            'completeness ' || r.report_completeness_percent::text || '%'),
+          NULL::text, NULL::integer, r.report_id, r.institution_id,
+          r.reporting_period, NULL::text
+        FROM institution_reports r
+        JOIN institutions i USING (institution_id)
+        WHERE ($1::text IS NULL OR r.institution_id = $1)
+          AND ($2::text IS NULL OR r.reporting_period = $2)
+        ORDER BY r.reporting_period DESC, r.institution_id
+        LIMIT $4)
+       UNION ALL
+       (SELECT 'institution'::text, i.institution_id, i.institution_name,
+          concat_ws(' ', 'Synthetic institution', i.institution_name,
+            i.institution_id, i.institution_type, i.region, i.tier, i.status),
+          NULL::text, NULL::integer, NULL::text, i.institution_id,
+          NULL::text, NULL::text
+        FROM institutions i
+        WHERE $1::text IS NULL OR i.institution_id = $1
+        ORDER BY i.institution_name
+        LIMIT $4)
+       UNION ALL
+       (SELECT 'exception'::text, e.exception_id, i.institution_name,
+          concat_ws(' ', 'Synthetic review signal', e.message,
+            'institution ' || i.institution_name || ' (' || i.institution_id || ')',
+            'period ' || e.reporting_period, e.indicator_id, e.severity,
+            'observed ' || e.observed_value::text,
+            'training threshold ' || e.threshold_value::text, e.status),
+          NULL::text, NULL::integer, e.report_id, e.institution_id,
+          e.reporting_period, e.exception_id
+        FROM supervisory_exceptions e
+        JOIN institutions i USING (institution_id)
+        WHERE ($1::text IS NULL OR e.institution_id = $1)
+          AND ($2::text IS NULL OR e.reporting_period = $2)
+        ORDER BY e.created_at DESC
+        LIMIT $4)
+     )
+     SELECT * FROM corpus
+     LIMIT $3`,
+    [institutionId, period, limit, limit],
+  );
+
+  return result.rows.map((row) => ({
+    kind: row.kind,
+    id: String(row.id),
+    title: String(row.title),
+    content: String(row.content),
+    citation: {
+      ...(row.document_id ? { documentId: row.document_id } : {}),
+      ...(row.chunk_index !== null ? { chunkIndex: Number(row.chunk_index) } : {}),
+      ...(row.report_id ? { reportId: row.report_id } : {}),
+      ...(row.institution_id ? { institutionId: row.institution_id } : {}),
+      ...(row.reporting_period ? { period: row.reporting_period } : {}),
+      ...(row.exception_id ? { exceptionId: row.exception_id } : {}),
+    },
+  }));
 }
 
 function numeric(value: string | number | null): number | null {

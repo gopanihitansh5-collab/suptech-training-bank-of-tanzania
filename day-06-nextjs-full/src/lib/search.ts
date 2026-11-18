@@ -7,10 +7,13 @@ export interface SearchCitation {
   reportId?: string;
   institutionId?: string;
   period?: string;
+  exceptionId?: string;
 }
 
+export type SearchKind = 'document' | 'report' | 'institution' | 'exception';
+
 export interface SearchHit {
-  kind: 'document' | 'report' | 'institution';
+  kind: SearchKind;
   id: string;
   title: string;
   excerpt: string;
@@ -31,10 +34,11 @@ const QUERY_MIN_LENGTH = 2;
 const QUERY_MAX_LENGTH = 200;
 const EXCERPT_MAX_LENGTH = 300;
 
-const KIND_ORDER: Record<SearchHit['kind'], number> = {
+const KIND_ORDER: Record<SearchKind, number> = {
   document: 0,
-  report: 1,
-  institution: 2,
+  exception: 1,
+  report: 2,
+  institution: 3,
 };
 
 export function escapeLike(value: string): string {
@@ -184,19 +188,68 @@ export async function searchInstitutions(
   });
 }
 
+export async function searchExceptions(
+  queryText: string,
+  options: SearchOptions = {},
+): Promise<SearchHit[]> {
+  const search = queryText.trim();
+  if (!search) return [];
+  const limit = boundedLimit(options.limit, DEFAULT_STRUCTURED_LIMIT);
+  const result = await query(
+    `SELECT e.exception_id, e.report_id, e.institution_id,
+       i.institution_name, e.reporting_period, e.indicator_id, e.severity,
+       e.status, e.message, e.observed_value, e.threshold_value
+     FROM supervisory_exceptions e
+     JOIN institutions i USING (institution_id)
+     WHERE e.exception_id ILIKE $1
+        OR e.report_id ILIKE $1
+        OR e.indicator_id ILIKE $1
+        OR i.institution_name ILIKE $1
+        OR e.message ILIKE $1
+     ORDER BY e.reporting_period DESC,
+       CASE e.severity
+         WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3
+       END
+     LIMIT $2`,
+    [containsPattern(search), limit],
+  );
+
+  return result.rows.map((row) => {
+    const exceptionId = String(row.exception_id);
+    const institutionId = String(row.institution_id);
+    const period = String(row.reporting_period);
+    return {
+      kind: 'exception',
+      id: exceptionId,
+      title: `${row.severity} review signal · ${row.institution_name}`,
+      excerpt: truncateExcerpt(
+        `${row.message} Observed ${row.observed_value}; training threshold ${row.threshold_value}; status ${row.status}.`,
+      ),
+      citation: {
+        exceptionId,
+        reportId: String(row.report_id),
+        institutionId,
+        period,
+      },
+      rank: 0,
+    };
+  });
+}
+
 export async function searchAll(
   queryText: string,
   options: SearchOptions = {},
 ): Promise<SearchHit[]> {
   const search = validateQuery(queryText);
   const limit = boundedLimit(options.limit, DEFAULT_MERGED_LIMIT);
-  const [documents, reports, institutions] = await Promise.all([
+  const [documents, exceptions, reports, institutions] = await Promise.all([
     searchDocuments(search, { limit }),
+    searchExceptions(search, { limit }),
     searchReports(search, { limit }),
     searchInstitutions(search, { limit }),
   ]);
 
-  return [...documents, ...reports, ...institutions]
+  return [...documents, ...exceptions, ...reports, ...institutions]
     .sort(
       (left, right) =>
         right.rank - left.rank || KIND_ORDER[left.kind] - KIND_ORDER[right.kind],

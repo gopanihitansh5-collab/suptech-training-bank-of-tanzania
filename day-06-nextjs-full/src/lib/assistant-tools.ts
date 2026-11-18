@@ -7,13 +7,16 @@ import {
   listExceptions,
   listInstitutions,
 } from './repository';
+import { answerFromEvidence } from './grounded-answer';
+import { searchGroundedEvidence } from './grounded-retrieval';
 
 export type ToolName =
   | 'get_portfolio_overview'
   | 'list_exceptions'
   | 'get_institution'
   | 'get_analytics'
-  | 'list_institutions';
+  | 'list_institutions'
+  | 'search_corpus';
 
 export interface ToolParameterDescriptor {
   type: 'string' | 'integer';
@@ -108,6 +111,21 @@ export const ASSISTANT_TOOLS: readonly ToolDescriptor[] = [
         search: { type: 'string', description: 'Identifier or name fragment.' },
         limit: { type: 'integer', description: 'Maximum rows to return, 1 to 25.' },
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'search_corpus',
+    description: 'Hybrid retrieval over synthetic documents, reports, institutions and review signals, followed by a cited local-model answer.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Natural-language query over synthetic evidence.' },
+        period: { type: 'string', description: 'Optional reporting period in YYYY-MM format.' },
+        institutionId: { type: 'string', description: 'Optional institution identifier.' },
+        limit: { type: 'integer', description: 'Maximum evidence sources, 1 to 25.' },
+      },
+      required: ['query'],
       additionalProperties: false,
     },
   },
@@ -293,6 +311,36 @@ export async function runTool(name: string, rawArguments: unknown): Promise<Tool
         ? `${result.total} synthetic institutions matched; first is ${first.name} (${first.institutionId}) in ${first.region} with ${first.openExceptions} open exceptions.`
         : 'No synthetic institutions matched the requested search.';
       return { tool: name, arguments: argumentsUsed, result, summary };
+    }
+    case 'search_corpus': {
+      const search = readString(args, 'query');
+      if (!search || search.length < 2) {
+        throw new RequestValidationError('query must contain at least 2 characters.');
+      }
+      const period = readPeriod(args);
+      const institutionId = readInstitutionId(args);
+      const limit = readLimit(args, 6);
+      const argumentsUsed = defined({ query: search, period, institutionId, limit });
+      const evidence = await searchGroundedEvidence(search, {
+        period,
+        institutionId,
+        limit,
+      });
+      const answer = await answerFromEvidence(search, evidence.hits);
+      const result = {
+        retrievalMode: evidence.mode,
+        ...(evidence.fallbackReason ? { fallbackReason: evidence.fallbackReason } : {}),
+        hits: evidence.hits,
+        answer,
+      };
+      return {
+        tool: name,
+        arguments: argumentsUsed,
+        result,
+        summary: answer.status === 'answered'
+          ? `Retrieved ${evidence.hits.length} synthetic evidence source(s) with ${evidence.mode} retrieval and generated a cited local-model answer.`
+          : `Retrieved ${evidence.hits.length} synthetic evidence source(s) with ${evidence.mode} retrieval; ${answer.text}`,
+      };
     }
     default:
       throw new RequestValidationError('Unknown assistant tool.');

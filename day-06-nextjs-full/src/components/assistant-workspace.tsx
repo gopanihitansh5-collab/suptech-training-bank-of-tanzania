@@ -7,7 +7,8 @@ type ToolName =
   | 'list_exceptions'
   | 'get_institution'
   | 'get_analytics'
-  | 'list_institutions';
+  | 'list_institutions'
+  | 'search_corpus';
 
 const toolNames = new Set<ToolName>([
   'get_portfolio_overview',
@@ -15,6 +16,7 @@ const toolNames = new Set<ToolName>([
   'get_institution',
   'get_analytics',
   'list_institutions',
+  'search_corpus',
 ]);
 
 interface AssistantPlan {
@@ -35,6 +37,33 @@ interface ToolResult {
 interface ConversationEntry {
   role: 'user' | 'assistant';
   content: string;
+}
+
+interface GroundedSource {
+  kind: 'document' | 'report' | 'institution' | 'exception';
+  id: string;
+  title: string;
+  excerpt: string;
+  citation: Record<string, unknown>;
+}
+
+interface GroundedAnswer {
+  status: 'answered' | 'no_evidence' | 'unavailable';
+  text: string;
+  error?: string;
+  citations: Array<{
+    sourceId: string;
+    title: string;
+    kind: GroundedSource['kind'];
+    citation: Record<string, unknown>;
+  }>;
+}
+
+interface GroundedResult {
+  retrievalMode: 'hybrid' | 'keyword';
+  fallbackReason?: string;
+  hits: GroundedSource[];
+  answer: GroundedAnswer;
 }
 
 const suggestions = [
@@ -154,6 +183,9 @@ function EvidenceValue({ label, value }: { label: string; value: unknown }) {
 }
 
 function EvidenceView({ result }: { result: ToolResult }) {
+  if (result.tool === 'search_corpus' && isGroundedResult(result.result)) {
+    return <GroundedEvidence result={result.result} />;
+  }
   if (!isRecord(result.result)) {
     return <p className="assistant-evidence-empty">No structured evidence was returned.</p>;
   }
@@ -162,6 +194,93 @@ function EvidenceView({ result }: { result: ToolResult }) {
       {Object.entries(result.result).map(([key, value]) => (
         <EvidenceValue key={key} label={key} value={value} />
       ))}
+    </div>
+  );
+}
+
+function isGroundedResult(value: unknown): value is GroundedResult {
+  if (!isRecord(value) || !Array.isArray(value.hits) || !isRecord(value.answer)) return false;
+  return (
+    (value.retrievalMode === 'hybrid' || value.retrievalMode === 'keyword') &&
+    typeof value.answer.status === 'string' &&
+    typeof value.answer.text === 'string' &&
+    Array.isArray(value.answer.citations)
+  );
+}
+
+function sourceHref(source: GroundedSource): string {
+  const citation = source.citation;
+  if (
+    source.kind === 'document' &&
+    typeof citation.documentId === 'string' &&
+    typeof citation.chunkIndex === 'number'
+  ) {
+    return `/documents/${encodeURIComponent(citation.documentId)}?chunk=${citation.chunkIndex}`;
+  }
+  if (source.kind === 'exception' && typeof citation.exceptionId === 'string') {
+    return `/exceptions?search=${encodeURIComponent(citation.exceptionId)}`;
+  }
+  if (source.kind === 'report' && typeof citation.period === 'string') {
+    return `/reports?period=${encodeURIComponent(citation.period)}`;
+  }
+  if (typeof citation.institutionId === 'string') {
+    return `/institutions/${encodeURIComponent(citation.institutionId)}`;
+  }
+  return '/search';
+}
+
+function GroundedEvidence({ result }: { result: GroundedResult }) {
+  return (
+    <div className="grounded-answer">
+      <div className="grounded-answer-header">
+        <span className="dataset-layer">
+          {result.retrievalMode === 'hybrid' ? 'Local semantic + keyword retrieval' : 'Keyword retrieval'}
+        </span>
+        <span className="panel-caption">{result.hits.length} source(s)</span>
+      </div>
+      {result.fallbackReason && (
+        <p className="grounded-fallback" role="status">{result.fallbackReason}</p>
+      )}
+      <section className={`grounded-response grounded-response-${result.answer.status}`}>
+        <h3>Grounded response</h3>
+        <p>{result.answer.text}</p>
+        {result.answer.error && <p className="panel-caption">Local model: {result.answer.error}</p>}
+        {result.answer.citations.length > 0 && (
+          <div className="grounded-citations" aria-label="Cited sources">
+            {result.answer.citations.map((citation) => (
+              <a
+                className="period-chip"
+                href={sourceHref({
+                  kind: citation.kind,
+                  id: citation.sourceId,
+                  title: citation.title,
+                  excerpt: '',
+                  citation: citation.citation,
+                })}
+                key={citation.sourceId}
+              >
+                {citation.sourceId} · {citation.title}
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="grounded-sources" aria-label="Retrieved evidence">
+        <h3>Retrieved evidence</h3>
+        {result.hits.map((source, index) => (
+          <article className="grounded-source" key={`${source.kind}:${source.id}`}>
+            <div className="grounded-source-heading">
+              <strong>[S{index + 1}] {source.title}</strong>
+              <a className="table-link" href={sourceHref(source)}>Open source</a>
+            </div>
+            <span className="panel-caption">{readableLabel(source.kind)} · {source.id}</span>
+            <p>{source.excerpt}</p>
+          </article>
+        ))}
+        {result.hits.length === 0 && (
+          <p className="assistant-evidence-empty">No matching synthetic records were retrieved.</p>
+        )}
+      </section>
     </div>
   );
 }

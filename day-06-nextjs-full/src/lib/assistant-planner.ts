@@ -129,6 +129,20 @@ export function planAssistantQuestion(question: string): AssistantPlan {
     );
   }
 
+  if (/\b(search|find|look up|explain|why|how|what|compare|describe|evidence|drill down|show me)\b/.test(normalized)) {
+    return plan(
+      'search_corpus',
+      {
+        query: question.trim(),
+        ...(period ? { period } : {}),
+        ...(institutionId ? { institutionId } : {}),
+        limit: 6,
+      },
+      'Retrieve relevant synthetic evidence and prepare a cited answer using the local model.',
+      'Hybrid local retrieval over persisted synthetic documents, reports, institutions and review signals.',
+    );
+  }
+
   throw new RequestValidationError(
     'I can plan an overview, exception list, institution lookup, analytics query or institution search. Try one of the suggested questions.',
   );

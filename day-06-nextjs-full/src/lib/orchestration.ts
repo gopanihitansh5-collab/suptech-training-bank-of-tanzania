@@ -4,6 +4,7 @@
  * Manages multiple AI agents using local Qwen model via LM Studio.
  * Each agent handles a specific supervisory task with bounded context.
  */
+import { getLocalModelBaseUrl, isLocalChatModelAvailable } from './local-model';
 
 export interface AgentConfig {
   /** Unique agent identifier */
@@ -105,35 +106,12 @@ State when the supplied history is too small or incomplete for a conclusion.`,
   },
 };
 
-function getChatCompletionsUrl(): string {
-  const configured = process.env.LM_STUDIO_BASE_URL?.trim() || 'http://127.0.0.1:1235/v1';
-  let url: URL;
-  try {
-    url = new URL(configured);
-  } catch {
-    throw new Error('The local model endpoint URL is invalid.');
-  }
-  const loopbackHosts = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
-  if (!loopbackHosts.has(url.hostname) || !['http:', 'https:'].includes(url.protocol)) {
-    throw new Error('The local model endpoint must use loopback; external providers are disabled.');
-  }
-  return `${url.toString().replace(/\/+$/, '')}/chat/completions`;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export async function isLocalModelAvailable(): Promise<boolean> {
-  try {
-    const modelsUrl = getChatCompletionsUrl().replace(/\/chat\/completions$/, '/models');
-    const response = await fetch(modelsUrl, { signal: AbortSignal.timeout(2500) });
-    if (!response.ok) return false;
-    const data: unknown = await response.json();
-    return isRecord(data) && Array.isArray(data.data) && data.data.length > 0;
-  } catch {
-    return false;
-  }
+  return isLocalChatModelAvailable();
 }
 
 /**
@@ -153,7 +131,7 @@ async function callLMStudio(
       { role: 'user', content: userMessage },
     ];
 
-    const response = await fetch(getChatCompletionsUrl(), {
+    const response = await fetch(`${getLocalModelBaseUrl()}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

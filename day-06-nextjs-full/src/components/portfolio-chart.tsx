@@ -19,12 +19,8 @@ export interface PortfolioPoint {
   exceptions: number;
 }
 
-export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
+function useReducedMotion() {
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [visibleSeries, setVisibleSeries] = useState({
-    deposits: true,
-    loans: true,
-  });
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -33,6 +29,16 @@ export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
     preference.addEventListener('change', updatePreference);
     return () => preference.removeEventListener('change', updatePreference);
   }, []);
+
+  return reducedMotion;
+}
+
+export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
+  const reducedMotion = useReducedMotion();
+  const [visibleSeries, setVisibleSeries] = useState({
+    deposits: true,
+    loans: true,
+  });
 
   if (!data.length) return <div className="empty-state">No reporting history is available.</div>;
   const hasVisibleSeries = visibleSeries.deposits || visibleSeries.loans;
@@ -89,5 +95,74 @@ export function PortfolioChart({ data }: { data: PortfolioPoint[] }) {
         </div>
       )}
     </>
+  );
+}
+
+export function PortfolioQualityChart({ data }: { data: PortfolioPoint[] }) {
+  const reducedMotion = useReducedMotion();
+  const [visibleSeries, setVisibleSeries] = useState({
+    completeness: true,
+    exceptions: true,
+  });
+  const hasVisibleSeries = visibleSeries.completeness || visibleSeries.exceptions;
+
+  function toggleSeries(series: 'completeness' | 'exceptions') {
+    setVisibleSeries((current) => ({ ...current, [series]: !current[series] }));
+  }
+
+  return (
+    <div className="portfolio-quality-chart">
+      <div className="chart-legend" aria-label="Toggle quality chart series">
+        <button
+          className="chart-legend-button"
+          type="button"
+          aria-pressed={visibleSeries.completeness}
+          onClick={() => toggleSeries('completeness')}
+        >
+          <i className="legend-dot" style={{ background: '#8b5cf6' }} aria-hidden="true" />
+          Reporting completeness
+        </button>
+        <button
+          className="chart-legend-button"
+          type="button"
+          aria-pressed={visibleSeries.exceptions}
+          onClick={() => toggleSeries('exceptions')}
+        >
+          <i className="legend-dot" style={{ background: '#d97706' }} aria-hidden="true" />
+          Review signals
+        </button>
+      </div>
+      {hasVisibleSeries ? (
+        <div className="chart-wrap" role="img" aria-label="Monthly reporting completeness and review signal count">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}>
+              <CartesianGrid stroke="#e9edf4" strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="period" tick={{ fill: '#758197', fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="percent" domain={[0, 100]} tick={{ fill: '#758197', fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="signals" orientation="right" allowDecimals={false} tick={{ fill: '#758197', fontSize: 10 }} tickLine={false} axisLine={false} />
+              <Tooltip
+                formatter={(value, name) => [
+                  name === 'Completeness'
+                    ? `${Number(value).toFixed(1)}%`
+                    : `${Number(value)} signal(s)`,
+                  name,
+                ]}
+                contentStyle={{ border: '1px solid #e3e8f1', borderRadius: 8, fontSize: 11 }}
+              />
+              {visibleSeries.completeness && (
+                <Line yAxisId="percent" type="monotone" dataKey="completenessPercent" name="Completeness" stroke="#8b5cf6" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={!reducedMotion} />
+              )}
+              {visibleSeries.exceptions && (
+                <Line yAxisId="signals" type="monotone" dataKey="exceptions" name="Review signals" stroke="#d97706" strokeWidth={2.5} dot={false} isAnimationActive={!reducedMotion} />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="empty-state" role="status">
+          Select Reporting completeness or Review signals to show a trend.
+        </div>
+      )}
+    </div>
   );
 }

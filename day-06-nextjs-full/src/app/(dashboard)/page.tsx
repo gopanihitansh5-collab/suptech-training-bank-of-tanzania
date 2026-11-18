@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PortfolioChart } from '@/components/portfolio-chart';
+import { PortfolioChart, PortfolioQualityChart } from '@/components/portfolio-chart';
 import { getOverview } from '@/lib/repository';
 import { RequestValidationError } from '@/lib/api-errors';
 
@@ -92,12 +92,15 @@ export default async function OverviewPage({
           <div className="panel-header">
             <div>
               <h2 className="panel-title">Portfolio trend</h2>
-              <p className="panel-caption">Monthly deposits and loans · TZS billions</p>
+              <p className="panel-caption">Monthly synthetic deposits and loans · TZS billions</p>
             </div>
             <span className="period-chip">Synthetic records</span>
           </div>
           <div className="panel-body">
             <PortfolioChart data={overview.trend} />
+            <h3 className="chart-subheading">Reporting quality and review signals</h3>
+            <p className="panel-caption">Completeness uses a 0–100% axis; signal counts use the right axis.</p>
+            <PortfolioQualityChart data={overview.trend} />
           </div>
         </section>
         <section className="panel">

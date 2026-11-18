@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import { RequestValidationError } from '@/lib/api-errors';
-import { searchAll, type SearchHit } from '@/lib/search';
+import { searchGroundedEvidence } from '@/lib/grounded-retrieval';
+import type { SearchHit } from '@/lib/search';
 import { SearchForm } from '@/components/search-form';
 
 type SearchParams = Promise<{
   q?: string | string[];
+  period?: string | string[];
+  institutionId?: string | string[];
+  kind?: string | string[];
 }>;
 
 function first(value: string | string[] | undefined): string | undefined {
@@ -18,6 +22,11 @@ function hitHref(hit: SearchHit): string {
       ? `/documents/${encodeURIComponent(documentId)}?chunk=${chunkIndex}`
       : '/data-explorer';
   }
+  if (hit.kind === 'exception') {
+    return hit.citation.exceptionId
+      ? `/exceptions?search=${encodeURIComponent(hit.citation.exceptionId)}`
+      : '/exceptions';
+  }
   if (hit.kind === 'report') {
     return hit.citation.period
       ? `/reports?period=${encodeURIComponent(hit.citation.period)}`
@@ -30,6 +39,7 @@ function hitHref(hit: SearchHit): string {
 
 function hitLinkLabel(hit: SearchHit): string {
   if (hit.kind === 'document') return 'Open source chunk';
+  if (hit.kind === 'exception') return 'Open review signal';
   if (hit.kind === 'report') return 'View reports';
   return 'View institution';
 }
@@ -42,6 +52,15 @@ function citationChips(hit: SearchHit): string[] {
       chips.push(`chunk #${hit.citation.chunkIndex}`);
     }
     if (hit.citation.documentId) chips.push(`document ${hit.citation.documentId}`);
+    return chips;
+  }
+  if (hit.kind === 'exception') {
+    if (hit.citation.exceptionId) chips.push(`signal ${hit.citation.exceptionId}`);
+    if (hit.citation.reportId) chips.push(`report ${hit.citation.reportId}`);
+    if (hit.citation.institutionId) {
+      chips.push(`institution ${hit.citation.institutionId}`);
+    }
+    if (hit.citation.period) chips.push(`period ${hit.citation.period}`);
     return chips;
   }
   if (hit.kind === 'report') {
@@ -124,13 +143,32 @@ export default async function SearchPage({
 }) {
   const params = await searchParams;
   const requestedQuery = (first(params.q) ?? '').trim();
+  const filters = {
+    period: first(params.period) ?? '',
+    institutionId: first(params.institutionId)?.trim() ?? '',
+    kind: first(params.kind) ?? '',
+  };
   const hasQuery = requestedQuery.length > 0;
   let hits: SearchHit[] = [];
   let validationError: string | null = null;
+  let retrievalMode: 'hybrid' | 'keyword' | null = null;
+  let fallbackReason: string | undefined;
 
   if (requestedQuery.length >= 2) {
     try {
-      hits = await searchAll(requestedQuery);
+      const kind = ['document', 'report', 'institution', 'exception']
+        .find((value): value is SearchHit['kind'] => value === filters.kind);
+      if (filters.kind && !kind) {
+        throw new RequestValidationError('Evidence type is not supported.');
+      }
+      const retrieval = await searchGroundedEvidence(requestedQuery, {
+        period: filters.period || undefined,
+        institutionId: filters.institutionId || undefined,
+        kind,
+      });
+      hits = retrieval.hits;
+      retrievalMode = retrieval.mode;
+      fallbackReason = retrieval.fallbackReason;
     } catch (error) {
       if (error instanceof RequestValidationError) {
         validationError = error.message;
@@ -141,6 +179,7 @@ export default async function SearchPage({
   }
 
   const documentHits = hits.filter((hit) => hit.kind === 'document');
+  const exceptionHits = hits.filter((hit) => hit.kind === 'exception');
   const reportHits = hits.filter((hit) => hit.kind === 'report');
   const institutionHits = hits.filter((hit) => hit.kind === 'institution');
 
@@ -149,10 +188,9 @@ export default async function SearchPage({
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Synthetic training corpus only.</strong> Results are keyword
-          matches over fictional documents, reports and institutions. They are
-          not official findings, and this page does not generate model-written
-          answers.
+          <strong>Synthetic training corpus only.</strong> Local semantic and
+          keyword retrieval is used when available; the page never sends
+          records to a public model provider or treats review signals as official findings.
         </div>
       </div>
 
@@ -165,7 +203,7 @@ export default async function SearchPage({
           </p>
         </div>
         <span className="period-chip">
-          {hasQuery ? `${hits.length} result(s)` : 'Keyword search'}
+          {hasQuery ? `${hits.length} result(s)` : 'Evidence search'}
         </span>
       </section>
 
@@ -175,12 +213,18 @@ export default async function SearchPage({
             <div>
               <h2 className="panel-title">Search the training corpus</h2>
               <p className="panel-caption">
-                Enter 2–200 characters. Document hits require completed TXT/CSV ingestion.
+                Enter 2–200 characters. Semantic ranking uses the configured local embedding model; keyword search remains available when it is offline.
               </p>
             </div>
           </div>
           <div className="panel-body">
-            <SearchForm key={requestedQuery} initialQuery={requestedQuery} />
+            <SearchForm
+              key={`${requestedQuery}:${filters.period}:${filters.institutionId}:${filters.kind}`}
+              initialQuery={requestedQuery}
+              initialPeriod={filters.period}
+              initialInstitutionId={filters.institutionId}
+              initialKind={filters.kind}
+            />
           </div>
         </section>
 
@@ -212,11 +256,23 @@ export default async function SearchPage({
 
         {requestedQuery.length >= 2 && !validationError ? (
           <>
+            {retrievalMode && (
+              <p className="retrieval-status" role="status">
+                {retrievalMode === 'hybrid' ? 'Hybrid semantic + keyword retrieval' : 'Keyword retrieval'}
+                {fallbackReason ? ` · ${fallbackReason}` : ''}
+              </p>
+            )}
             <ResultGroup
               title="Documents"
               caption="Completed ingestion chunks ranked by full-text relevance."
               hits={documentHits}
-              emptyMessage="No ingested document chunks matched. Document search only covers completed TXT/CSV uploads; no documents are ingestable yet until the upload workflow is available."
+              emptyMessage="No completed synthetic document chunks matched this query."
+            />
+            <ResultGroup
+              title="Review signals"
+              caption="Illustrative threshold signals linked to synthetic reports."
+              hits={exceptionHits}
+              emptyMessage="No synthetic review signals matched this query."
             />
             <ResultGroup
               title="Reports"
