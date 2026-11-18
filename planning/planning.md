@@ -4,6 +4,10 @@ The full product definition, page-by-page outcomes, architecture, end-to-end
 demo journey, guardrails and delivery dependencies are in
 [product-roadmap.md](./product-roadmap.md).
 
+For a code-oriented system map, business/data flow, RAG and semantic-search
+roadmap, agent ownership rules, and the recommended four-agent Phase 8 split,
+see the [project logic and agent handoff](./agent-project-outline.md).
+
 ## Agreed direction
 
 - Replace the Vite single-page app with a Next.js App Router application.
