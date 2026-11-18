@@ -1,5 +1,6 @@
 import type { QueryResultRow } from 'pg';
 import { NotFoundError, RequestValidationError } from './api-errors';
+import { INDICATOR_DEFINITIONS } from './catalog';
 import { query } from './db';
 
 export interface Page<T> {
@@ -421,10 +422,18 @@ export async function listExceptions(
   };
 
   if (filters.search?.trim()) {
-    add((p) => `(e.exception_id ILIKE ${p} OR i.institution_name ILIKE ${p} OR e.message ILIKE ${p})`, `%${filters.search.trim()}%`);
+    const search = filters.search.trim();
+    if (search.length > 100) {
+      throw new RequestValidationError('Search must be 100 characters or fewer.');
+    }
+    add((p) => `(e.exception_id ILIKE ${p} OR i.institution_name ILIKE ${p} OR e.message ILIKE ${p})`, `%${search}%`);
   }
   if (filters.institutionId?.trim()) {
-    add((p) => `e.institution_id = ${p}`, filters.institutionId.trim().toUpperCase());
+    const institutionId = filters.institutionId.trim();
+    if (!/^[A-Z0-9-]{2,24}$/i.test(institutionId)) {
+      throw new RequestValidationError('Institution identifier has an invalid format.');
+    }
+    add((p) => `e.institution_id = ${p}`, institutionId.toUpperCase());
   }
   const period = normalizePeriod(filters.period);
   if (period) add((p) => `e.reporting_period = ${p}`, period);
@@ -482,6 +491,12 @@ export async function getAnalytics(
 }> {
   const periodFilter = normalizePeriod(requestedPeriod) ?? null;
   const selectedIndicator = requestedIndicator?.trim() ?? '';
+  if (
+    selectedIndicator &&
+    !INDICATOR_DEFINITIONS.some((definition) => definition.id === selectedIndicator)
+  ) {
+    throw new RequestValidationError('Indicator is not in the training catalog.');
+  }
   const periodResult = await query<{ period: string | null }>(
     `SELECT COALESCE($1::text, MAX(reporting_period)) AS period
      FROM institution_reports`,

@@ -6,11 +6,11 @@ import { usePathname } from 'next/navigation';
 const navigation = [
   { label: 'Overview', href: '/', icon: '◫' },
   { label: 'Institutions', href: '/institutions', icon: '▦' },
+  { label: 'Supervisory analytics', href: '/analytics', icon: '↗' },
+  { label: 'Exceptions & alerts', href: '/exceptions', icon: '!' },
 ];
 
 const plannedNavigation = [
-  'Supervisory analytics',
-  'Exceptions & alerts',
   'Custom reports',
   'Data explorer',
   'AI supervisory assistant',

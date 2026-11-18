@@ -11,20 +11,37 @@
 
 ## Day 6
 
-### Initial vertical slice — 2026-11-17
+### Initial vertical slice — 2026-11-18
 
 | Command / check | Expected | Actual |
 | --- | --- | --- |
-| `npm test` | Focused Day 6 unit tests pass. | **Passed before final UI compatibility edits:** 3 files, 9 tests. |
-| `npm run typecheck` | Strict TypeScript check passes. | **Passed before final UI compatibility edits.** Must rerun after the last edits documented in `PROGRESS.md`. |
-| `npm run build` | Optimized Next.js build succeeds. | **Passed before final UI compatibility edits.** Next.js 16 updated `tsconfig.json` to `react-jsx` and added `.next/dev/types/**/*.ts`; rerun after the last edits. |
-| `npm run db:migrate` | Apply or confirm the isolated schema migration. | **Passed:** migration `001_initial` was already applied on the Day 6 database at loopback port 5433. |
-| `npm run db:seed` | Persist deterministic fictional data. | **Passed:** 12 institutions, 288 reports, 2,880 indicators and 7 illustrative exceptions. |
-| Browser overview | Sign-in reaches a database-backed dashboard with synthetic labeling. | **Passed before final UI compatibility edits:** displayed reporting period `2026-10`, 12 institutions, 12 reports, 2 open review signals, deposits, completeness, trend chart and recent signals. |
-| Browser directory/detail | Searchable register links to source-linked institution history. | **Passed before final UI compatibility edits:** 12 entities; `TZ004` showed 12 monthly reports and one review signal. |
-| API auth/data smoke | Protect data APIs and return validated persisted records. | **Passed:** no-session overview 401; login 200; overview/search/detail 200; invalid period 400; logout cookie expiry confirmed and a request without the cookie returned 401. |
+| `npm test` | Focused Day 6 unit tests pass. | **Passed:** 3 files, 9 tests. |
+| `npm run typecheck` | Strict TypeScript check passes. | **Passed** after final compatibility edits. |
+| `npm run build` | Optimized Next.js build succeeds. | **Passed** after final compatibility edits; expected App Router and API routes generated. |
+| `npm audit --omit=dev` | No known production dependency advisories. | **Passed:** 0 vulnerabilities. |
+| Database container | Isolated Day 6 database remains reachable. | **Passed:** healthy container, bound only to `127.0.0.1:5433`. Port 5432 was not accessed for writes. |
+| Migration and seed | Apply/confirm schema and persist deterministic fictional data. | **Passed:** migration `001_initial` already applied; seed reported 12 institutions, 288 reports, 2,880 indicators and 7 illustrative exceptions. |
+| Protected API smoke | Enforce local sign-in and return persisted, validated data. | **Passed:** unauthenticated 401; invalid credentials 401; login 200; overview/search/detail 200; invalid pagination/period 400; missing institution 404; invalid identifier 400; logout expires cookie and no-cookie request returns 401. |
+| Server-rendered page smoke | Signed-in pages render data and unknown IDs are not found. | **Passed:** `/`, `/institutions`, `/institutions/TZ004` returned 200; `/institutions/NOPE` returned 404. |
+| Prior browser smoke | Visually inspect first slice and source-linked details. | **Passed:** overview, 12-entry directory and `TZ004` detail rendered. The browser handle was unavailable after resume; the final pass used HTTP checks for the same pages. |
+| Local Qwen chat | Confirm local chat inference is usable. | **Passed:** LM Studio returned the expected `QWEN_READY` response from `qwen/qwen3.6-35b-a3b`. |
+| Local Nomic embeddings | Confirm local embedding inference is usable. | **Passed:** `text-embedding-nomic-embed-text-v1.5` returned a finite 768-dimension vector. Retrieval is not yet integrated into the app. |
 | Logout token replay probe | Determine behavior if an old token is manually replayed. | A copied stateless signed token remains valid until expiry even after browser-cookie deletion. This is documented as a local-demo limitation; no server-side revocation is implemented. |
 
-The final changes to the error boundary, institution parameter handling,
-repeated search parameters and pagination controls were applied after these
-checks and remain unverified. See the exact next steps in `PROGRESS.md`.
+### Analytics and exception register — 2026-11-18
+
+| Command / check | Expected | Actual |
+| --- | --- | --- |
+| `npm test` | Focused Day 6 tests pass. | **Passed:** 4 files, 12 tests, including malformed periods, unknown indicators, invalid severities, page bounds, long search, and institution-ID validation. |
+| `npm run typecheck` | Strict TypeScript check passes. | **Passed.** |
+| `npm run build` | Optimized app build includes analytics and exceptions. | **Passed:** `/analytics`, `/exceptions`, and both protected API routes generated. |
+| Protected API smoke | Enforce session and return filtered persisted data. | **Passed:** unauthenticated routes 401; valid login; analytics period/indicator query returned 200 with a value and 12 history periods; filtered exception query returned the matching synthetic signal. |
+| Invalid API filters | Reject malformed indicator, severity, page size, and institution ID. | **Passed:** each tested invalid filter returned 400. Invalid period and overlong search have focused repository tests. |
+| Server-rendered page smoke | Render analytics and filtered exception pages with training notices. | **Passed:** `/analytics`, `/exceptions`, and filtered `/exceptions` returned 200 and included the synthetic/training notice. |
+| Service/API error handling | Surface validation and service failures; do not disguise failures as empty data. | **Passed by code-path inspection:** validation maps to 400; generic service failures are logged and return 500. No live database-outage injection was performed. |
+
+### Known demo authentication limitation
+
+A copied stateless signed token remains valid until its eight-hour expiry even
+after the browser cookie is cleared. This does not affect the normal browser
+logout flow but is not a production revocation strategy.
