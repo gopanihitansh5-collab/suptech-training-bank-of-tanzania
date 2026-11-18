@@ -1,5 +1,7 @@
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
-import { assertSafeDatabaseUrl } from './db-config';
+import dns from 'node:dns';
+import net from 'node:net';
+import { assertSafeDatabaseUrl, isLocalDatabaseUrl } from './db-config';
 
 declare global {
   var __suptechDay6Pool: Pool | undefined;
@@ -8,11 +10,14 @@ declare global {
 export function getPool(): Pool {
   if (!globalThis.__suptechDay6Pool) {
     const connectionString = assertSafeDatabaseUrl(process.env.DATABASE_URL);
+    const isLocal = isLocalDatabaseUrl(connectionString);
+    dns.setDefaultResultOrder('ipv4first');
+    net.setDefaultAutoSelectFamily(false);
     globalThis.__suptechDay6Pool = new Pool({
       connectionString,
       application_name: 'suptech-monitor-day-06',
       max: 10,
-      connectionTimeoutMillis: 2500,
+      connectionTimeoutMillis: isLocal ? 2500 : 10000,
       idleTimeoutMillis: 30000,
       query_timeout: 10000,
     });

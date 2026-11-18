@@ -2,6 +2,14 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 const REQUIRED_LOCAL_PORT = '5433';
 const REQUIRED_REMOTE_SSLMODES = new Set(['require', 'verify-ca', 'verify-full']);
 
+export function isLocalDatabaseUrl(databaseUrl: string): boolean {
+  try {
+    return LOCAL_HOSTS.has(new URL(databaseUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function assertSafeDatabaseUrl(databaseUrl: string | undefined): string {
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is required. Configure the isolated Day 6 database on 127.0.0.1:5433 or a managed PostgreSQL URL with sslmode=require.');
