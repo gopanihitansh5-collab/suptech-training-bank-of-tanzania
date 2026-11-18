@@ -17,12 +17,12 @@ See `.paul/PROJECT.md` (updated 2026-11-17).
 
 Milestone: Day 6 full-stack Next.js training PoC
 Phase: 03 of 07 (Stitch workspace) — verified
-Plan: 01 of 01 (Integrating five remaining modules) — complete
+Plan: 01 of 01 (Safe TXT/CSV ingestion) — ready to apply
 Status: Phases 1–3 have verified evidence and summaries. The Phase 1 Qwen
 review attempt failed before response because its prompt exceeded model
 context; this is recorded and was not treated as independent approval.
-Last activity: 2026-11-18 — all nine modules passed authenticated route
-smoke checks; filtered report pages show persisted results.
+Last activity: 2026-11-18 — Phase 3 was committed and pushed; Phase 4 ingestion
+plan is ready after reviewing the existing schema, config and security rules.
 
 Progress:
 - Milestone: ████░░░░░░ 43%
@@ -30,7 +30,7 @@ Progress:
 
 ## Loop Position
 
-Phase 03: PLAN ✓ → APPLY ✓ → UNIFY ✓
+Phase 04: PLAN ✓ → APPLY ○ → UNIFY ○
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Phase 03: PLAN ✓ → APPLY ✓ → UNIFY ✓
 - Phase 01 plan: verification and summary complete; Qwen review attempt failed
   before response due to context overflow
 - Phase 03 plan: implementation, verification, and summary complete
+- Phase 04 plan: created; implementation not started
 
 ## Accumulated Context
 
@@ -74,10 +75,10 @@ Phase 03: PLAN ✓ → APPLY ✓ → UNIFY ✓
 ## Session Continuity
 
 Last session: 2026-11-18
-Stopped at: Phase 3 is complete; all nine modules render in the protected
-shared shell. Assistant, ingestion and admin writes remain future capabilities.
-Next action: Commit and push Phase 3, then plan and implement safe TXT/CSV
-ingestion under Phase 4.
+Stopped at: Phase 3 is complete and pushed; all nine modules render in the
+protected shared shell. Phase 4 ingestion plan is ready.
+Next action: Implement and test the opt-in upload gate, parsers and ingestion
+lifecycle using only synthetic training files.
 Resume context: See `docs/PROGRESS.md` and the active plan.
 
 ---
