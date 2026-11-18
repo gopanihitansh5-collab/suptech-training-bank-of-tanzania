@@ -27,6 +27,7 @@ export const INDICATOR_DEFINITIONS: IndicatorDefinition[] = [
   { id: 'liquidity', label: 'Liquidity ratio', unit: '%', formula: 'reported liquidity ratio', description: 'Illustrative synthetic liquidity ratio.' },
   { id: 'completeness', label: 'Reporting completeness', unit: '%', formula: 'reported completeness percentage', description: 'Synthetic share of expected report fields received.' },
   { id: 'quality_failure_rate', label: 'Data-quality failure rate', unit: '%', formula: 'rejected rows / (submitted rows + rejected rows) × 100', description: 'Null when the submitted and rejected row count is zero.' },
+  { id: 'late_submission', label: 'Late submission days', unit: 'count', formula: 'reported late submission days', description: 'Reported lateness of the synthetic report in days; sector value is the mean across institutions.' },
 ];
 
 export const TRAINING_THRESHOLDS: TrainingThreshold[] = [
@@ -36,4 +37,5 @@ export const TRAINING_THRESHOLDS: TrainingThreshold[] = [
   { id: 'TRN-LIQ-LOW', indicatorId: 'liquidity', label: 'Liquidity review signal', operator: 'lt', value: 100, severity: 'high', rationale: 'Training-only comparison boundary.' },
   { id: 'TRN-COMP-LOW', indicatorId: 'completeness', label: 'Incomplete report review signal', operator: 'lt', value: 90, severity: 'medium', rationale: 'Training-only comparison boundary.' },
   { id: 'TRN-DQ-HIGH', indicatorId: 'quality_failure_rate', label: 'Data-quality review signal', operator: 'gt', value: 1, severity: 'medium', rationale: 'Training-only comparison boundary.' },
+  { id: 'TRN-LATE-HIGH', indicatorId: 'late_submission', label: 'Late submission review signal', operator: 'gt', value: 3, severity: 'medium', rationale: 'Training-only comparison boundary.' },
 ];

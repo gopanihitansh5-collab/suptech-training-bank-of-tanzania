@@ -44,6 +44,27 @@ function safePercent(numerator: number, denominator: number): number | null {
   return round((numerator / denominator) * 100);
 }
 
+export function isConsecutivePeriod(previous: string, current: string): boolean {
+  const previousYear = Number(previous.slice(0, 4));
+  const previousMonth = Number(previous.slice(5, 7));
+  const currentYear = Number(current.slice(0, 4));
+  const currentMonth = Number(current.slice(5, 7));
+  const previousIndex = previousYear * 12 + previousMonth - 1;
+  const currentIndex = currentYear * 12 + currentMonth - 1;
+  return currentIndex === previousIndex + 1;
+}
+
+function depositWeightedMean(rows: DemoReport[], pick: (report: DemoReport) => number): number | null {
+  const deposits = rows.reduce((sum, report) => sum + report.depositsTzsBillions, 0);
+  if (deposits === 0) return null;
+  return round(rows.reduce((sum, report) => sum + pick(report) * report.depositsTzsBillions, 0) / deposits);
+}
+
+function simpleMean(rows: DemoReport[], pick: (report: DemoReport) => number): number | null {
+  if (rows.length === 0) return null;
+  return round(rows.reduce((sum, report) => sum + pick(report), 0) / rows.length);
+}
+
 export function computeAnalytics(
   institutions: DemoInstitution[],
   reports: DemoReport[],
@@ -70,13 +91,13 @@ export function computeAnalytics(
         deposits: report.depositsTzsBillions,
         loans: report.loansTzsBillions,
         loan_to_deposit: safePercent(report.loansTzsBillions, report.depositsTzsBillions),
-        deposit_growth: previous
+        deposit_growth: previous && isConsecutivePeriod(previous.period, report.period)
           ? safePercent(
               report.depositsTzsBillions - previous.depositsTzsBillions,
               previous.depositsTzsBillions,
             )
           : null,
-        loan_growth: previous
+        loan_growth: previous && isConsecutivePeriod(previous.period, report.period)
           ? safePercent(
               report.loansTzsBillions - previous.loansTzsBillions,
               previous.loansTzsBillions,
@@ -86,6 +107,7 @@ export function computeAnalytics(
         npl_ratio: report.nplRatioPercent,
         liquidity: report.liquidityRatioPercent,
         completeness: report.reportCompletenessPercent,
+        late_submission: report.lateSubmissionDays,
         quality_failure_rate: qualityDenominator > 0
           ? safePercent(report.recordsRejected, qualityDenominator)
           : null,
@@ -130,6 +152,59 @@ export function computeAnalytics(
     }
   }
 
+  const reportsByPeriod = new Map<string, DemoReport[]>();
+  for (const report of reports) {
+    const rows = reportsByPeriod.get(report.period) ?? [];
+    rows.push(report);
+    reportsByPeriod.set(report.period, rows);
+  }
+
+  const periodTotals = new Map<string, { deposits: number; loans: number; submitted: number; rejected: number }>();
+  for (const [period, rows] of reportsByPeriod) {
+    periodTotals.set(period, {
+      deposits: rows.reduce((sum, report) => sum + report.depositsTzsBillions, 0),
+      loans: rows.reduce((sum, report) => sum + report.loansTzsBillions, 0),
+      submitted: rows.reduce((sum, report) => sum + report.recordsSubmitted, 0),
+      rejected: rows.reduce((sum, report) => sum + report.recordsRejected, 0),
+    });
+  }
+
+  for (const [period, rows] of reportsByPeriod) {
+    const totals = periodTotals.get(period);
+    if (!totals) continue;
+    const previousPeriod = [...periodTotals.keys()].find((key) => isConsecutivePeriod(key, period));
+    const previousTotals = previousPeriod ? periodTotals.get(previousPeriod) : undefined;
+    const sectorValues: Record<string, number | null> = {
+      deposits: round(totals.deposits),
+      loans: round(totals.loans),
+      loan_to_deposit: safePercent(totals.loans, totals.deposits),
+      deposit_growth: previousTotals
+        ? safePercent(totals.deposits - previousTotals.deposits, previousTotals.deposits)
+        : null,
+      loan_growth: previousTotals
+        ? safePercent(totals.loans - previousTotals.loans, previousTotals.loans)
+        : null,
+      capital_adequacy: depositWeightedMean(rows, (report) => report.capitalAdequacyRatioPercent),
+      npl_ratio: depositWeightedMean(rows, (report) => report.nplRatioPercent),
+      liquidity: depositWeightedMean(rows, (report) => report.liquidityRatioPercent),
+      completeness: simpleMean(rows, (report) => report.reportCompletenessPercent),
+      late_submission: simpleMean(rows, (report) => report.lateSubmissionDays),
+      quality_failure_rate: safePercent(totals.rejected, totals.submitted + totals.rejected),
+    };
+
+    for (const definition of INDICATOR_DEFINITIONS) {
+      indicators.push({
+        indicatorId: definition.id,
+        institutionId: null,
+        period,
+        value: sectorValues[definition.id],
+        unit: definition.unit,
+        formula: definition.formula,
+        sourceReportIds: rows.map((report) => report.id),
+      });
+    }
+  }
+
   return { indicators, exceptions };
 }
 
@@ -170,8 +245,8 @@ export function calculatePortfolioSummary(
   }
 
   const currentReports = reports.filter((report) => report.period === period);
-  const analytics = computeAnalytics(institutions, currentReports);
-  const reportExceptions = analytics.exceptions;
+  const analytics = computeAnalytics(institutions, reports);
+  const reportExceptions = analytics.exceptions.filter((item) => item.period === period);
   const completeness = currentReports.map((report) => report.reportCompletenessPercent);
 
   return {

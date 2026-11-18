@@ -32,6 +32,12 @@ function report(overrides: Partial<DemoReport> = {}): DemoReport {
   };
 }
 
+const secondInstitution: DemoInstitution = {
+  ...institution,
+  id: 'TZ002',
+  name: 'Synthetic Community Bank',
+};
+
 describe('supervisory analytics', () => {
   it('keeps growth null when the prior period is absent', () => {
     const result = computeAnalytics([institution], [report()]);
@@ -70,5 +76,94 @@ describe('supervisory analytics', () => {
     expect(summary.period).toBe('2026-09');
     expect(summary.reportsReceived).toBe(1);
     expect(summary.totalDepositsTzsBillions).toBe(125);
+  });
+
+  it('keeps growth null across a period gap', () => {
+    const result = computeAnalytics(
+      [institution],
+      [
+        report({ period: '2026-08', id: 'RPT-TZ001-2026-08' }),
+        report({ period: '2026-10', id: 'RPT-TZ001-2026-10' }),
+      ],
+    );
+    const growth = result.indicators.find(
+      (item) => item.indicatorId === 'deposit_growth' && item.period === '2026-10' && item.institutionId === institution.id,
+    );
+    expect(growth?.value).toBeNull();
+  });
+
+  it('computes growth across consecutive months', () => {
+    const result = computeAnalytics(
+      [institution],
+      [
+        report({ period: '2026-08', id: 'RPT-TZ001-2026-08', depositsTzsBillions: 100 }),
+        report({ period: '2026-09', depositsTzsBillions: 125 }),
+      ],
+    );
+    const growth = result.indicators.find(
+      (item) => item.indicatorId === 'deposit_growth' && item.period === '2026-09' && item.institutionId === institution.id,
+    );
+    expect(growth?.value).toBe(25);
+  });
+
+  it('raises a medium late-submission exception only past three days', () => {
+    const atFourDays = computeAnalytics([institution], [report({ lateSubmissionDays: 4 })]);
+    const lateException = atFourDays.exceptions.find((item) => item.indicatorId === 'late_submission');
+    expect(lateException?.severity).toBe('medium');
+    const atThreeDays = computeAnalytics([institution], [report({ lateSubmissionDays: 3 })]);
+    expect(atThreeDays.exceptions.some((item) => item.indicatorId === 'late_submission')).toBe(false);
+  });
+
+  it('rolls indicators up to the sector grain across institutions', () => {
+    const result = computeAnalytics(
+      [institution, secondInstitution],
+      [
+        report({
+          depositsTzsBillions: 100,
+          loansTzsBillions: 80,
+          capitalAdequacyRatioPercent: 14,
+          nplRatioPercent: 3,
+          liquidityRatioPercent: 130,
+          reportCompletenessPercent: 98,
+          lateSubmissionDays: 0,
+          recordsSubmitted: 1000,
+          recordsRejected: 0,
+        }),
+        report({
+          id: 'RPT-TZ002-2026-09',
+          institutionId: secondInstitution.id,
+          depositsTzsBillions: 300,
+          loansTzsBillions: 90,
+          capitalAdequacyRatioPercent: 12,
+          nplRatioPercent: 4,
+          liquidityRatioPercent: 120,
+          reportCompletenessPercent: 96,
+          lateSubmissionDays: 2,
+          recordsSubmitted: 3000,
+          recordsRejected: 30,
+        }),
+      ],
+    );
+    const sectorValue = (indicatorId: string) =>
+      result.indicators.find((item) => item.indicatorId === indicatorId && item.institutionId === null)?.value;
+    expect(sectorValue('deposits')).toBe(400);
+    expect(sectorValue('loans')).toBe(170);
+    expect(sectorValue('loan_to_deposit')).toBe(42.5);
+    expect(sectorValue('completeness')).toBe(97);
+    expect(sectorValue('capital_adequacy')).toBe(12.5);
+    expect(sectorValue('quality_failure_rate')).toBe(0.74);
+    expect(sectorValue('late_submission')).toBe(1);
+  });
+
+  it('counts portfolio exceptions only from the latest period', () => {
+    const summary = calculatePortfolioSummary(
+      [institution],
+      [
+        report({ period: '2026-08', id: 'RPT-TZ001-2026-08', capitalAdequacyRatioPercent: 9 }),
+        report({ period: '2026-09', capitalAdequacyRatioPercent: 14 }),
+      ],
+    );
+    expect(summary.openExceptions).toBe(0);
+    expect(summary.period).toBe('2026-09');
   });
 });
