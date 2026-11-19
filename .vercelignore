@@ -1,5 +1,6 @@
 **/.env
 **/.env.*
+milestone/groq.txt
 **/node_modules
 **/.next
 **/.vercel
