@@ -11,7 +11,7 @@ function request(origin = 'https://preview.example.com') {
   });
 }
 
-describe('preview demo login route', () => {
+describe('one-click demo login route', () => {
   beforeEach(() => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     vi.stubEnv('NODE_ENV', 'production');
@@ -27,7 +27,7 @@ describe('preview demo login route', () => {
     vi.clearAllMocks();
   });
 
-  it('creates a secure session using server-side demo credentials in Preview', async () => {
+  it('creates a secure session using the configured role in Preview', async () => {
     const response = await POST(request());
     const body = await response.json();
 
@@ -40,10 +40,42 @@ describe('preview demo login route', () => {
       expect.stringContaining('INSERT INTO audit_events'),
       expect.arrayContaining(['demo.supervisor', 'demo_login']),
     );
+    expect(vi.mocked(query)).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.arrayContaining([
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        JSON.stringify({ role: 'supervisor', method: 'one_click_demo' }),
+      ]),
+    );
   });
 
-  it('is unavailable outside Preview', async () => {
+  it('creates a supervisor session in Production regardless of the configured demo role', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('DEMO_ROLE', 'admin');
+
+    const response = await POST(request());
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ userId: 'demo.supervisor', role: 'supervisor' });
+    expect(response.headers.get('set-cookie')).toContain('suptech_demo_session=');
+    expect(vi.mocked(query)).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.arrayContaining([
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        JSON.stringify({ role: 'supervisor', method: 'one_click_demo' }),
+      ]),
+    );
+  });
+
+  it('is unavailable outside Preview and Production', async () => {
+    vi.stubEnv('VERCEL_ENV', 'development');
 
     const response = await POST(request());
 

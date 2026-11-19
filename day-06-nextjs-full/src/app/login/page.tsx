@@ -17,7 +17,12 @@ export default async function LoginPage() {
         </div>
         <h1>Sign in to SupTech Monitor</h1>
         <p>Use the demo account configured for this training environment.</p>
-        <LoginForm showOneClickLogin={process.env.VERCEL_ENV === 'preview'} />
+        <LoginForm
+          showOneClickLogin={
+            process.env.VERCEL_ENV === 'preview' ||
+            process.env.VERCEL_ENV === 'production'
+          }
+        />
         <div className="login-note">
           Synthetic training records only. Demo access is not an official Bank of Tanzania identity system.
         </div>

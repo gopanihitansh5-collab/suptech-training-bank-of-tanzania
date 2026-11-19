@@ -138,13 +138,20 @@ boundary is compliant.
 - Session = HMAC-SHA256 signed, base64url payload cookie
   `suptech_demo_session`, TTL 8 h, `httpOnly`, `sameSite=strict`,
   `secure` in production.
+- The login page offers one-click demo access in Preview and Production.
+  Production access is public, uses the configured demo identity with the
+  `supervisor` role, and is for synthetic training data only. Preview retains the
+  configured `DEMO_ROLE`. The endpoint records an audit event and remains
+  unavailable in local development. This is not production identity or an
+  authorization control.
 - The DB tables `users/roles/permissions` are a **demo RBAC mirror**. The
   seed inserts one demo user whose `user_id` equals `DEMO_USERNAME` (fallback
   `demo.supervisor` when the env var is absent at seed time). **If you change
   `DEMO_USERNAME`, re-run `npm run db:seed`** so the mirror matches the
   session identity — Phase 4 ingestion writes reference this user via FK.
-- Login is rate-limited per username (in-memory fixed window, 5 failures /
-  5 min → 429). This is a demo boundary control, not a production control.
+- Password login is rate-limited per username (in-memory fixed window, 5
+  failures / 5 min → 429). This is a demo boundary control, not a production
+  control. One-click demo access is intentionally public and is not rate-limited.
 - `viewer < supervisor < admin`; role checks go through
   `requireDemoSession(allowedRoles)` — routes never parse cookies themselves.
 

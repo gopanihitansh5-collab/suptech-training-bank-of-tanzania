@@ -16,7 +16,8 @@ export async function POST(request: Request) {
   let outcome: LoginOutcome = 'error';
 
   try {
-    if (process.env.VERCEL_ENV !== 'preview') {
+    const vercelEnvironment = process.env.VERCEL_ENV;
+    if (vercelEnvironment !== 'preview' && vercelEnvironment !== 'production') {
       outcome = 'denied';
       return NextResponse.json({ error: 'Not found.' }, { status: 404 });
     }
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
     }
 
     const config = getDemoAuthConfig();
+    const role = vercelEnvironment === 'production' ? 'supervisor' : config.role;
     await query(
       `INSERT INTO audit_events (actor_id, action, entity_type, entity_id, details)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -36,17 +38,17 @@ export async function POST(request: Request) {
         'demo_login',
         'session',
         config.username,
-        JSON.stringify({ role: config.role, method: 'preview_one_click' }),
+        JSON.stringify({ role, method: 'one_click_demo' }),
       ],
     );
 
     const response = NextResponse.json({
       userId: config.username,
-      role: config.role,
+      role,
     });
     response.cookies.set(
       getSessionCookieName(),
-      createSessionToken(config.username, config.role, config.secret),
+      createSessionToken(config.username, role, config.secret),
       {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

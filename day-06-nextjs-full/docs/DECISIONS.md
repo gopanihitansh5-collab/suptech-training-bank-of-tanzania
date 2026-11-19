@@ -58,3 +58,16 @@
 - **Trade-off:** This is a training boundary, not a substitute for an
   organization identity provider, institution-level authorization or
   production security review.
+
+## 2026-11-19 — Public supervisor one-click production demo
+
+- **Decision:** Show one-click demo login on Production and Preview. Production
+  issues a session for the configured demo user with the `supervisor` role;
+  Preview retains its configured demo role. Successful one-click logins are
+  audited.
+- **Reason:** Visitors should be able to open the synthetic training dashboard
+  without entering shared credentials.
+- **Safety boundary:** Production one-click access is public and is not a
+  production identity system. It must remain limited to synthetic data and
+  the supervisor role; admin-only operations must continue to enforce the
+  `admin` role independently.

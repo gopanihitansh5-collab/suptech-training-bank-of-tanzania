@@ -5,16 +5,17 @@ info:
   description: |
     Read-only supervisory monitoring and assistant endpoints for the Day 6
     training application. All data is synthetic training data. Authentication
-    is a local demo boundary. Optional agent calls use only the configured
+    is a demo boundary; Production offers public one-click access as supervisor
+    only. Optional agent calls use only the configured
     loopback LM Studio endpoint. This is not a real supervisory system and
     expresses no Bank of Tanzania policy; exceptions are review signals,
     never findings of misconduct or non-compliance.
 servers:
   - url: http://127.0.0.1:3000
-    description: Local demo only; never expose publicly.
+    description: Local development. Public deployment is synthetic-demo only.
 tags:
   - name: auth
-    description: Local demo sign-in and sign-out.
+    description: Demo sign-in and sign-out.
   - name: overview
     description: Portfolio summary, trend and recent exceptions.
   - name: analytics
@@ -72,6 +73,41 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '429':
           $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/AuthMisconfigured'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/auth/demo-login:
+    post:
+      tags: [auth]
+      operationId: oneClickDemoLogin
+      summary: Create a one-click demo session
+      security: []
+      description: |
+        Available only on Vercel Preview and Production deployments. Requires
+        an exact same-origin `Origin` header. Production access is public and
+        always issues the configured demo identity with the `supervisor` role;
+        Preview uses the configured `DEMO_ROLE`. The successful sign-in is
+        written to `audit_events`. This endpoint is for synthetic training
+        data only and is not a production identity or authorization control.
+      responses:
+        '200':
+          description: Signed in. `Set-Cookie` establishes the demo session cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetCookieSession'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '403':
+          description: Missing or mismatched `Origin` header.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not available outside Vercel Preview and Production.
         '503':
           $ref: '#/components/responses/AuthMisconfigured'
         '500':
