@@ -12,19 +12,21 @@ import {
 } from './assistant-tools';
 import { searchGroundedEvidence } from './grounded-retrieval';
 import {
-  generateLocalChatCompletion,
-  getLocalModelBaseUrl,
-  isLocalChatModelAvailable,
-  LocalModelResponseError,
-  LocalModelUnavailableError,
-} from './local-model';
+  generateChatCompletion,
+  getActiveChatProviderName,
+  isChatProviderAvailable,
+  type ChatMessage,
+} from './model-provider';
+import { getPlatformContext } from './platform-context';
 import {
   getAnalytics,
   getInstitutionDetail,
   getOverview,
   listExceptions,
+  listInstitutions,
   type ExceptionRow,
   type InstitutionDetail,
+  type InstitutionRow,
   type OverviewData,
 } from './repository';
 import type { SearchHit, SearchCitation } from './search';
@@ -118,9 +120,16 @@ export interface SupervisoryResponseCitation {
   kind?: string;
 }
 
+export interface SupervisoryResponseFact {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
 export interface SupervisoryResponsePayload {
   executiveSummary: string;
   detail: string;
+  facts: SupervisoryResponseFact[];
   dataCards?: SupervisoryResponseCard[];
   citations?: SupervisoryResponseCitation[];
   disclaimer: string;
@@ -144,10 +153,11 @@ export interface SupervisoryWorkflowResult {
   verification: VerificationReport;
   response: SupervisoryResponsePayload;
   latencyMs: number;
-  modelUsed: 'local-qwen' | 'deterministic-fallback';
+  modelUsed: 'groq' | 'local-qwen' | 'deterministic-fallback';
+  modelProvider: string;
+  contextUsed: boolean;
 }
 
-const CHAT_MODEL = process.env.LM_STUDIO_CHAT_MODEL || 'qwen/qwen3.6-35b-a3b';
 export const MAX_AGENT_REQUESTS = 10;
 export const MAX_AGENT_MESSAGE_LENGTH = 2000;
 
@@ -308,14 +318,44 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function containsNumber(value: unknown): boolean {
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.some(containsNumber);
+  if (isRecord(value)) return Object.values(value).some(containsNumber);
+  return false;
+}
+
+function isValidComposerOutput(
+  text: string,
+  analyticalResults: Record<string, unknown>,
+  retrievedSources?: SearchHit[],
+): boolean {
+  const trimmed = text.trim();
+  if (trimmed.length < 80) return false;
+  const dataExists =
+    containsNumber(analyticalResults) || (retrievedSources?.length ?? 0) > 0;
+  if (dataExists && !/\d/.test(trimmed)) return false;
+  const lower = trimmed.toLowerCase();
+  const genericPhrases = [
+    "i don't have access",
+    'as an ai',
+    'query processed',
+    'no data available',
+  ];
+  if (dataExists && genericPhrases.some((phrase) => lower.includes(phrase))) {
+    return false;
+  }
+  return true;
+}
+
 export async function isLocalModelAvailable(): Promise<boolean> {
-  return isLocalChatModelAvailable();
+  return isChatProviderAvailable();
 }
 
 /**
- * Call LM Studio API for a single agent
+ * Call the active chat provider for a single agent
  */
-async function callLMStudio(
+async function callChatProvider(
   agentConfig: AgentConfig,
   userMessage: string,
   conversationHistory?: Array<{ role: string; content: string }>
@@ -323,37 +363,31 @@ async function callLMStudio(
   const startTime = Date.now();
 
   try {
-    const messages = [
-      { role: 'system', content: agentConfig.systemPrompt },
-      ...(conversationHistory || []),
+    const platformContext = await getPlatformContext();
+    const history: ChatMessage[] = (conversationHistory || []).map((message) => ({
+      role:
+        message.role === 'system'
+          ? 'system'
+          : message.role === 'assistant'
+            ? 'assistant'
+            : 'user',
+      content: message.content,
+    }));
+    const messages: ChatMessage[] = [
+      {
+        role: 'system',
+        content: `${agentConfig.systemPrompt}\n\nLive platform context (synthetic):\n${platformContext.text}`,
+      },
+      ...history,
       { role: 'user', content: userMessage },
     ];
 
-    const response = await fetch(`${getLocalModelBaseUrl()}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: CHAT_MODEL,
-        messages,
-        max_tokens: agentConfig.maxTokens || 512,
-        temperature: agentConfig.temperature || 0.3,
-      }),
-      signal: AbortSignal.timeout(30_000),
-    });
-
-    if (!response.ok) {
-      throw new Error(`The local model returned HTTP ${response.status}.`);
-    }
-
-    const data: unknown = await response.json();
-    const choices = isRecord(data) && Array.isArray(data.choices) ? data.choices : [];
-    const firstChoice = choices[0];
-    const message = isRecord(firstChoice) && isRecord(firstChoice.message)
-      ? firstChoice.message
-      : null;
-    const content = message?.content;
-    if (typeof content !== 'string' || content.trim().length === 0) {
-      throw new Error('The local model returned an empty or invalid response.');
+    const content = await generateChatCompletion(
+      messages,
+      agentConfig.maxTokens || 512,
+    );
+    if (content.trim().length === 0) {
+      throw new Error('The chat provider returned an empty or invalid response.');
     }
     const latencyMs = Date.now() - startTime;
 
@@ -372,7 +406,7 @@ async function callLMStudio(
       agentName: agentConfig.name,
       error: error instanceof Error
         ? error.message
-        : 'The local model request failed.',
+        : 'The chat provider request failed.',
       latencyMs,
     };
   }
@@ -446,13 +480,13 @@ export async function orchestrateAgents(
   if (parallel) {
     const promises = requests.map(async (request) => {
       const config = AGENT_CONFIGS[request.agentId];
-      return callLMStudio(config, request.userMessage, request.conversationHistory);
+      return callChatProvider(config, request.userMessage, request.conversationHistory);
     });
     results.push(...(await Promise.all(promises)));
   } else {
     for (const request of requests) {
       const config = AGENT_CONFIGS[request.agentId];
-      const result = await callLMStudio(config, request.userMessage, request.conversationHistory);
+      const result = await callChatProvider(config, request.userMessage, request.conversationHistory);
       results.push(result);
     }
   }
@@ -493,7 +527,7 @@ export async function executeAgent(request: AgentRequest): Promise<AgentResponse
       error: `The prompt must contain 2-${MAX_AGENT_MESSAGE_LENGTH} characters.`,
     };
   }
-  return callLMStudio(config, request.userMessage, request.conversationHistory);
+  return callChatProvider(config, request.userMessage, request.conversationHistory);
 }
 
 /**
@@ -799,8 +833,110 @@ export function verifySupervisoryOutput(params: {
   };
 }
 
+function numericStats(
+  values: Array<number | null>,
+): { min: number; max: number; average: number; count: number } | null {
+  const present = values.filter((value): value is number => value !== null && Number.isFinite(value));
+  if (present.length === 0) return null;
+  return {
+    min: Math.min(...present),
+    max: Math.max(...present),
+    average: present.reduce((total, value) => total + value, 0) / present.length,
+    count: present.length,
+  };
+}
+
+function formatSigned(value: number | null, unit: string): string {
+  if (value === null) return 'not available';
+  if (value === 0) return unit ? `0 ${unit}` : '0';
+  return `${value > 0 ? '+' : '-'}${formatNumber(Math.abs(value))}${unit ? ` ${unit}` : ''}`;
+}
+
+function describeDirection(value: number | null): string {
+  if (value === null) return 'could not be compared';
+  if (value === 0) return 'were unchanged';
+  return value > 0 ? 'rose' : 'fell';
+}
+
+function countValues<T>(
+  rows: T[],
+  read: (row: T) => string | null | undefined,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    const value = read(row);
+    if (!value) continue;
+    counts[value] = (counts[value] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function topKey(counts: Record<string, number>): { key: string; count: number } | null {
+  let best: { key: string; count: number } | null = null;
+  for (const [key, count] of Object.entries(counts)) {
+    if (!best || count > best.count) best = { key, count };
+  }
+  return best;
+}
+
+function signalLine(row: ExceptionRow): string {
+  return `${row.institutionName} (${row.institutionId}) ${row.indicatorId} ${row.period}: observed ${formatNumber(row.observedValue)} against training threshold ${formatNumber(row.thresholdValue)} (${row.severity}, ${row.status}).`;
+}
+
+const EXTRACTIVE_STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'what', 'are', 'was', 'were', 'how', 'why',
+  'when', 'where', 'which', 'that', 'this', 'from', 'into', 'about', 'does',
+  'did', 'has', 'have', 'had', 'can', 'could', 'would', 'should', 'will',
+  'shall', 'may', 'might', 'not', 'you', 'your', 'our', 'their', 'its',
+  'please', 'give', 'show', 'explain', 'tell', 'list', 'all', 'any',
+  'synthetic', 'training',
+]);
+
+function extractiveTerms(question: string): string[] {
+  return [...new Set(
+    question
+      .toLowerCase()
+      .split(/[^a-z0-9%]+/)
+      .filter((term) => term.length >= 3 && !EXTRACTIVE_STOPWORDS.has(term)),
+  )];
+}
+
+function splitSourceSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 15);
+}
+
+function selectExtractiveEvidence(
+  question: string,
+  sources: SearchHit[],
+): Array<{ reference: string; title: string; sentence: string }> {
+  const terms = extractiveTerms(question);
+  const selected: Array<{ reference: string; title: string; sentence: string }> = [];
+  const used = new Set<string>();
+  for (let index = 0; index < Math.min(3, sources.length); index += 1) {
+    const source = sources[index];
+    for (const sentence of splitSourceSentences(source.excerpt)) {
+      const lower = sentence.toLowerCase();
+      const mentionsQuestion = terms.some((term) => lower.includes(term));
+      if (!mentionsQuestion && !/\d/.test(sentence)) continue;
+      if (used.has(lower)) continue;
+      used.add(lower);
+      selected.push({
+        reference: `[S${index + 1}]`,
+        title: source.title,
+        sentence,
+      });
+      break;
+    }
+    if (selected.length >= 3) break;
+  }
+  return selected;
+}
+
 /**
- * Synthesizes deterministic supervisory responses when local model is offline.
+ * Synthesizes deterministic supervisory responses when the chat provider is offline.
  */
 function synthesizeDeterministicResponse(params: {
   question: string;
@@ -812,6 +948,8 @@ function synthesizeDeterministicResponse(params: {
   const { question, intent, scope, analyticalResults, retrievedSources } = params;
   const cards: SupervisoryResponseCard[] = [];
   const citations: SupervisoryResponseCitation[] = [];
+  const facts: SupervisoryResponseFact[] = [];
+  const questionScope = question.replace(/\s+/g, ' ').trim().slice(0, 160);
 
   if (retrievedSources && retrievedSources.length > 0) {
     retrievedSources.forEach((hit, idx) => {
@@ -830,95 +968,374 @@ function synthesizeDeterministicResponse(params: {
 
   switch (intent) {
     case 'analytical': {
-      if (scope.institutionId && analyticalResults?.institution) {
-        const inst = (analyticalResults.institution as InstitutionDetail).institution;
-        executiveSummary = `Supervisory assessment for ${inst.name} (${inst.institutionId}) indicates a ${inst.status} position with ${inst.openExceptions} open review signal(s) in latest period ${inst.latestPeriod ?? 'N/A'}.`;
-        detail = `Institutional analysis shows deposits of ${formatNumber(inst.depositsTzsBillions)} TZS billion, a Capital Adequacy Ratio of ${formatNumber(inst.capitalAdequacyRatioPercent)}%, and a Non-Performing Loan (NPL) ratio of ${formatNumber(inst.nplRatioPercent)}%. The institution operates in the ${inst.region} region categorized as ${inst.tier}. All figures derive from synthetic return records.`;
-        cards.push(
-          { title: 'Deposits', value: `${formatNumber(inst.depositsTzsBillions)} TZS bn`, caption: 'Synthetic return' },
-          { title: 'Capital Adequacy', value: `${formatNumber(inst.capitalAdequacyRatioPercent)}%`, caption: 'Regulatory benchmark: 10%' },
-          { title: 'NPL Ratio', value: `${formatNumber(inst.nplRatioPercent)}%`, caption: 'Prudential warning: > 5%' },
-          { title: 'Review Signals', value: `${inst.openExceptions}`, badge: inst.openExceptions > 0 ? 'Review Needed' : 'Normal' }
+      const institutionDetail = analyticalResults?.institution as InstitutionDetail | undefined;
+      const overview = analyticalResults?.overview as OverviewData | undefined;
+
+      if (scope.institutionId && institutionDetail) {
+        const inst = institutionDetail.institution;
+        const reports = [...institutionDetail.reports].sort(
+          (left, right) => right.period.localeCompare(left.period),
         );
-      } else if (analyticalResults?.overview) {
-        const ov = analyticalResults.overview as OverviewData;
-        executiveSummary = `Portfolio overview for period ${ov.period ?? 'current'} shows ${ov.summary.institutions} reporting institutions, total deposits of ${formatNumber(ov.summary.depositsTzsBillions)} TZS billion, and ${ov.summary.openExceptions} open supervisory review signal(s).`;
-        detail = `Across the supervised sector, reports received stand at ${ov.summary.reportsReceived} of ${ov.summary.reportsExpected} expected (reporting completeness ${formatNumber(ov.summary.completenessPercent)}%). Critical review signals currently total ${ov.summary.criticalExceptions}. Loans total ${formatNumber(ov.summary.loansTzsBillions)} TZS billion.`;
-        cards.push(
-          { title: 'Total Deposits', value: `${formatNumber(ov.summary.depositsTzsBillions)} TZS bn` },
-          { title: 'Total Loans', value: `${formatNumber(ov.summary.loansTzsBillions)} TZS bn` },
-          { title: 'Completeness', value: `${formatNumber(ov.summary.completenessPercent)}%` },
-          { title: 'Open Signals', value: `${ov.summary.openExceptions}`, badge: `${ov.summary.criticalExceptions} Critical` }
+        const latest = reports[0];
+        const previous = reports[1];
+        const oldest = reports.length > 1 ? reports[reports.length - 1] : null;
+        const latestPeriod = latest?.period ?? inst.latestPeriod ?? scope.period ?? 'latest available period';
+
+        const deposits = latest?.depositsTzsBillions ?? inst.depositsTzsBillions;
+        const loans = latest?.loansTzsBillions ?? null;
+        const car = latest?.capitalAdequacyRatioPercent ?? inst.capitalAdequacyRatioPercent;
+        const npl = latest?.nplRatioPercent ?? inst.nplRatioPercent;
+        const liquidity = latest?.liquidityRatioPercent ?? null;
+        const completeness = latest?.completenessPercent ?? null;
+        const ldr = deposits !== null && deposits !== 0 && loans !== null
+          ? (loans / deposits) * 100
+          : null;
+
+        const depositDelta = latest && previous
+          ? latest.depositsTzsBillions - previous.depositsTzsBillions
+          : null;
+        const loanDelta = latest && previous
+          ? latest.loansTzsBillions - previous.loansTzsBillions
+          : null;
+        const carDelta = latest && previous
+          ? latest.capitalAdequacyRatioPercent - previous.capitalAdequacyRatioPercent
+          : null;
+        const nplDelta = latest && previous
+          ? latest.nplRatioPercent - previous.nplRatioPercent
+          : null;
+        const liquidityDelta = latest && previous
+          ? latest.liquidityRatioPercent - previous.liquidityRatioPercent
+          : null;
+        const completenessDelta = latest && previous
+          ? latest.completenessPercent - previous.completenessPercent
+          : null;
+
+        const depositStats = numericStats(
+          reports.map((report) => report.depositsTzsBillions),
         );
-      } else {
-        executiveSummary = `Supervisory analytics query processed for ${scope.period ?? 'latest available period'}.`;
-        detail = 'Analytical figures extracted from parameterised queries in repository.ts.';
+        const nplStats = numericStats(reports.map((report) => report.nplRatioPercent));
+        const depositTrendDelta = latest && oldest
+          ? latest.depositsTzsBillions - oldest.depositsTzsBillions
+          : null;
+        const nplTrendDelta = latest && oldest
+          ? latest.nplRatioPercent - oldest.nplRatioPercent
+          : null;
+
+        const exceptions = institutionDetail.exceptions ?? [];
+        const severity = countValues(exceptions, (row) => row.severity);
+        const status = countValues(exceptions, (row) => row.status);
+        const open = status.open ?? 0;
+        const underReview = status.under_review ?? 0;
+        const resolved = status.resolved ?? 0;
+
+        executiveSummary = `Institutional supervisory assessment for ${inst.name} (${inst.institutionId}) in ${latestPeriod}: deposits ${formatNumber(deposits)} TZS bn, loans ${formatNumber(loans)} TZS bn, LDR ${formatNumber(ldr)}%, capital adequacy ${formatNumber(car)}%, NPL ${formatNumber(npl)}%, liquidity ${formatNumber(liquidity)}% and completeness ${formatNumber(completeness)}%. ${open} open and ${underReview} under-review review signal(s) are recorded; ${previous ? `deposits ${formatSigned(depositDelta, 'TZS bn')} versus ${previous.period}` : 'no previous period is available for comparison'}.`;
+
+        const movement = latest && previous
+          ? `Period-on-period changes (${latestPeriod} vs ${previous.period}): deposits ${formatSigned(depositDelta, 'TZS bn')}, loans ${formatSigned(loanDelta, 'TZS bn')}, capital adequacy ${formatSigned(carDelta, 'pp')}, NPL ${formatSigned(nplDelta, 'pp')}, liquidity ${formatSigned(liquidityDelta, 'pp')} and completeness ${formatSigned(completenessDelta, 'pp')}.`
+          : 'Only one reported period is available, so period-on-period deltas cannot be computed.';
+
+        const trend = depositStats && nplStats
+          ? `Across ${reports.length} reported period(s), deposits ranged from ${formatNumber(depositStats.min)} to ${formatNumber(depositStats.max)} TZS bn (average ${formatNumber(depositStats.average)}) and ${describeDirection(depositTrendDelta)}; NPL ranged from ${formatNumber(nplStats.min)}% to ${formatNumber(nplStats.max)}% (average ${formatNumber(nplStats.average)}%) and ${describeDirection(nplTrendDelta)} over the window.`
+          : 'No multi-period trend is available for this institution.';
+
+        const exceptionSentence = exceptions.length > 0
+          ? `${exceptions.length} synthetic review signal(s) are recorded: ${severity.critical ?? 0} critical, ${severity.high ?? 0} high, ${severity.medium ?? 0} medium, ${severity.low ?? 0} low; ${open} open, ${underReview} under review, ${resolved} resolved.`
+          : 'No synthetic review signals are recorded for this institution.';
+
+        detail = [movement, trend, exceptionSentence].join(' ');
+
+        facts.push(
+          { label: 'Institution', value: `${inst.name} (${inst.institutionId})`, detail: `${inst.type} · ${inst.region} · ${inst.tier} · ${inst.status}` },
+          { label: 'Latest period', value: latestPeriod },
+          { label: 'Deposits', value: `${formatNumber(deposits)} TZS bn`, detail: previous ? `change ${formatSigned(depositDelta, 'TZS bn')} vs ${previous.period}` : 'no prior period' },
+          { label: 'Loans', value: `${formatNumber(loans)} TZS bn`, detail: previous ? `change ${formatSigned(loanDelta, 'TZS bn')} vs ${previous.period}` : 'no prior period' },
+          { label: 'Loan-to-deposit ratio', value: `${formatNumber(ldr)}%`, detail: 'loans divided by deposits' },
+          { label: 'Capital adequacy', value: `${formatNumber(car)}%`, detail: previous ? `change ${formatSigned(carDelta, 'pp')}` : undefined },
+          { label: 'NPL ratio', value: `${formatNumber(npl)}%`, detail: previous ? `change ${formatSigned(nplDelta, 'pp')}` : undefined },
+          { label: 'Liquidity', value: `${formatNumber(liquidity)}%`, detail: previous ? `change ${formatSigned(liquidityDelta, 'pp')}` : undefined },
+          { label: 'Completeness', value: `${formatNumber(completeness)}%`, detail: previous ? `change ${formatSigned(completenessDelta, 'pp')}` : undefined },
+          {
+            label: 'Deposits over reported periods',
+            value: depositStats ? `${formatNumber(depositStats.min)} min / ${formatNumber(depositStats.max)} max / ${formatNumber(depositStats.average)} average TZS bn` : 'not available',
+            detail: `${reports.length} report(s)`,
+          },
+          {
+            label: 'NPL over reported periods',
+            value: nplStats ? `${formatNumber(nplStats.min)}% min / ${formatNumber(nplStats.max)}% max / ${formatNumber(nplStats.average)}% average` : 'not available',
+            detail: `${reports.length} report(s)`,
+          },
+          { label: 'Open review signals', value: `${open}` },
+          { label: 'Under review', value: `${underReview}` },
+          { label: 'Resolved', value: `${resolved}` },
+          { label: 'Critical signals', value: `${severity.critical ?? 0}` },
+        );
+
+        cards.push(
+          { title: 'Deposits', value: `${formatNumber(deposits)} TZS bn`, caption: 'Synthetic return' },
+          { title: 'Loan-to-Deposit', value: `${formatNumber(ldr)}%`, caption: 'Loans / deposits' },
+          { title: 'Capital Adequacy', value: `${formatNumber(car)}%`, caption: 'Training boundary: 10%' },
+          { title: 'NPL Ratio', value: `${formatNumber(npl)}%`, caption: 'Training boundary: 8%' },
+          { title: 'Review Signals', value: `${open}`, badge: `${severity.critical ?? 0} Critical` },
+        );
+        break;
       }
+
+      if (overview) {
+        const summary = overview.summary;
+        const periodLabel = overview.period ?? scope.period ?? 'latest available period';
+        const ldr = summary.depositsTzsBillions !== 0
+          ? (summary.loansTzsBillions / summary.depositsTzsBillions) * 100
+          : null;
+        const criticalShare = summary.openExceptions > 0
+          ? (summary.criticalExceptions / summary.openExceptions) * 100
+          : null;
+        const trend = overview.trend ?? [];
+        const first = trend[0];
+        const last = trend.length > 0 ? trend[trend.length - 1] : undefined;
+        const depositChange = first && last
+          ? last.depositsTzsBillions - first.depositsTzsBillions
+          : null;
+        const loanChange = first && last
+          ? last.loansTzsBillions - first.loansTzsBillions
+          : null;
+        const exceptionChange = first && last
+          ? last.exceptions - first.exceptions
+          : null;
+        const topSignals = (overview.recentExceptions ?? []).slice(0, 3);
+        const trendWindow = first && last
+          ? `${first.period} to ${last.period} (${trend.length} period(s))`
+          : 'not available';
+
+        executiveSummary = `Portfolio overview for period ${periodLabel}: ${summary.institutions} institutions reported deposits of ${formatNumber(summary.depositsTzsBillions)} TZS bn and loans of ${formatNumber(summary.loansTzsBillions)} TZS bn, an LDR of ${formatNumber(ldr)}%. Reports received ${summary.reportsReceived} of ${summary.reportsExpected} expected (completeness ${formatNumber(summary.completenessPercent)}%), with ${summary.openExceptions} open review signals of which ${summary.criticalExceptions} are critical (${formatNumber(criticalShare)}% of open signals).`;
+
+        detail = `Across the 12-period window from ${trendWindow}, deposits ${describeDirection(depositChange)} ${formatSigned(depositChange, 'TZS bn')}, loans ${describeDirection(loanChange)} ${formatSigned(loanChange, 'TZS bn')} and review signals ${describeDirection(exceptionChange)} ${formatSigned(exceptionChange, '')}. ${topSignals.length > 0 ? `Highest-priority open signals: ${topSignals.map((row) => signalLine(row)).join(' ')}` : 'No open review signals are recorded in the latest period.'}`;
+
+        facts.push(
+          { label: 'Reporting period', value: periodLabel },
+          { label: 'Institutions', value: `${summary.institutions}` },
+          { label: 'Reports received', value: `${summary.reportsReceived} of ${summary.reportsExpected}`, detail: `completeness ${formatNumber(summary.completenessPercent)}%` },
+          { label: 'Deposits', value: `${formatNumber(summary.depositsTzsBillions)} TZS bn` },
+          { label: 'Loans', value: `${formatNumber(summary.loansTzsBillions)} TZS bn` },
+          { label: 'Loan-to-deposit ratio', value: `${formatNumber(ldr)}%` },
+          { label: 'Completeness', value: `${formatNumber(summary.completenessPercent)}%` },
+          { label: 'Open review signals', value: `${summary.openExceptions}` },
+          { label: 'Critical review signals', value: `${summary.criticalExceptions}`, detail: `${formatNumber(criticalShare)}% of open signals` },
+          { label: 'Deposit change', value: formatSigned(depositChange, 'TZS bn'), detail: trendWindow },
+          { label: 'Loan change', value: formatSigned(loanChange, 'TZS bn'), detail: trendWindow },
+          { label: 'Review-signal change', value: formatSigned(exceptionChange, ''), detail: trendWindow },
+        );
+
+        cards.push(
+          { title: 'Total Deposits', value: `${formatNumber(summary.depositsTzsBillions)} TZS bn` },
+          { title: 'Total Loans', value: `${formatNumber(summary.loansTzsBillions)} TZS bn` },
+          { title: 'Loan-to-Deposit', value: `${formatNumber(ldr)}%` },
+          { title: 'Completeness', value: `${formatNumber(summary.completenessPercent)}%` },
+          { title: 'Open Signals', value: `${summary.openExceptions}`, badge: `${summary.criticalExceptions} Critical` },
+        );
+        break;
+      }
+
+      const periodLabel = scope.period ?? 'the requested scope';
+      executiveSummary = `No analytical records were returned for ${periodLabel}${scope.institutionId ? ` and ${scope.institutionId}` : ''}. The question "${questionScope}" could not be matched to a synthetic reporting slice.`;
+      detail = 'No portfolio or institution report was available for the requested period or identifier, so no numeric comparison can be stated.';
+      facts.push(
+        { label: 'Requested scope', value: periodLabel },
+        { label: 'Records returned', value: '0' },
+      );
       break;
     }
     case 'exception_explanation': {
       const exceptions = (analyticalResults?.exceptions as ExceptionRow[]) ?? [];
       const count = exceptions.length;
+      const severity = countValues(exceptions, (row) => row.severity);
+      const status = countValues(exceptions, (row) => row.status);
+      const institutionCounts = countValues(
+        exceptions,
+        (row) => `${row.institutionName} (${row.institutionId})`,
+      );
+      const indicatorCounts = countValues(exceptions, (row) => row.indicatorId);
+      const topInstitution = topKey(institutionCounts);
+      const topIndicator = topKey(indicatorCounts);
+      const periods = [...new Set(exceptions.map((row) => row.period))].sort();
+      const oldestPeriod = periods[0] ?? null;
+      const newestPeriod = periods.length > 0 ? periods[periods.length - 1] : null;
+      const topSignals = exceptions.slice(0, 3);
+      const scopeLabel = [scope.institutionId, scope.period].filter(Boolean).join(', ');
+
       executiveSummary = count > 0
-        ? `Identified ${count} open review signal(s) matching supervisory scope${scope.institutionId ? ` for ${scope.institutionId}` : ''}.`
-        : `No open supervisory exceptions found for the specified filters.`;
+        ? `${count} synthetic review signal(s) matched ${scopeLabel || 'the requested scope'}: ${status.open ?? 0} open, ${status.under_review ?? 0} under review and ${status.resolved ?? 0} resolved, with ${severity.critical ?? 0} critical, ${severity.high ?? 0} high, ${severity.medium ?? 0} medium and ${severity.low ?? 0} low.`
+        : `No synthetic review signals matched ${scopeLabel || 'the requested scope'} for "${questionScope}".`;
 
       if (count > 0) {
-        const top = exceptions[0];
-        detail = `Priority signal: ${top.indicatorId} flagged for ${top.institutionName} (${top.institutionId}) in period ${top.period} with severity "${top.severity}". Observed value ${formatNumber(top.observedValue)} breached illustrative benchmark ${formatNumber(top.thresholdValue)}. Reason: ${top.message}. In supervisory practice, this signal alerts analysts to inspect underlying data submissions and does not constitute an official ruling of misconduct.`;
+        detail = `Top signals: ${topSignals.map((row) => signalLine(row)).join(' ')} The most frequent institution is ${topInstitution?.key ?? 'not available'} (${topInstitution?.count ?? 0} signal(s)) and the most frequent indicator is ${topIndicator?.key ?? 'not available'} (${topIndicator?.count ?? 0} signal(s)). Matching periods run from ${oldestPeriod ?? 'not available'} to ${newestPeriod ?? 'not available'}. Threshold breaches are training review signals, not official findings.`;
+        const first = topSignals[0];
         cards.push(
-          { title: 'Matching Exceptions', value: `${count}`, badge: top.severity.toUpperCase() },
-          { title: 'Observed Value', value: `${formatNumber(top.observedValue)}`, caption: `Threshold: ${formatNumber(top.thresholdValue)}` },
-          { title: 'Status', value: top.status.replace('_', ' ') }
+          { title: 'Matching Exceptions', value: `${count}`, badge: `${severity.critical ?? 0} Critical` },
+          { title: 'Open Signals', value: `${status.open ?? 0}` },
+          { title: 'Top Observed Value', value: `${formatNumber(first.observedValue)}`, caption: `Training threshold: ${formatNumber(first.thresholdValue)}` },
         );
       } else {
-        detail = 'No threshold breaches recorded in this synthetic slice. Continue standard surveillance.';
+        detail = 'No threshold breaches were recorded in this synthetic slice. Continue standard surveillance and widen the institution, period or severity filters.';
       }
+
+      facts.push(
+        { label: 'Matched review signals', value: `${count}` },
+        { label: 'Critical', value: `${severity.critical ?? 0}` },
+        { label: 'High', value: `${severity.high ?? 0}` },
+        { label: 'Medium', value: `${severity.medium ?? 0}` },
+        { label: 'Low', value: `${severity.low ?? 0}` },
+        { label: 'Open', value: `${status.open ?? 0}` },
+        { label: 'Under review', value: `${status.under_review ?? 0}` },
+        { label: 'Resolved', value: `${status.resolved ?? 0}` },
+        { label: 'Top institution', value: topInstitution?.key ?? 'not available', detail: topInstitution ? `${topInstitution.count} signal(s)` : undefined },
+        { label: 'Top indicator', value: topIndicator?.key ?? 'not available', detail: topIndicator ? `${topIndicator.count} signal(s)` : undefined },
+        { label: 'Oldest period', value: oldestPeriod ?? 'not available' },
+        { label: 'Newest period', value: newestPeriod ?? 'not available' },
+      );
       break;
     }
     case 'combined': {
-      const ov = analyticalResults?.overview as OverviewData | undefined;
-      const inst = analyticalResults?.institution as InstitutionDetail | undefined;
-      executiveSummary = `Combined supervisory assessment reconciling quantitative figures with regulatory documentation.`;
-      const docCitations = citations.map((c) => c.reference).join(', ');
-      detail = `Cross-referencing retrieved guidance (${docCitations || '[S1]'}) with active prudential data demonstrates that institutions must maintain documented capital, liquidity, and asset quality standards. ` +
-        (inst
-          ? `For ${inst.institution.name}, observed CAR is ${formatNumber(inst.institution.capitalAdequacyRatioPercent)}% and NPL is ${formatNumber(inst.institution.nplRatioPercent)}%, contextualized against regulatory return guidance.`
-          : ov
-          ? `At portfolio level (${ov.period}), deposits total ${formatNumber(ov.summary.depositsTzsBillions)} TZS bn with ${ov.summary.openExceptions} open review signals needing verification against supervisory filing instructions.`
-          : 'Quantitative and qualitative evidence consolidated.');
+      const overview = analyticalResults?.overview as OverviewData | undefined;
+      const institutionDetail = analyticalResults?.institution as InstitutionDetail | undefined;
+      const referenceList = citations.map((citation) => citation.reference).join(', ');
 
-      if (ov) {
-        cards.push(
-          { title: 'Portfolio Deposits', value: `${formatNumber(ov.summary.depositsTzsBillions)} TZS bn` },
-          { title: 'Open Signals', value: `${ov.summary.openExceptions}` }
+      let dataSentence: string;
+      if (institutionDetail) {
+        const inst = institutionDetail.institution;
+        const latest = institutionDetail.reports[0];
+        const deposits = latest?.depositsTzsBillions ?? inst.depositsTzsBillions;
+        const loans = latest?.loansTzsBillions ?? null;
+        const ldr = deposits !== null && deposits !== 0 && loans !== null
+          ? (loans / deposits) * 100
+          : null;
+        dataSentence = `For ${inst.name} (${inst.institutionId}) in ${latest?.period ?? inst.latestPeriod ?? 'the latest period'}, deposits are ${formatNumber(deposits)} TZS bn, loans ${formatNumber(loans)} TZS bn, LDR ${formatNumber(ldr)}%, capital adequacy ${formatNumber(inst.capitalAdequacyRatioPercent)}% and NPL ${formatNumber(inst.nplRatioPercent)}%, with ${inst.openExceptions} open review signal(s).`;
+        facts.push(
+          { label: 'Institution', value: `${inst.name} (${inst.institutionId})` },
+          { label: 'Deposits', value: `${formatNumber(deposits)} TZS bn` },
+          { label: 'Loan-to-deposit ratio', value: `${formatNumber(ldr)}%` },
+          { label: 'Capital adequacy', value: `${formatNumber(inst.capitalAdequacyRatioPercent)}%` },
+          { label: 'NPL ratio', value: `${formatNumber(inst.nplRatioPercent)}%` },
+          { label: 'Open review signals', value: `${inst.openExceptions}` },
         );
+        cards.push(
+          { title: 'Deposits', value: `${formatNumber(deposits)} TZS bn` },
+          { title: 'Loan-to-Deposit', value: `${formatNumber(ldr)}%` },
+          { title: 'Open Signals', value: `${inst.openExceptions}` },
+        );
+      } else if (overview) {
+        const summary = overview.summary;
+        const ldr = summary.depositsTzsBillions !== 0
+          ? (summary.loansTzsBillions / summary.depositsTzsBillions) * 100
+          : null;
+        dataSentence = `At portfolio level for ${overview.period ?? 'the latest period'}, deposits total ${formatNumber(summary.depositsTzsBillions)} TZS bn with ${formatNumber(summary.loansTzsBillions)} TZS bn in loans (LDR ${formatNumber(ldr)}%), completeness is ${formatNumber(summary.completenessPercent)}% and ${summary.openExceptions} review signal(s) are open, including ${summary.criticalExceptions} critical.`;
+        facts.push(
+          { label: 'Reporting period', value: overview.period ?? 'latest available period' },
+          { label: 'Deposits', value: `${formatNumber(summary.depositsTzsBillions)} TZS bn` },
+          { label: 'Loans', value: `${formatNumber(summary.loansTzsBillions)} TZS bn` },
+          { label: 'Loan-to-deposit ratio', value: `${formatNumber(ldr)}%` },
+          { label: 'Completeness', value: `${formatNumber(summary.completenessPercent)}%` },
+          { label: 'Open review signals', value: `${summary.openExceptions}` },
+          { label: 'Critical review signals', value: `${summary.criticalExceptions}` },
+        );
+        cards.push(
+          { title: 'Portfolio Deposits', value: `${formatNumber(summary.depositsTzsBillions)} TZS bn` },
+          { title: 'Open Signals', value: `${summary.openExceptions}`, badge: `${summary.criticalExceptions} Critical` },
+        );
+      } else {
+        dataSentence = `No quantitative synthetic records were returned for ${scope.period ?? 'the requested scope'}.`;
+        facts.push({ label: 'Records returned', value: '0' });
       }
+
+      const evidenceSentence = citations.length > 0
+        ? `Retrieved guidance ${referenceList} is cross-referenced with these values; the cited passages describe reporting expectations and should be read as synthetic training material.`
+        : 'No document evidence was retrieved, so the assessment relies on the synthetic data slice only.';
+
+      executiveSummary = `Combined supervisory assessment for ${scope.institutionName ?? scope.institutionId ?? scope.period ?? 'the requested scope'}. ${dataSentence}`;
+      detail = `${dataSentence} ${evidenceSentence}`;
+      facts.push(
+        { label: 'Evidence sources', value: `${citations.length}` },
+        { label: 'Citation references', value: citations.map((citation) => citation.reference).join(', ') || 'none' },
+      );
       break;
     }
     case 'report': {
-      executiveSummary = `Structured supervisory summary report compiled for period ${scope.period ?? 'current'}.`;
-      detail = `This report aggregates institutional filings, prudential indicator metrics, and open review signals across synthetic records. All statistics represent training simulations designed for supervisory workflow exercise.`;
-      if (analyticalResults?.overview) {
-        const ov = analyticalResults.overview as OverviewData;
-        cards.push(
-          { title: 'Institutions', value: `${ov.summary.institutions}` },
-          { title: 'Completeness', value: `${formatNumber(ov.summary.completenessPercent)}%` },
-          { title: 'Critical Exceptions', value: `${ov.summary.criticalExceptions}` }
-        );
-      }
+      const overview = analyticalResults?.overview as OverviewData | undefined;
+      const exceptions = (analyticalResults?.exceptions as ExceptionRow[]) ?? [];
+      const institutions = (analyticalResults?.institutions as InstitutionRow[]) ?? [];
+      const summary = overview?.summary;
+      const periodLabel = overview?.period ?? scope.period ?? 'the latest period';
+      const ldr = summary && summary.depositsTzsBillions !== 0
+        ? (summary.loansTzsBillions / summary.depositsTzsBillions) * 100
+        : null;
+      const severity = countValues(exceptions, (row) => row.severity);
+      const status = countValues(exceptions, (row) => row.status);
+      const topDeposits = [...institutions]
+        .filter((row) => row.depositsTzsBillions !== null)
+        .sort((left, right) => (right.depositsTzsBillions ?? 0) - (left.depositsTzsBillions ?? 0))
+        .slice(0, 3);
+      const topNpl = [...institutions]
+        .filter((row) => row.nplRatioPercent !== null)
+        .sort((left, right) => (right.nplRatioPercent ?? 0) - (left.nplRatioPercent ?? 0))
+        .slice(0, 3);
+
+      executiveSummary = summary
+        ? `Supervisory summary report for ${periodLabel}: ${summary.institutions} institutions, deposits ${formatNumber(summary.depositsTzsBillions)} TZS bn, loans ${formatNumber(summary.loansTzsBillions)} TZS bn (LDR ${formatNumber(ldr)}%), reporting completeness ${formatNumber(summary.completenessPercent)}% and ${summary.openExceptions} open review signals (${summary.criticalExceptions} critical).`
+        : `Supervisory summary report for ${periodLabel}: no portfolio aggregate was returned.`;
+
+      detail = summary
+        ? `Aggregate coverage is ${summary.reportsReceived} of ${summary.reportsExpected} expected reports. Review signals on the sampled page total ${exceptions.length} with ${severity.critical ?? 0} critical, ${severity.high ?? 0} high, ${severity.medium ?? 0} medium and ${severity.low ?? 0} low; ${status.open ?? 0} are open, ${status.under_review ?? 0} under review and ${status.resolved ?? 0} resolved. ${topDeposits.length > 0 ? `Highest deposits: ${topDeposits.map((row) => `${row.name} (${row.institutionId}) ${formatNumber(row.depositsTzsBillions)} TZS bn`).join('; ')}.` : 'No institution deposit values were returned.'} ${topNpl.length > 0 ? `Highest NPL ratios: ${topNpl.map((row) => `${row.name} (${row.institutionId}) ${formatNumber(row.nplRatioPercent)}%`).join('; ')}.` : 'No institution NPL values were returned.'}`
+        : `No synthetic aggregate returned for ${periodLabel}; ${exceptions.length} review signal(s) were available on the sampled page.`;
+
+      facts.push(
+        { label: 'Reporting period', value: periodLabel },
+        { label: 'Institutions', value: `${summary?.institutions ?? 0}` },
+        { label: 'Reports received', value: `${summary?.reportsReceived ?? 0} of ${summary?.reportsExpected ?? 0}` },
+        { label: 'Deposits', value: `${formatNumber(summary?.depositsTzsBillions ?? null)} TZS bn` },
+        { label: 'Loans', value: `${formatNumber(summary?.loansTzsBillions ?? null)} TZS bn` },
+        { label: 'Loan-to-deposit ratio', value: `${formatNumber(ldr)}%` },
+        { label: 'Completeness', value: `${formatNumber(summary?.completenessPercent ?? null)}%` },
+        { label: 'Open review signals', value: `${summary?.openExceptions ?? (status.open ?? 0)}` },
+        { label: 'Critical review signals', value: `${summary?.criticalExceptions ?? (severity.critical ?? 0)}` },
+        { label: 'Top deposits', value: topDeposits.map((row) => `${row.institutionId} ${formatNumber(row.depositsTzsBillions)} TZS bn`).join('; ') || 'not available' },
+        { label: 'Top NPL ratios', value: topNpl.map((row) => `${row.institutionId} ${formatNumber(row.nplRatioPercent)}%`).join('; ') || 'not available' },
+      );
+
+      cards.push(
+        { title: 'Institutions', value: `${summary?.institutions ?? 0}` },
+        { title: 'Reports', value: `${summary?.reportsReceived ?? 0} / ${summary?.reportsExpected ?? 0}` },
+        { title: 'Total Deposits', value: `${formatNumber(summary?.depositsTzsBillions ?? null)} TZS bn` },
+        { title: 'Completeness', value: `${formatNumber(summary?.completenessPercent ?? null)}%` },
+        { title: 'Critical Signals', value: `${summary?.criticalExceptions ?? 0}` },
+      );
       break;
     }
     case 'document':
     case 'general':
     default: {
-      executiveSummary = citations.length > 0
-        ? `Retrieved ${citations.length} synthetic document and regulatory source(s) addressing: "${question}".`
-        : `Grounded supervisory knowledge retrieval completed.`;
-      detail = citations.length > 0
-        ? `Analysis of retrieved synthetic evidence (${citations.map((c) => c.reference).join(', ')}):\n\n` +
-          citations.map((c) => `${c.reference} ${c.title}:\n${c.excerpt}`).join('\n\n')
-        : 'No specific document evidence matched the criteria. Please broaden search terms or check reporting periods.';
+      const sources = retrievedSources ?? [];
+      const extracts = selectExtractiveEvidence(question, sources);
+      const references = citations.map((citation) => citation.reference).join(', ');
+
+      if (extracts.length > 0) {
+        executiveSummary = `Retrieved ${sources.length} synthetic source(s) for "${questionScope}": ${extracts.map((entry) => `${entry.reference} ${entry.title}`).join('; ')}.`;
+        detail = `Extractive summary from the retrieved evidence: ${extracts.map((entry) => `${entry.reference} ${entry.sentence}`).join(' ')}`;
+      } else if (sources.length > 0) {
+        executiveSummary = `Retrieved ${sources.length} synthetic source(s) for "${questionScope}", but no direct extractive match was found for the question terms.`;
+        detail = `The retrieved sources are listed as citations (${references}) with titles ${sources.map((source, index) => `${`[S${index + 1}]`} ${source.title}`).join('; ')}. No sentence in the top hits contained the question terms or a numeric value, so no extractive statement is asserted.`;
+      } else {
+        executiveSummary = `No synthetic document or regulatory evidence matched "${questionScope}".`;
+        detail = 'No retrieved source was available for the question. Broaden the search terms or check the reporting period.';
+      }
+
+      facts.push(
+        { label: 'Retrieved sources', value: `${sources.length}` },
+        { label: 'Extractive sentences', value: `${extracts.length}` },
+        ...sources.slice(0, 3).map((source, index) => ({
+          label: `Source S${index + 1}`,
+          value: source.title,
+          detail: source.kind,
+        })),
+      );
       break;
     }
   }
@@ -926,6 +1343,7 @@ function synthesizeDeterministicResponse(params: {
   return {
     executiveSummary,
     detail,
+    facts,
     dataCards: cards.length > 0 ? cards : undefined,
     citations: citations.length > 0 ? citations : undefined,
     disclaimer: SYNTHETIC_DISCLAIMER,
@@ -1060,16 +1478,18 @@ export async function executeSupervisoryWorkflow(
 
     case 'report': {
       activeAgents.push('data-analyst', 'report-agent');
-      const [overview, exceptionPage] = await Promise.all([
+      const [overview, exceptionPage, institutionPage] = await Promise.all([
         getOverview(scope.period),
         listExceptions({
           institutionId: scope.institutionId,
           period: scope.period,
           pageSize: 5,
         }),
+        listInstitutions({ pageSize: 50 }),
       ]);
       analyticalResults.overview = overview;
       analyticalResults.exceptions = exceptionPage.items;
+      analyticalResults.institutions = institutionPage.items;
       break;
     }
 
@@ -1098,8 +1518,14 @@ export async function executeSupervisoryWorkflow(
   // 5. Response Composer Agent: synthesize grounded output
   activeAgents.push('response-composer');
 
-  let modelUsed: 'local-qwen' | 'deterministic-fallback' = 'deterministic-fallback';
-  let responsePayload = synthesizeDeterministicResponse({
+  const platformContext = await getPlatformContext();
+  const contextUsed =
+    platformContext.text.length > 0 &&
+    !platformContext.text.toLowerCase().includes('context unavailable');
+  const modelProvider = getActiveChatProviderName();
+
+  let modelUsed: 'groq' | 'local-qwen' | 'deterministic-fallback' = 'deterministic-fallback';
+  const responsePayload = synthesizeDeterministicResponse({
     question: trimmed,
     intent: classification.intent,
     scope,
@@ -1107,57 +1533,56 @@ export async function executeSupervisoryWorkflow(
     retrievedSources,
   });
 
-  // Attempt local LM Studio enrichment if available
-  const isOnline = await isLocalChatModelAvailable();
+  const isOnline = await isChatProviderAvailable();
   if (isOnline) {
     try {
       const evidencePrompt = (retrievedSources ?? [])
         .slice(0, 4)
-        .map((s, idx) => `[S${idx + 1}] ${s.title}: ${s.excerpt}`)
+        .map((source, idx) => `[S${idx + 1}] ${source.title}: ${source.excerpt}`)
         .join('\n\n');
 
-      const dataPrompt = JSON.stringify(analyticalResults, null, 2).slice(0, 1500);
+      const dataPrompt = JSON.stringify(analyticalResults, null, 2).slice(0, 4000);
 
-      const enrichedNarrative = await generateLocalChatCompletion(
+      const enrichedNarrative = await generateChatCompletion(
         [
           {
             role: 'system',
             content: `You are the Response Composer Agent for SupTech Monitor.
-Synthesize an executive summary and detailed supervisory analysis for: "${trimmed}".
-Intent: ${classification.intent}. Scope: ${JSON.stringify(scope)}.
-Use only the supplied data and evidence.
-Cite sources as [S1], [S2] if evidence is present.
-Threshold breaches are review signals, not legal findings. Synthetic data only.
-Format with two clear paragraphs: first is executive summary, second is detailed analysis.`,
+Use only the supplied facts, figures, and evidence. Do not invent thresholds, institutions, periods, or records.
+Include exact numbers from the supplied analytical data and cite evidence as [S1], [S2] only when the provided sources support the statement.
+State missing evidence explicitly instead of guessing.
+Threshold breaches are training review signals, not official findings. All data is synthetic training material.
+Reply with two paragraphs: an executive summary first, then detailed analysis.
+
+Live platform context (synthetic):
+${platformContext.text}`,
           },
           {
             role: 'user',
-            content: `Analytical Data:\n${dataPrompt}\n\nEvidence Sources:\n${evidencePrompt || 'None'}`,
+            content: `Question: ${trimmed}
+Intent: ${classification.intent}
+Scope: ${JSON.stringify(scope)}
+Analytical data: ${dataPrompt}
+Evidence sources: ${evidencePrompt || 'None'}`,
           },
         ],
-        800
+        800,
       );
 
-      if (enrichedNarrative && enrichedNarrative.length > 50) {
-        const paragraphs = enrichedNarrative.split('\n\n').filter((p) => p.trim().length > 0);
+      if (isValidComposerOutput(enrichedNarrative, analyticalResults, retrievedSources)) {
+        const paragraphs = enrichedNarrative
+          .split('\n\n')
+          .filter((paragraph) => paragraph.trim().length > 0);
         if (paragraphs.length >= 2) {
           responsePayload.executiveSummary = paragraphs[0].trim();
           responsePayload.detail = paragraphs.slice(1).join('\n\n').trim();
         } else {
           responsePayload.detail = enrichedNarrative.trim();
         }
-        modelUsed = 'local-qwen';
+        modelUsed = getActiveChatProviderName() === 'groq' ? 'groq' : 'local-qwen';
       }
-    } catch (error) {
-      // Graceful offline fallback: log or ignore and preserve deterministic response
-      if (
-        !(
-          error instanceof LocalModelUnavailableError ||
-          error instanceof LocalModelResponseError
-        )
-      ) {
-        // Unexpected error, keep deterministic fallback
-      }
+    } catch {
+      modelUsed = 'deterministic-fallback';
     }
   }
 
@@ -1182,5 +1607,7 @@ Format with two clear paragraphs: first is executive summary, second is detailed
     response: responsePayload,
     latencyMs,
     modelUsed,
+    modelProvider,
+    contextUsed,
   };
 }

@@ -152,6 +152,29 @@ export interface DocumentFilters {
   pageSize?: number;
 }
 
+export interface IngestionJobRow {
+  jobId: string;
+  documentId: string;
+  originalFilename: string;
+  documentStatus: string;
+  jobStatus: string;
+  attemptCount: number;
+  errorMessage: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+  chunkCount: number;
+}
+
+export interface IngestionSummary {
+  documentsByStatus: Record<string, number>;
+  jobsByStatus: Record<string, number>;
+}
+
+const INGESTION_JOB_LIMIT_MIN = 1;
+const INGESTION_JOB_LIMIT_MAX = 50;
+const INGESTION_JOB_LIMIT_DEFAULT = 20;
+
 function pagination(
   page = 1,
   pageSize = 20,
@@ -399,6 +422,64 @@ export async function deleteDocument(
   });
 
   return true;
+}
+
+function boundedJobLimit(limit: number): number {
+  if (!Number.isFinite(limit)) {
+    return INGESTION_JOB_LIMIT_DEFAULT;
+  }
+  const truncated = Math.trunc(limit);
+  return Math.min(Math.max(truncated, INGESTION_JOB_LIMIT_MIN), INGESTION_JOB_LIMIT_MAX);
+}
+
+export async function listIngestionJobs(
+  limit = INGESTION_JOB_LIMIT_DEFAULT,
+): Promise<IngestionJobRow[]> {
+  const boundedLimit = boundedJobLimit(limit);
+  const result = await query(
+    `SELECT j.job_id, j.document_id, d.original_filename, d.status AS document_status,
+       j.status AS job_status, j.attempt_count, j.error_message, j.started_at,
+       j.finished_at, j.created_at, d.chunk_count
+     FROM ingestion_jobs j
+     JOIN uploaded_documents d ON d.document_id = j.document_id
+     ORDER BY j.created_at DESC
+     LIMIT $1`,
+    [boundedLimit],
+  );
+
+  return result.rows.map((row) => ({
+    jobId: row.job_id,
+    documentId: row.document_id,
+    originalFilename: row.original_filename,
+    documentStatus: row.document_status,
+    jobStatus: row.job_status,
+    attemptCount: Number(row.attempt_count),
+    errorMessage: row.error_message,
+    startedAt: row.started_at ? new Date(row.started_at).toISOString() : null,
+    finishedAt: row.finished_at ? new Date(row.finished_at).toISOString() : null,
+    createdAt: new Date(row.created_at).toISOString(),
+    chunkCount: Number(row.chunk_count),
+  }));
+}
+
+export async function getIngestionSummary(): Promise<IngestionSummary> {
+  const result = await query<{ kind: string; status: string; count: number }>(
+    `SELECT 'document' AS kind, status, count(*)::int AS count
+     FROM uploaded_documents
+     GROUP BY status
+     UNION ALL
+     SELECT 'job' AS kind, status, count(*)::int AS count
+     FROM ingestion_jobs
+     GROUP BY status`,
+  );
+
+  const documentsByStatus: Record<string, number> = {};
+  const jobsByStatus: Record<string, number> = {};
+  for (const row of result.rows) {
+    const target = row.kind === 'job' ? jobsByStatus : documentsByStatus;
+    target[row.status] = Number(row.count);
+  }
+  return { documentsByStatus, jobsByStatus };
 }
 
 export async function listDocuments(

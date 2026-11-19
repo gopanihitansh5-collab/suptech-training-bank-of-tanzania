@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import { RequestValidationError } from '@/lib/api-errors';
-import { listDocuments } from '@/lib/ingestion-store';
+import {
+  getIngestionSummary,
+  listDocuments,
+  listIngestionJobs,
+} from '@/lib/ingestion-store';
+import type { IngestionJobRow, IngestionSummary } from '@/lib/ingestion-store';
 import { getDataExplorerStats, listReports } from '@/lib/repository';
 import { ReportTable } from '@/components/report-table';
 
@@ -39,6 +44,27 @@ export default async function DataExplorerPage({
       totalPages: 0,
     };
   }
+  let ingestionSummary: IngestionSummary = {
+    documentsByStatus: {},
+    jobsByStatus: {},
+  };
+  let ingestionJobs: IngestionJobRow[] = [];
+  try {
+    const [summary, jobs] = await Promise.all([
+      getIngestionSummary(),
+      listIngestionJobs(10),
+    ]);
+    ingestionSummary = summary;
+    ingestionJobs = jobs;
+  } catch {
+    ingestionSummary = { documentsByStatus: {}, jobsByStatus: {} };
+    ingestionJobs = [];
+  }
+  const totalJobs = Object.values(ingestionSummary.jobsByStatus).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+  const latestJobStatus = ingestionJobs[0]?.jobStatus ?? null;
   let result;
   try {
     result = await listReports({ ...filters, page, pageSize: 25 });
@@ -55,8 +81,8 @@ export default async function DataExplorerPage({
         <span aria-hidden="true">ⓘ</span>
         <div>
           <strong>Read-only synthetic data explorer.</strong> Counts below come
-          from persisted Day 6 tables. Row-level validation and ingestion-run
-          history are not stored by this MVP.
+          from persisted Day 6 tables. Row-level validation findings are not
+          stored by this MVP.
         </div>
       </div>
       <section className="page-heading">
@@ -111,9 +137,74 @@ export default async function DataExplorerPage({
         <dl className="data-quality-list">
           <div><dt>Latest persisted reporting period</dt><dd>{stats.latestPeriod ?? 'No report period available'}</dd></div>
           <div><dt>Missing, duplicate, or rejected row counts</dt><dd>Not recorded in Day 6</dd></div>
-          <div><dt>Durable ingestion run history</dt><dd>Not available in this MVP</dd></div>
+          <div>
+            <dt>Durable ingestion run history</dt>
+            <dd>
+              {totalJobs > 0
+                ? `${totalJobs.toLocaleString('en')} job(s) persisted; latest status: ${latestJobStatus ?? 'unknown'}`
+                : 'No ingestion jobs recorded'}
+            </dd>
+          </div>
           <div><dt>Data boundary</dt><dd>Fictional training records only</dd></div>
         </dl>
+      </section>
+      <section className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">Ingestion history</h2>
+            <p className="panel-caption">
+              Recent persisted ingestion jobs with their document processing evidence.
+            </p>
+          </div>
+          <span className="period-chip">{totalJobs} job(s)</span>
+        </div>
+        {ingestionJobs.length > 0 ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Filename</th>
+                  <th>Document status</th>
+                  <th>Job status</th>
+                  <th>Attempts</th>
+                  <th>Chunks</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ingestionJobs.map((job) => (
+                  <tr key={job.jobId}>
+                    <td>
+                      {job.documentStatus === 'completed' && job.chunkCount > 0 ? (
+                        <Link
+                          className="table-link mono"
+                          href={`/documents/${encodeURIComponent(job.documentId)}?chunk=0`}
+                        >
+                          {job.originalFilename}
+                        </Link>
+                      ) : (
+                        <span className="mono">{job.originalFilename}</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className="status-pill">{job.documentStatus}</span>
+                    </td>
+                    <td>
+                      <span className="status-pill">{job.jobStatus}</span>
+                    </td>
+                    <td className="mono">{job.attemptCount}</td>
+                    <td className="mono">{job.chunkCount}</td>
+                    <td>{new Date(job.createdAt).toLocaleString('en')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state" role="status">
+            No ingestion jobs recorded. Uploaded documents will appear here once an ingestion job runs.
+          </div>
+        )}
       </section>
       <section className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">

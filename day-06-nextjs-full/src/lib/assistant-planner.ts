@@ -8,6 +8,7 @@ export interface AssistantPlan {
   purpose: string;
   source: string;
   confirmation: string;
+  inferred?: Record<string, string>;
 }
 
 function extractPeriod(question: string): string | undefined {
@@ -22,6 +23,27 @@ function extractPeriod(question: string): string | undefined {
 
 function extractInstitutionId(question: string): string | undefined {
   return question.match(/\b[A-Z]{2}\d{3}\b/i)?.[0]?.toUpperCase();
+}
+
+function extractAllInstitutionIds(question: string): string[] {
+  const matches = question.match(/\b[A-Z]{2}\d{3}\b/gi) ?? [];
+  return [...new Set(matches.map((value) => value.toUpperCase()))];
+}
+
+type RankingMetric = 'open_exceptions' | 'npl_ratio' | 'capital_adequacy' | 'deposits';
+
+function extractRankingMetric(normalized: string): RankingMetric {
+  if (/\b(exception|exceptions|alert|alerts|signal|signals)\b/.test(normalized)) {
+    return 'open_exceptions';
+  }
+  if (/\bnpl\b/.test(normalized)) return 'npl_ratio';
+  if (/\b(capital|car)\b/.test(normalized)) return 'capital_adequacy';
+  if (/\bdeposits?\b/.test(normalized)) return 'deposits';
+  return 'open_exceptions';
+}
+
+function extractRankingOrder(normalized: string): 'asc' | 'desc' {
+  return /\b(lowest|bottom|smallest|fewest|asc|ascending)\b/.test(normalized) ? 'asc' : 'desc';
 }
 
 function extractIndicatorId(question: string): string | undefined {
@@ -46,6 +68,7 @@ function plan(
   args: Record<string, unknown>,
   purpose: string,
   source: string,
+  inferred?: Record<string, string>,
 ): AssistantPlan {
   return {
     tool,
@@ -53,7 +76,37 @@ function plan(
     purpose,
     source,
     confirmation: 'Run this read-only query on the synthetic training dataset?',
+    ...(inferred && Object.keys(inferred).length > 0 ? { inferred } : {}),
   };
+}
+
+function planExceptions(
+  normalized: string,
+  institutionId: string | undefined,
+  period: string | undefined,
+): AssistantPlan {
+  const severity = ['critical', 'high', 'medium', 'low'].find((value) =>
+    new RegExp(`\\b${value}\\b`).test(normalized),
+  );
+  const status = ['open', 'under_review', 'resolved'].find((value) =>
+    normalized.includes(value.replace('_', ' ')) || normalized.includes(value),
+  );
+  const inferred: Record<string, string> = {};
+  if (!period) inferred.period = 'latest available period';
+  if (!status) inferred.status = 'open';
+  return plan(
+    'list_exceptions',
+    {
+      ...(status ? { status } : { status: 'open' }),
+      ...(severity ? { severity } : {}),
+      ...(institutionId ? { institutionId } : {}),
+      ...(period ? { period } : {}),
+      limit: 10,
+    },
+    'List matching synthetic review signals with their source reports.',
+    'Persisted synthetic exception records and linked institution reports.',
+    inferred,
+  );
 }
 
 export function planAssistantQuestion(question: string): AssistantPlan {
@@ -64,25 +117,112 @@ export function planAssistantQuestion(question: string): AssistantPlan {
 
   const period = extractPeriod(normalized);
   const institutionId = extractInstitutionId(question);
+  const institutionIds = extractAllInstitutionIds(question);
 
-  if (/\b(exception|exceptions|alert|alerts|signal|signals)\b/.test(normalized)) {
-    const severity = ['critical', 'high', 'medium', 'low'].find((value) =>
-      new RegExp(`\\b${value}\\b`).test(normalized),
-    );
-    const status = ['open', 'under_review', 'resolved'].find((value) =>
-      normalized.includes(value.replace('_', ' ')) || normalized.includes(value),
-    );
+  const hasExceptionTerm = /\b(exception|exceptions|alert|alerts|signal|signals)\b/.test(normalized);
+  const hasInstitutionTerm = /\b(institution|institutions|bank|banks)\b/.test(normalized);
+  const hasRankingTerm = /\b(rank|ranking|ranked|top|bottom|highest|lowest|best|worst|most|least)\b/.test(normalized);
+  const hasBreakdownTerm = /\b(breakdown|break down|distribution|how many|by severity|by status)\b/.test(normalized);
+  const hasTrendTerm = /\b(increase|increases|increased|increasing|decrease|decreases|decreased|decreasing|grew|grow|growing|growth|fell|fall|falling|trend|trends|change|changes|changed|over time)\b/.test(normalized) ||
+    /\blast\s+\d+\s+periods?\b/.test(normalized);
+  const hasExceptionRanking = !/\b(top|bottom)\s+\d+\b/.test(normalized) && (
+    /\b(most|fewest|highest|lowest)\b[^.]*\b(open\s+)?(exceptions|alerts|signals)\b/.test(normalized) ||
+    /\b(open\s+)?(exceptions|alerts|signals)\b[^.]*\b(most|fewest|highest|lowest)\b/.test(normalized) ||
+    /\b(most|fewest|highest|lowest)\b[^.]*\bnumber of\b[^.]*\b(exceptions|alerts|signals)\b/.test(normalized)
+  );
+  const hasCorpusTerm = /\b(documents?|uploaded|circulars?|guidelines?|corpus|polic(?:y|ies))\b/.test(normalized) ||
+    /\b(summarise|summarize)\b[^.]*\b(document|circular|guideline|upload)\b/.test(normalized);
+
+  if (
+    /\b(compare|comparing|compared|versus|vs)\b/.test(normalized) &&
+    institutionIds.length >= 2
+  ) {
+    if (institutionIds.length > 5) {
+      throw new RequestValidationError('Compare between 2 and 5 institutions.');
+    }
     return plan(
-      'list_exceptions',
+      'compare_institutions',
+      { institutionIds },
+      `Compare the latest synthetic positions of ${institutionIds.join(', ')}.`,
+      'Persisted synthetic institution and report records.',
+    );
+  }
+
+  if (hasExceptionRanking) {
+    const order = extractRankingOrder(normalized);
+    return plan(
+      'rank_institutions',
+      { metric: 'open_exceptions', order },
+      `Rank synthetic institutions by open exceptions in ${order === 'asc' ? 'ascending' : 'descending'} order.`,
+      'Persisted synthetic institution register and open review-signal counts.',
+    );
+  }
+
+  if (hasCorpusTerm) {
+    return plan(
+      'search_corpus',
       {
-        ...(status ? { status } : { status: 'open' }),
-        ...(severity ? { severity } : {}),
-        ...(institutionId ? { institutionId } : {}),
+        query: question.trim(),
         ...(period ? { period } : {}),
-        limit: 10,
+        ...(institutionId ? { institutionId } : {}),
+        limit: 6,
       },
-      'List matching synthetic review signals with their source reports.',
-      'Persisted synthetic exception records and linked institution reports.',
+      'Retrieve relevant synthetic documents, circulars or guidance and prepare a cited answer.',
+      'Hybrid local retrieval over persisted synthetic documents and reports.',
+    );
+  }
+
+  if (hasBreakdownTerm) {
+    if (hasExceptionTerm) {
+      return planExceptions(normalized, institutionId, period);
+    }
+    return plan(
+      'get_portfolio_overview',
+      period ? { period } : {},
+      'Summarize portfolio totals and reporting completeness for one period.',
+      'Persisted synthetic reports and training review signals.',
+      period ? undefined : { period: 'latest available period' },
+    );
+  }
+
+  if (hasRankingTerm && (hasInstitutionTerm || !hasExceptionTerm)) {
+    const metric = extractRankingMetric(normalized);
+    const order = extractRankingOrder(normalized);
+    return plan(
+      'rank_institutions',
+      { metric, order },
+      `Rank synthetic institutions by ${metric} in ${order === 'asc' ? 'ascending' : 'descending'} order.`,
+      'Persisted synthetic institution register and latest reported indicators.',
+    );
+  }
+
+  if (hasExceptionTerm) {
+    return planExceptions(normalized, institutionId, period);
+  }
+
+  if (hasTrendTerm) {
+    const indicatorId = extractIndicatorId(normalized);
+    return plan(
+      'get_analytics',
+      {
+        ...(period ? { period } : {}),
+        ...(institutionId ? { institutionId } : {}),
+        ...(indicatorId ? { indicatorId } : {}),
+      },
+      indicatorId
+        ? `Review the ${indicatorId} trend with its period-to-period change.`
+        : 'Review synthetic indicator trends and period-to-period changes.',
+      'Persisted synthetic supervisory indicators and source reports.',
+      period ? undefined : { period: 'latest available period' },
+    );
+  }
+
+  if (institutionIds.length >= 2 && institutionIds.length <= 5) {
+    return plan(
+      'compare_institutions',
+      { institutionIds },
+      `Compare the latest synthetic positions of ${institutionIds.join(', ')}.`,
+      'Persisted synthetic institution and report records.',
     );
   }
 
@@ -101,10 +241,11 @@ export function planAssistantQuestion(question: string): AssistantPlan {
       period ? { period } : {},
       'Summarize portfolio totals and reporting completeness for one period.',
       'Persisted synthetic reports and training review signals.',
+      period ? undefined : { period: 'latest available period' },
     );
   }
 
-  if (/\b(analytics|indicator|ratio|trend|growth|npl|capital|liquidity|completeness)\b/.test(normalized)) {
+  if (/\b(analytics|indicator|ratio|npl|capital|liquidity|completeness|deposits?|loans?)\b/.test(normalized)) {
     const indicatorId = extractIndicatorId(normalized);
     return plan(
       'get_analytics',
@@ -117,6 +258,7 @@ export function planAssistantQuestion(question: string): AssistantPlan {
         ? `Review the ${indicatorId} indicator and its available trend.`
         : 'Review synthetic indicator values and available portfolio trends.',
       'Persisted synthetic supervisory indicators and source reports.',
+      period ? undefined : { period: 'latest available period' },
     );
   }
 
@@ -129,21 +271,24 @@ export function planAssistantQuestion(question: string): AssistantPlan {
     );
   }
 
-  if (/\b(search|find|look up|explain|why|how|what|compare|describe|evidence|drill down|show me)\b/.test(normalized)) {
+  if (institutionId) {
     return plan(
-      'search_corpus',
-      {
-        query: question.trim(),
-        ...(period ? { period } : {}),
-        ...(institutionId ? { institutionId } : {}),
-        limit: 6,
-      },
-      'Retrieve relevant synthetic evidence and prepare a cited answer using the local model.',
-      'Hybrid local retrieval over persisted synthetic documents, reports, institutions and review signals.',
+      'get_institution',
+      { institutionId },
+      `Inspect the synthetic institution ${institutionId}, its reports and review signals.`,
+      'Persisted synthetic institution and report records.',
     );
   }
 
-  throw new RequestValidationError(
-    'I can plan an overview, exception list, institution lookup, analytics query or institution search. Try one of the suggested questions.',
+  return plan(
+    'search_corpus',
+    {
+      query: question.trim(),
+      ...(period ? { period } : {}),
+      ...(institutionId ? { institutionId } : {}),
+      limit: 6,
+    },
+    'Retrieve relevant synthetic evidence and prepare a cited answer using the local model.',
+    'Hybrid local retrieval over persisted synthetic documents, reports, institutions and review signals.',
   );
 }

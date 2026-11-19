@@ -5,10 +5,12 @@ import {
   getLocalModelBaseUrl,
   LocalModelResponseError,
 } from './local-model';
+import { clearChatProviderAvailabilityCache } from './model-provider';
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  clearChatProviderAvailabilityCache();
 });
 
 describe('local model gateway', () => {
@@ -46,7 +48,9 @@ describe('local model gateway', () => {
     await expect(createLocalEmbeddings(['test'])).rejects.toBeInstanceOf(LocalModelResponseError);
   });
 
-  it('uses the loopback chat model and rejects malformed answers', async () => {
+  it('delegates chat to the loopback provider and rejects malformed answers', async () => {
+    vi.stubEnv('MODEL_PROVIDER', 'lmstudio');
+    vi.stubEnv('LM_STUDIO_BASE_URL', 'http://127.0.0.1:1235/v1');
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: 'Grounded answer.' } }] }), {
         status: 200,
@@ -61,6 +65,31 @@ describe('local model gateway', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'http://127.0.0.1:1235/v1/chat/completions',
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it('delegates chat to Groq when the Groq provider is active', async () => {
+    vi.stubEnv('MODEL_PROVIDER', 'groq');
+    vi.stubEnv('GROQ_API_KEY', 'test-groq-key');
+    vi.stubEnv('GROQ_BASE_URL', 'https://api.groq.com/openai/v1');
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: 'Groq answer.' } }] }), {
+        status: 200,
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(generateLocalChatCompletion([
+      { role: 'system', content: 'Use only evidence.' },
+      { role: 'user', content: 'Summarize this evidence.' },
+    ])).resolves.toBe('Groq answer.');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.groq.com/openai/v1/chat/completions',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-groq-key',
+        }),
+      }),
     );
   });
 });

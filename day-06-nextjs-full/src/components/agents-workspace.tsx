@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { AgentsCharts } from './agents-charts';
 
 export interface AgentSummary {
   id: string;
@@ -87,7 +88,9 @@ interface SupervisoryWorkflowResult {
     disclaimer: string;
   };
   latencyMs: number;
-  modelUsed: 'local-qwen' | 'deterministic-fallback';
+  modelUsed: string;
+  modelProvider?: string;
+  facts?: unknown;
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
@@ -158,6 +161,118 @@ function responseError(value: unknown): string {
   return 'The supervisory analysis request could not be completed.';
 }
 
+const MODEL_LABELS: Record<string, string> = {
+  groq: 'Groq',
+  'local-qwen': 'Local Qwen',
+  'deterministic-fallback': 'Deterministic fallback',
+};
+
+interface WorkflowFact {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+interface FollowUpChip {
+  label: string;
+  question: string;
+  period?: string;
+  institutionId?: string;
+}
+
+function modelLabel(modelUsed: string): string {
+  return MODEL_LABELS[modelUsed] ?? modelUsed;
+}
+
+function narrowFacts(value: unknown): WorkflowFact[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') return [];
+    const record = entry as Record<string, unknown>;
+    if (typeof record.label !== 'string' || typeof record.value !== 'string') return [];
+    return [
+      {
+        label: record.label,
+        value: record.value,
+        detail: typeof record.detail === 'string' ? record.detail : undefined,
+      },
+    ];
+  });
+}
+
+function buildFollowUps(result: SupervisoryWorkflowResult): FollowUpChip[] {
+  const chips: FollowUpChip[] = [];
+  const institutionId = result.scope.institutionId;
+  const results = result.analyticalResults;
+  const hasOverview = Boolean(results && results.overview && typeof results.overview === 'object');
+  const hasExceptions = Boolean(results && Array.isArray(results.exceptions) && results.exceptions.length > 0);
+  const period = result.scope.period ?? '';
+  const periodSuffix = period ? ` for ${period}` : '';
+
+  if (institutionId) {
+    chips.push(
+      {
+        label: `Show the 12-period trend for ${institutionId}`,
+        question: `Show the 12-period trend for ${institutionId}`,
+        institutionId,
+      },
+      {
+        label: `Compare ${institutionId} with another institution`,
+        question: `Compare ${institutionId} with another institution`,
+        institutionId,
+      },
+      {
+        label: `List open exceptions for ${institutionId}`,
+        question: `List open exceptions for ${institutionId}`,
+        institutionId,
+      },
+    );
+  }
+
+  if (hasOverview) {
+    chips.push(
+      {
+        label: 'Which institutions have the most open exceptions?',
+        question: 'Which institutions have the most open exceptions?',
+      },
+      {
+        label: `Show the NPL ratio trend${periodSuffix}`,
+        question: `Show the NPL ratio trend${periodSuffix}`,
+        period: period || undefined,
+      },
+      {
+        label: `Generate an exception report${periodSuffix}`,
+        question: `Generate an exception report${periodSuffix}`,
+        period: period || undefined,
+      },
+    );
+  }
+
+  if (hasExceptions) {
+    chips.push(
+      {
+        label: 'Explain the highest-severity signal',
+        question: 'Explain the highest-severity signal',
+      },
+      {
+        label: 'List critical open exceptions',
+        question: 'List critical open exceptions',
+      },
+      {
+        label: 'Compare the affected institutions',
+        question: 'Compare the affected institutions',
+      },
+    );
+  }
+
+  const seen = new Set<string>();
+  return chips.filter((chip) => {
+    if (seen.has(chip.question)) return false;
+    seen.add(chip.question);
+    return true;
+  });
+}
+
 export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSummary[] }) {
   const [activeTab, setActiveTab] = useState<'workflow' | 'direct'>('workflow');
 
@@ -176,6 +291,9 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
   const [directLoading, setDirectLoading] = useState(false);
   const [parallel, setParallel] = useState(true);
 
+  const workflowFacts = workflowResult ? narrowFacts(workflowResult.facts) : [];
+  const followUps = workflowResult ? buildFollowUps(workflowResult) : [];
+
   // Suggested workflow click
   function applySuggestedWorkflow(suggestion: typeof SUGGESTED_WORKFLOWS[0]) {
     setWorkflowQuestion(suggestion.question);
@@ -187,10 +305,15 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
   }
 
   // Handle Workflow Execution
-  async function handleWorkflowSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = workflowQuestion.trim();
+  async function runWorkflow(
+    question: string,
+    overrides?: { period?: string; institutionId?: string },
+  ) {
+    const query = question.trim();
     if (query.length < 2 || workflowLoading) return;
+
+    const period = overrides?.period ?? workflowPeriod.trim();
+    const institutionId = overrides?.institutionId ?? workflowInstitutionId.trim();
 
     setWorkflowLoading(true);
     setWorkflowError(null);
@@ -203,8 +326,8 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
         body: JSON.stringify({
           workflow: true,
           question: query,
-          period: workflowPeriod.trim() || undefined,
-          institutionId: workflowInstitutionId.trim() || undefined,
+          period: period || undefined,
+          institutionId: institutionId || undefined,
         }),
       });
 
@@ -224,6 +347,18 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
     } finally {
       setWorkflowLoading(false);
     }
+  }
+
+  async function handleWorkflowSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await runWorkflow(workflowQuestion);
+  }
+
+  function applyFollowUp(chip: FollowUpChip) {
+    setWorkflowQuestion(chip.question);
+    if (chip.period !== undefined) setWorkflowPeriod(chip.period);
+    if (chip.institutionId !== undefined) setWorkflowInstitutionId(chip.institutionId);
+    void runWorkflow(chip.question, { period: chip.period, institutionId: chip.institutionId });
   }
 
   // Handle Manual Direct Prompt Submission
@@ -540,16 +675,24 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                       <strong style={{ textTransform: 'uppercase', color: 'var(--teal)' }}>
                         {workflowResult.intent}
                       </strong>{' '}
-                      · Latency: {workflowResult.latencyMs} ms · Engine:{' '}
-                      <span className="status-pill" style={{ fontSize: '9px', textTransform: 'none' }}>
-                        {workflowResult.modelUsed === 'local-qwen' ? 'Qwen (LM Studio)' : 'Deterministic Offline Engine'}
-                      </span>
+                      · Latency: {workflowResult.latencyMs} ms
                     </p>
                   </div>
-                  <span className="status-pill">Graph Completed</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span className="period-chip">
+                      Model: {modelLabel(workflowResult.modelUsed)}
+                      {workflowResult.modelProvider ? ` · ${workflowResult.modelProvider}` : ''}
+                    </span>
+                    <span className="status-pill">Graph Completed</span>
+                  </div>
                 </div>
 
                 <div className="panel-body">
+                  {workflowResult.modelUsed === 'deterministic-fallback' && (
+                    <p className="panel-caption" style={{ margin: '0 0 12px' }}>
+                      Deterministic fallback uses approved database calculations and still shows the evidence.
+                    </p>
+                  )}
                   {/* Graph Pipeline Diagram */}
                   <div
                     style={{
@@ -737,6 +880,69 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                     </div>
                   ))}
                 </div>
+              )}
+
+              <AgentsCharts
+                intent={workflowResult.intent}
+                analyticalResults={workflowResult.analyticalResults}
+              />
+
+              {followUps.length > 0 && (
+                <section className="panel" aria-labelledby="workflow-followups-title">
+                  <div className="panel-header">
+                    <div>
+                      <h3 className="panel-title" id="workflow-followups-title">
+                        Follow-up questions
+                      </h3>
+                      <p className="panel-caption">
+                        Generated from the current scope and returned evidence.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="panel-body">
+                    <div className="assistant-suggestions" aria-label="Suggested follow-up questions">
+                      {followUps.map((chip) => (
+                        <button
+                          type="button"
+                          className="assistant-suggestion"
+                          key={chip.question}
+                          onClick={() => applyFollowUp(chip)}
+                          disabled={workflowLoading}
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {workflowFacts.length > 0 && (
+                <section className="panel" aria-labelledby="workflow-facts-title">
+                  <div className="panel-header">
+                    <div>
+                      <h3 className="panel-title" id="workflow-facts-title">
+                        Grounded facts
+                      </h3>
+                      <p className="panel-caption">
+                        Structured facts returned with this workflow result.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="panel-body">
+                    <dl className="assistant-plan-details assistant-narrative-facts">
+                      {workflowFacts.map((fact, index) => (
+                        <div key={`${fact.label}-${index}`}>
+                          <dt>{fact.label}</dt>
+                          <dd>
+                            {fact.value}
+                            {fact.detail && <span className="panel-caption">{fact.detail}</span>}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </section>
               )}
 
               {/* Executive Summary & Grounded Findings */}

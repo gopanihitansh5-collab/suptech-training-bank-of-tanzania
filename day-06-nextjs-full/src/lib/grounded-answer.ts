@@ -1,4 +1,8 @@
-import { LocalModelResponseError, LocalModelUnavailableError, generateLocalChatCompletion } from './local-model';
+import {
+  ModelProviderResponseError,
+  ModelProviderUnavailableError,
+  generateChatCompletion,
+} from './model-provider';
 import type { SearchHit } from './search';
 
 export interface GroundedCitation {
@@ -12,7 +16,116 @@ export interface GroundedAnswer {
   status: 'answered' | 'no_evidence' | 'unavailable';
   text: string;
   citations: GroundedCitation[];
+  mode?: 'model' | 'extractive' | 'unavailable';
   error?: string;
+}
+
+const STOPWORDS = new Set([
+  'the',
+  'and',
+  'for',
+  'with',
+  'what',
+  'are',
+  'was',
+  'were',
+  'how',
+  'why',
+  'when',
+  'where',
+  'which',
+  'that',
+  'this',
+  'from',
+  'into',
+  'about',
+  'does',
+  'did',
+  'has',
+  'have',
+  'had',
+  'can',
+  'could',
+  'would',
+  'should',
+  'will',
+  'shall',
+  'may',
+  'might',
+  'not',
+  'you',
+  'your',
+  'our',
+  'their',
+  'its',
+  'please',
+  'give',
+  'show',
+  'explain',
+  'tell',
+  'list',
+  'all',
+  'any',
+  'synthetic',
+  'training',
+]);
+
+function queryTerms(question: string): string[] {
+  return [...new Set(
+    question
+      .toLowerCase()
+      .split(/[^a-z0-9%]+/)
+      .filter((term) => term.length >= 3 && !STOPWORDS.has(term)),
+  )];
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 15);
+}
+
+function selectExtractiveSentences(
+  question: string,
+  sources: SearchHit[],
+): Array<{ sourceId: string; text: string; hit: SearchHit }> {
+  const terms = queryTerms(question);
+  const selected: Array<{ sourceId: string; text: string; hit: SearchHit }> = [];
+  const used = new Set<string>();
+
+  for (let index = 0; index < sources.length && selected.length < 3; index += 1) {
+    const hit = sources[index];
+    for (const sentence of splitSentences(hit.excerpt)) {
+      const lower = sentence.toLowerCase();
+      const mentionsQuestion = terms.some((term) => lower.includes(term));
+      if (!mentionsQuestion && !/\d/.test(sentence)) continue;
+      if (used.has(lower)) continue;
+      used.add(lower);
+      selected.push({ sourceId: `S${index + 1}`, text: sentence, hit });
+      break;
+    }
+  }
+
+  return selected;
+}
+
+function citationsFor(
+  sourceIds: string[],
+  citationMap: Map<string, SearchHit>,
+): GroundedCitation[] {
+  return sourceIds.map((sourceId) => {
+    const hit = citationMap.get(sourceId);
+    if (!hit) {
+      throw new ModelProviderResponseError('A retrieved citation could not be resolved.');
+    }
+    return {
+      sourceId,
+      title: hit.title,
+      kind: hit.kind,
+      citation: hit.citation,
+    };
+  });
 }
 
 export async function answerFromEvidence(
@@ -23,6 +136,7 @@ export async function answerFromEvidence(
   if (sources.length === 0) {
     return {
       status: 'no_evidence',
+      mode: 'unavailable',
       text: 'I could not find matching evidence in the synthetic training corpus. Try a different institution, period, indicator, or phrase.',
       citations: [],
     };
@@ -35,8 +149,9 @@ export async function answerFromEvidence(
     `[S${index + 1}] ${hit.kind}: ${hit.title}\n${hit.excerpt.slice(0, 1000)}`,
   ).join('\n\n');
 
+  let modelError: Error | null = null;
   try {
-    const text = await generateLocalChatCompletion([
+    const text = await generateChatCompletion([
       {
         role: 'system',
         content: `You are a grounded assistant for a synthetic supervisory training application.
@@ -55,39 +170,52 @@ This is fictional training data, not official policy or a finding of misconduct.
     const citedIds = [...new Set(text.match(/\[S\d+\]/g) ?? [])]
       .map((citation) => citation.slice(1, -1));
     if (citedIds.length === 0) {
-      throw new LocalModelResponseError('The generated answer did not cite any retrieved sources.');
+      throw new ModelProviderResponseError(
+        'The generated answer did not cite any retrieved sources.',
+      );
     }
     if (citedIds.some((sourceId) => !citationMap.has(sourceId))) {
-      throw new LocalModelResponseError('The generated answer cited a source that was not retrieved.');
+      throw new ModelProviderResponseError(
+        'The generated answer cited a source that was not retrieved.',
+      );
     }
     return {
       status: 'answered',
+      mode: 'model',
       text,
-      citations: citedIds.map((sourceId) => {
-        const hit = citationMap.get(sourceId);
-        if (!hit) throw new LocalModelResponseError('A retrieved citation could not be resolved.');
-        return {
-          sourceId,
-          title: hit.title,
-          kind: hit.kind,
-          citation: hit.citation,
-        };
-      }),
+      citations: citationsFor(citedIds, citationMap),
     };
   } catch (error) {
-    if (!(error instanceof LocalModelUnavailableError || error instanceof LocalModelResponseError)) {
+    if (
+      !(
+        error instanceof ModelProviderUnavailableError ||
+        error instanceof ModelProviderResponseError
+      )
+    ) {
       throw error;
     }
+    modelError = error;
+  }
+
+  const selected = selectExtractiveSentences(question, sources.slice(0, 3));
+  if (selected.length > 0) {
+    const usedIds = [...new Set(selected.map((entry) => entry.sourceId))];
     return {
-      status: 'unavailable',
-      text: 'The retrieved sources are available below, but the local answer could not be validated. Review the cited records directly.',
-      citations: sources.map((hit, index) => ({
-        sourceId: `S${index + 1}`,
-        title: hit.title,
-        kind: hit.kind,
-        citation: hit.citation,
-      })),
-      error: error.message,
+      status: 'answered',
+      mode: 'extractive',
+      text: selected
+        .map((entry) => `[${entry.sourceId}] ${entry.text}`)
+        .join(' '),
+      citations: citationsFor(usedIds, citationMap),
+      error: modelError.message,
     };
   }
+
+  return {
+    status: 'unavailable',
+    mode: 'unavailable',
+    text: 'The retrieved sources are available below, but no extractive sentence matched the question terms and the model answer could not be validated. Review the cited records directly.',
+    citations: citationsFor([...citationMap.keys()], citationMap),
+    error: modelError.message,
+  };
 }

@@ -6,11 +6,13 @@ import { query, withTransaction } from './db';
 import {
   deleteDocument,
   deleteDocumentFile,
+  getIngestionSummary,
   getLocalUploadsDir,
   getStorageClient,
   ingestDocument,
   isS3Configured,
   listDocuments,
+  listIngestionJobs,
   resetStorageClient,
   saveDocumentFile,
 } from './ingestion-store';
@@ -166,6 +168,110 @@ describe('ingestion-store module', () => {
 
       const fullPath = path.join(getLocalUploadsDir(), storagePath);
       expect(fs.existsSync(fullPath)).toBe(false);
+    });
+  });
+
+  describe('listIngestionJobs', () => {
+    it('clamps the limit to the 1..50 range', async () => {
+      vi.mocked(query).mockResolvedValue({ rows: [] } as never);
+
+      await listIngestionJobs(0);
+      expect(vi.mocked(query).mock.calls[0][1]).toEqual([1]);
+
+      await listIngestionJobs(999);
+      expect(vi.mocked(query).mock.calls[1][1]).toEqual([50]);
+
+      await listIngestionJobs();
+      expect(vi.mocked(query).mock.calls[2][1]).toEqual([20]);
+
+      await listIngestionJobs(Number.NaN);
+      expect(vi.mocked(query).mock.calls[3][1]).toEqual([20]);
+    });
+
+    it('maps job rows joined to uploaded documents', async () => {
+      const documentId = 'c3b0f660-2f2c-4a57-922f-34aac67681d8';
+      vi.mocked(query).mockResolvedValueOnce({
+        rows: [
+          {
+            job_id: 'job-123',
+            document_id: documentId,
+            original_filename: 'notes.json',
+            document_status: 'completed',
+            job_status: 'completed',
+            attempt_count: 1,
+            error_message: null,
+            started_at: new Date('2026-10-15T10:00:00Z'),
+            finished_at: new Date('2026-10-15T10:00:05Z'),
+            created_at: new Date('2026-10-15T09:59:59Z'),
+            chunk_count: 4,
+          },
+        ],
+      } as never);
+
+      const jobs = await listIngestionJobs(10);
+      expect(jobs).toHaveLength(1);
+      expect(jobs[0]).toEqual({
+        jobId: 'job-123',
+        documentId,
+        originalFilename: 'notes.json',
+        documentStatus: 'completed',
+        jobStatus: 'completed',
+        attemptCount: 1,
+        errorMessage: null,
+        startedAt: '2026-10-15T10:00:00.000Z',
+        finishedAt: '2026-10-15T10:00:05.000Z',
+        createdAt: '2026-10-15T09:59:59.000Z',
+        chunkCount: 4,
+      });
+    });
+
+    it('maps a failed job with nullable timestamps and an error message', async () => {
+      vi.mocked(query).mockResolvedValueOnce({
+        rows: [
+          {
+            job_id: 'job-456',
+            document_id: 'd3b0f660-2f2c-4a57-922f-34aac67681d8',
+            original_filename: 'broken.csv',
+            document_status: 'failed',
+            job_status: 'failed',
+            attempt_count: 2,
+            error_message: 'Unsupported file',
+            started_at: null,
+            finished_at: null,
+            created_at: new Date('2026-10-16T08:00:00Z'),
+            chunk_count: 0,
+          },
+        ],
+      } as never);
+
+      const jobs = await listIngestionJobs(10);
+      expect(jobs[0]).toMatchObject({
+        jobStatus: 'failed',
+        attemptCount: 2,
+        errorMessage: 'Unsupported file',
+        startedAt: null,
+        finishedAt: null,
+        chunkCount: 0,
+      });
+    });
+  });
+
+  describe('getIngestionSummary', () => {
+    it('groups document and job counts by status', async () => {
+      vi.mocked(query).mockResolvedValueOnce({
+        rows: [
+          { kind: 'document', status: 'completed', count: 3 },
+          { kind: 'document', status: 'failed', count: 1 },
+          { kind: 'job', status: 'completed', count: 3 },
+          { kind: 'job', status: 'queued', count: 2 },
+        ],
+      } as never);
+
+      const summary = await getIngestionSummary();
+      expect(summary).toEqual({
+        documentsByStatus: { completed: 3, failed: 1 },
+        jobsByStatus: { completed: 3, queued: 2 },
+      });
     });
   });
 
