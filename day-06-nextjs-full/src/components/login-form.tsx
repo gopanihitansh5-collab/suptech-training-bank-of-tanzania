@@ -3,10 +3,25 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function LoginForm() {
+export function LoginForm({ showOneClickLogin = false }: { showOneClickLogin?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+
+  async function completeSignIn(response: Response) {
+    const result: unknown = await response.json();
+    if (!response.ok) {
+      const message =
+        result && typeof result === 'object' && 'error' in result &&
+        typeof result.error === 'string'
+          ? result.error
+          : 'Sign-in failed. Check the account and service configuration.';
+      setError(message);
+      return;
+    }
+    router.replace('/');
+    router.refresh();
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -22,18 +37,20 @@ export function LoginForm() {
           password: formData.get('password'),
         }),
       });
-      const result: unknown = await response.json();
-      if (!response.ok) {
-        const message =
-          result && typeof result === 'object' && 'error' in result &&
-          typeof result.error === 'string'
-            ? result.error
-            : 'Sign-in failed. Check the account and service configuration.';
-        setError(message);
-        return;
-      }
-      router.replace('/');
-      router.refresh();
+      await completeSignIn(response);
+    } catch {
+      setError('Could not reach the sign-in service. Check that the application is available and retry.');
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function oneClickLogin() {
+    setPending(true);
+    setError('');
+    try {
+      const response = await fetch('/api/auth/demo-login', { method: 'POST' });
+      await completeSignIn(response);
     } catch {
       setError('Could not reach the sign-in service. Check that the application is available and retry.');
     } finally {
@@ -43,6 +60,16 @@ export function LoginForm() {
 
   return (
     <form className="login-form" onSubmit={submit}>
+      {showOneClickLogin && (
+        <button
+          className="button-primary"
+          disabled={pending}
+          onClick={oneClickLogin}
+          type="button"
+        >
+          {pending ? 'Signing in…' : 'One-click login'}
+        </button>
+      )}
       <label>
         Username
         <input autoComplete="username" name="username" required maxLength={100} />

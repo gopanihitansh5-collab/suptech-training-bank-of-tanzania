@@ -233,6 +233,9 @@ Periods are validated as `YYYY-MM`. Identifiers are validated before querying.
 - roles are `viewer < supervisor < admin`;
 - login is rate-limited in memory (5 failures in 5 minutes, then `429`);
 - login writes an audit event.
+- Vercel Preview deployments show a `One-click login` button that issues a demo
+  session server-side without sending the configured credentials to the browser.
+  The endpoint is Preview-only; keep Vercel Deployment Protection enabled.
 
 This is a demonstration boundary, not production identity, and it is labelled
 as such in the UI.
@@ -368,11 +371,14 @@ The login page (`/login`) is the only page outside the dashboard shell.
 
 ## 8. API reference
 
-All data routes require the demo session except `POST /api/auth/login`.
+All data routes require the demo session except `POST /api/auth/login` and the
+Preview-only `POST /api/auth/demo-login` (which must remain behind Vercel
+Deployment Protection).
 
 | Method | Path | Role | Purpose |
 | --- | --- | --- | --- |
 | `POST` | `/api/auth/login` | public | Validate demo credentials and set the session cookie. |
+| `POST` | `/api/auth/demo-login` | Preview only | Create a demo session server-side; requires Vercel Deployment Protection. |
 | `POST` | `/api/auth/logout` | any | Clear the session cookie. |
 | `GET` | `/api/overview` | any | Portfolio summary and trend. |
 | `GET` | `/api/institutions` | any | Paginated institution list. |
