@@ -28,14 +28,14 @@ export function LoginForm() {
           result && typeof result === 'object' && 'error' in result &&
           typeof result.error === 'string'
             ? result.error
-            : 'Sign-in failed. Check the local service configuration.';
+            : 'Sign-in failed. Check the account and service configuration.';
         setError(message);
         return;
       }
       router.replace('/');
       router.refresh();
     } catch {
-      setError('Could not reach the local sign-in service. Check that the application is running.');
+      setError('Could not reach the sign-in service. Check that the application is available and retry.');
     } finally {
       setPending(false);
     }

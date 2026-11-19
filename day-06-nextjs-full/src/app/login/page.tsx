@@ -12,14 +12,14 @@ export default async function LoginPage() {
           <div className="brand-mark" aria-hidden="true">S</div>
           <div>
             <div className="brand-title">SupTech Monitor</div>
-            <div className="brand-subtitle">Day 6 · Local training</div>
+            <div className="brand-subtitle">Supervisory intelligence</div>
           </div>
         </div>
-        <h1>Sign in to the demo</h1>
-        <p>Use the local demo credentials configured in your private <code>.env</code> file.</p>
+        <h1>Sign in to SupTech Monitor</h1>
+        <p>Use the demo account configured for this training environment.</p>
         <LoginForm />
         <div className="login-note">
-          Synthetic training records only. This local sign-in is not a production identity system.
+          Synthetic training records only. Demo access is not an official Bank of Tanzania identity system.
         </div>
       </section>
     </main>

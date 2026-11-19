@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation';
 import { AuthError, requireDemoSession } from '@/lib/auth';
-import { DashboardNavigation } from '@/components/dashboard-navigation';
+import {
+  DashboardBreadcrumb,
+  DashboardNavigation,
+  MobileNavigation,
+} from '@/components/dashboard-navigation';
 import { LogoutButton } from '@/components/logout-button';
 
 export default async function DashboardLayout({
@@ -25,20 +29,28 @@ export default async function DashboardLayout({
               <div className="brand-subtitle">Supervisory intelligence</div>
             </div>
           </div>
-          <div className="nav-caption">Training console</div>
+          <div className="nav-caption">Supervisory workspace</div>
           <DashboardNavigation />
         </div>
         <div className="sidebar-note">
-          <strong>Environment</strong>
-          <span>Local synthetic training data</span>
+          <strong>Training data</strong>
+          <span>Synthetic records only</span>
         </div>
       </aside>
       <div className="workspace">
         <header className="topbar">
-          <div className="crumbs"><strong>SupTech Monitor</strong> / Day 6 application</div>
+          <div className="topbar-start">
+            <MobileNavigation />
+            <DashboardBreadcrumb />
+          </div>
           <div className="user-area">
-            <span className="session-label">{session.userId}</span>
-            <span className="role-pill">{session.role}</span>
+            <span className="user-avatar" aria-hidden="true">
+              {session.userId.trim().charAt(0).toUpperCase()}
+            </span>
+            <div className="user-identity">
+              <span className="session-label">{session.userId}</span>
+              <span className="role-pill">{session.role}</span>
+            </div>
             <LogoutButton />
           </div>
         </header>

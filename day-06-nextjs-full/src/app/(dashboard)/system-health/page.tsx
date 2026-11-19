@@ -50,11 +50,10 @@ export default async function SystemHealthPage() {
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Local training environment.</strong> This page checks the
-          isolated Day 6 database, the optional loopback model endpoint and the
-          local upload store only. It does not report Bank of Tanzania or
-          external infrastructure health, and no external integration is
-          connected by design.
+          <strong>Training environment only.</strong> These probes report the
+          services configured for this application. All displayed data is
+          synthetic; this page does not report Bank of Tanzania infrastructure
+          or regulatory-system health.
         </div>
       </div>
       <section className="page-heading">
@@ -70,7 +69,7 @@ export default async function SystemHealthPage() {
         </div>
       </section>
 
-      <section className="metric-grid" aria-label="Local service status">
+      <section className="metric-grid" aria-label="Configured service status">
         <article className="metric-card">
           <div className="metric-label">Day 6 PostgreSQL</div>
           <div className="metric-value">{health.database.available ? 'Connected' : 'Unavailable'}</div>
@@ -81,16 +80,18 @@ export default async function SystemHealthPage() {
           </div>
         </article>
         <article className="metric-card">
-          <div className="metric-label">Chat model</div>
+          <div className="metric-label">
+            {health.model.provider === 'groq' ? 'Groq chat' : 'LM Studio chat'}
+          </div>
           <div className="metric-value">{health.model.chatAvailable ? 'Available' : 'Unavailable'}</div>
-          <div className="metric-foot">Loopback endpoint · observed at page load</div>
+          <div className="metric-foot">Configured chat endpoint · checked at page load</div>
         </article>
         <article className="metric-card">
           <div className="metric-label">Embeddings</div>
           <div className="metric-value">
             {health.model.embeddingAvailable ? 'Available' : 'Unavailable'}
           </div>
-          <div className="metric-foot">Local embedding model probe</div>
+          <div className="metric-foot">LM Studio embedding probe</div>
         </article>
         <article className="metric-card">
           <div className="metric-label">Upload storage</div>
@@ -153,8 +154,8 @@ export default async function SystemHealthPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Local models</h2>
-              <p className="panel-caption">Credential-free loopback endpoint only.</p>
+              <h2 className="panel-title">Model services</h2>
+              <p className="panel-caption">Chat provider and local embedding service status.</p>
             </div>
           </div>
           <dl className="settings-list" style={{ padding: '0 18px' }}>
@@ -208,9 +209,11 @@ export default async function SystemHealthPage() {
             <div><dt>AUTH_SECRET</dt><dd>{configuredLabel(health.config.authSecretConfigured)}</dd></div>
             <div><dt>Demo user</dt><dd>{configuredLabel(health.config.demoUserConfigured)}</dd></div>
             <div><dt>Demo role</dt><dd>{health.config.demoRole}</dd></div>
+            <div><dt>Chat provider</dt><dd>{health.config.chatProvider}</dd></div>
+            <div><dt>Groq API key</dt><dd>{configuredLabel(health.config.groqApiKeyConfigured)}</dd></div>
             <div><dt>Remote database</dt><dd>{health.config.remoteDatabase ? 'Yes' : 'No'}</dd></div>
             <div><dt>S3-compatible storage</dt><dd>{configuredLabel(health.config.s3Configured)}</dd></div>
-            <div><dt>LM Studio endpoint</dt><dd>{configuredLabel(health.config.lmStudioConfigured)}</dd></div>
+            <div><dt>LM Studio embedding endpoint</dt><dd>{configuredLabel(health.config.lmStudioConfigured)}</dd></div>
             <div>
               <dt>Missing variables</dt>
               <dd className="mono">

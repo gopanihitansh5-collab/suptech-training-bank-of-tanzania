@@ -3,6 +3,7 @@ import type { QueryResult, QueryResultRow } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { query } from './db';
 import { getSystemHealth } from './health';
+import { clearChatProviderAvailabilityCache } from './model-provider';
 
 vi.mock('./db', () => ({ query: vi.fn() }));
 vi.mock('node:fs/promises', () => ({
@@ -58,6 +59,8 @@ function stubBaseEnv(): void {
   vi.stubEnv('AWS_REGION', '');
   vi.stubEnv('AWS_ENDPOINT_URL_S3', '');
   vi.stubEnv('AWS_S3_BUCKET', '');
+  vi.stubEnv('MODEL_PROVIDER', 'lmstudio');
+  vi.stubEnv('GROQ_API_KEY', '');
   vi.stubEnv('LM_STUDIO_BASE_URL', '');
   vi.stubEnv('LOCAL_UPLOADS_DIR', '');
 }
@@ -66,10 +69,12 @@ describe('system health probes', () => {
   beforeEach(() => {
     vi.mocked(query).mockReset();
     vi.mocked(access).mockReset();
+    clearChatProviderAvailabilityCache();
     stubBaseEnv();
   });
 
   afterEach(() => {
+    clearChatProviderAvailabilityCache();
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
@@ -143,6 +148,34 @@ describe('system health probes', () => {
       ['External BoT integration', 'degraded'],
     ]);
     expect(health.checks.at(-1)?.detail).toBe('Not connected by design');
+  });
+
+  it('probes Groq for chat and never returns its API key', async () => {
+    vi.stubEnv('MODEL_PROVIDER', 'groq');
+    vi.stubEnv('GROQ_API_KEY', 'unit-test-groq-key');
+    vi.mocked(query)
+      .mockResolvedValueOnce(queryResult([]))
+      .mockResolvedValueOnce(queryResult([{ version: 'PostgreSQL 16.4', database_name: 'suptech_day6' }]))
+      .mockResolvedValueOnce(queryResult([countRow()]));
+    vi.mocked(access).mockResolvedValue(undefined);
+    stubModelList(['openai/gpt-oss-20b']);
+
+    const health = await getSystemHealth();
+
+    expect(health.model).toMatchObject({
+      provider: 'groq',
+      chatAvailable: true,
+      chatModel: 'openai/gpt-oss-20b',
+      baseUrl: 'https://api.groq.com/openai/v1',
+    });
+    expect(health.config).toMatchObject({
+      chatProvider: 'groq',
+      chatProviderConfigured: true,
+      groqApiKeyConfigured: true,
+    });
+    expect(health.checks.find((check) => check.name === 'Chat model')?.detail)
+      .toContain('Groq');
+    expect(JSON.stringify(health)).not.toContain('unit-test-groq-key');
   });
 
   it('returns a complete degraded object when the database probe fails', async () => {

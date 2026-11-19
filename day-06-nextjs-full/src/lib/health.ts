@@ -3,10 +3,13 @@ import path from 'node:path';
 import type { QueryResultRow } from 'pg';
 import { query } from './db';
 import {
-  getLocalModelBaseUrl,
-  isLocalChatModelAvailable,
   isLocalEmbeddingModelAvailable,
 } from './local-model';
+import {
+  getProviderStatus,
+  isChatProviderAvailable,
+  type ChatProviderName,
+} from './model-provider';
 
 export type HealthCheckStatus = 'ok' | 'degraded' | 'unavailable';
 
@@ -40,6 +43,9 @@ export interface HealthConfig {
   demoRole: string;
   remoteDatabase: boolean;
   s3Configured: boolean;
+  chatProvider: ChatProviderName;
+  chatProviderConfigured: boolean;
+  groqApiKeyConfigured: boolean;
   lmStudioConfigured: boolean;
   missing: string[];
 }
@@ -57,6 +63,7 @@ export interface SystemHealth {
     lastAuditEventAt: string | null;
   };
   model: {
+    provider: ChatProviderName;
     chatAvailable: boolean;
     embeddingAvailable: boolean;
     baseUrl: string;
@@ -195,6 +202,7 @@ export function describeHealthConfig(): HealthConfig {
   const region = process.env.AWS_REGION?.trim();
   const endpoint = process.env.AWS_ENDPOINT_URL_S3?.trim();
   const lmStudioBaseUrl = process.env.LM_STUDIO_BASE_URL?.trim();
+  const provider = getProviderStatus();
 
   const missing: string[] = [];
   if (!databaseUrl) missing.push('DATABASE_URL');
@@ -212,17 +220,12 @@ export function describeHealthConfig(): HealthConfig {
     demoRole,
     remoteDatabase: isRemoteDatabaseUrl(databaseUrl),
     s3Configured: Boolean(region && endpoint),
+    chatProvider: provider.provider,
+    chatProviderConfigured: provider.configured,
+    groqApiKeyConfigured: Boolean(process.env.GROQ_API_KEY?.trim()),
     lmStudioConfigured: Boolean(lmStudioBaseUrl),
     missing,
   };
-}
-
-function modelBaseUrl(): string {
-  try {
-    return getLocalModelBaseUrl();
-  } catch {
-    return process.env.LM_STUDIO_BASE_URL?.trim() || 'invalid loopback configuration';
-  }
 }
 
 function emptySnapshot(): DatabaseSnapshot {
@@ -323,6 +326,7 @@ async function describeStorage(snapshot: DatabaseSnapshot): Promise<SystemHealth
 function buildChecks(
   databaseAvailable: boolean,
   databaseLatencyMs: number | null,
+  chatProvider: ChatProviderName,
   chatAvailable: boolean,
   embeddingAvailable: boolean,
   storage: SystemHealth['storage'],
@@ -337,6 +341,7 @@ function buildChecks(
     storageStatus = 'ok';
     storageDetail = 'Local upload directory is writable.';
   }
+  const chatProviderName = chatProvider === 'groq' ? 'Groq' : 'LM Studio';
 
   return [
     {
@@ -351,8 +356,8 @@ function buildChecks(
       name: 'Chat model',
       status: chatAvailable ? 'ok' : 'unavailable',
       detail: chatAvailable
-        ? 'A local chat model is listed by the loopback endpoint.'
-        : 'No local chat model responded on the loopback endpoint.',
+        ? `${chatProviderName} accepted a model availability probe.`
+        : `${chatProviderName} did not respond to a model availability probe.`,
     },
     {
       name: 'Embeddings',
@@ -383,6 +388,7 @@ function buildChecks(
 
 export async function getSystemHealth(): Promise<SystemHealth> {
   const config = describeHealthConfig();
+  const provider = getProviderStatus();
   const startedAt = Date.now();
 
   let databaseAvailable = false;
@@ -398,13 +404,14 @@ export async function getSystemHealth(): Promise<SystemHealth> {
 
   const [snapshot, chatAvailable, embeddingAvailable] = await Promise.all([
     loadDatabaseSnapshot(databaseAvailable),
-    isLocalChatModelAvailable(),
+    isChatProviderAvailable(),
     isLocalEmbeddingModelAvailable(),
   ]);
   const storage = await describeStorage(snapshot);
   const checks = buildChecks(
     databaseAvailable,
     databaseLatencyMs,
+    provider.provider,
     chatAvailable,
     embeddingAvailable,
     storage,
@@ -424,10 +431,11 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       lastAuditEventAt: snapshot.lastAuditEventAt,
     },
     model: {
+      provider: provider.provider,
       chatAvailable,
       embeddingAvailable,
-      baseUrl: modelBaseUrl(),
-      chatModel: process.env.LM_STUDIO_CHAT_MODEL?.trim() || 'qwen/qwen3.6-35b-a3b',
+      baseUrl: provider.baseUrl,
+      chatModel: provider.model,
       embeddingModel:
         process.env.LM_STUDIO_EMBEDDING_MODEL?.trim() ||
         'text-embedding-nomic-embed-text-v1.5',
