@@ -1,0 +1,382 @@
+SUPTECH MONITOR
+Supervisory Intelligence Platform
+MASTER MULTI-AGENT DEVELOPMENT PROMPT
+
+A full-stack, AI-enabled, RAG-powered supervisory monitoring PoCPrepared for implementation by an AI coding agent with delegated specialist agents
+
+Reference input
+Implementation instruction
+Stitch reference ZIP
+Use the nine supplied screen exports, HTML files and DESIGN.md as the visual source of truth.
+Qodex AI Agent Skills
+Inspect installed skills and activate relevant specialist workflows; do not assume a skill is present.
+Training scope
+Synthetic or approved anonymised data only; no live Bank of Tanzania integration or production claims.
+Core outcome
+A working application with real backend logic, persistence, search, document RAG, analytics, agent orchestration and tested user actions.
+
+
+1. How to use this document
+Copy the MASTER BUILD PROMPT in Section 5 into your coding agent from the root of the project repository. Keep the Stitch ZIP available in the repository or provide its extracted folder path. The prompt is deliberately structured as an engineering mandate: inspect first, plan, build in gated phases, test, review and persist progress.
+Do not ask the agent to generate the entire platform in one unstructured pass.
+Require the lead orchestrator to create a durable implementation plan and delegate bounded tasks to specialist agents.
+Require working backend behaviour before accepting attractive frontend-only screens.
+Require every visible control to perform a real action, or be explicitly disabled with a reason.
+Use synthetic data for missing source domains; clearly label it as demonstration data.
+Do not upload confidential, personal, regulated or institution-specific data to external LLMs, vector stores or public repositories.
+2. What was inspected in the supplied Stitch ZIP
+The uploaded archive contains nine page folders, each with a screen.png and code.html, plus a central DESIGN.md. These are the design references to preserve.
+Reference screen
+Use in the product
+executive_overview
+Primary overview dashboard and global application shell.
+financial_institutions_directory
+Institution search, table density, status indicators and directory layout.
+supervisory_analytics
+Analytical charts, filters, comparisons and data-heavy workspace.
+exceptions_regulatory_breaches_register
+Exception register, severity, workflow status and detail review.
+custom_report_builder
+Report configuration, preview and export workflow.
+data_explorer_regulatory_ingestion_workspace
+Ingestion, dataset inspection, validation and processing history.
+ai_supervisory_assistant
+Assistant conversation, answer composition and context layout.
+integrations_system_health
+Service health, integration monitoring and telemetry.
+administration_settings
+Settings, controls, user/role administration and audit configuration.
+
+2.1 Visual design tokens from DESIGN.md
+Design dimension
+Reference specification
+Canvas
+Light institutional canvas around #FAF8FF / #F8FAFC; white content surfaces.
+Navigation
+Deep navy infrastructure, approximately #0B1220 / #111C2E.
+Primary accent
+Teal #14B8A6; reference token primary #006B5F.
+Secondary accent
+Cyan #38BDF8 for analytic highlights and streaming states.
+Typography
+Geist for headings, Inter for body/interface text, JetBrains Mono for financial values and telemetry.
+Density
+Desktop 1440px+, pinned sidebar around 240px, 12-column workspace, compact filters and data tables.
+Surfaces
+1px borders, restrained shadows, clear surface tiers; avoid heavy blur and gratuitous gradients.
+Status
+Restrained emerald for healthy, amber for warning/review, crimson for critical, blue for informational.
+Responsive
+Icon rail on compact desktop; off-canvas navigation and stacked cards on smaller screens.
+
+Important: the ZIP contains a coherent design system and screen references. Do not substitute the earlier generic dark-dashboard suggestion. The Stitch archive is authoritative for the visual direction unless the product owner explicitly changes it.
+3. Skill activation and repository workflow
+The public Qodex repository describes skills as self-contained instruction folders with SKILL.md and optional supporting resources. Its multi-agent-orchestration skill documents sequential, parallel, hierarchical and consensus patterns, shared-memory communication, workflow monitoring, error handling and evaluation. The coding agent must inspect the installed copy and read its actual instructions before using it.
+Start by discovering available skills in the local environment. Search project-level and user-level skill locations supported by the current coding agent. Do not claim to have used a skill merely because its name appears in this prompt.
+3.1 Priority skills to discover and use when present
+Skill name
+Where it should contribute
+multi-agent-orchestration
+Lead/manager agent, specialist delegation, task graph, shared state, handoffs and result aggregation.
+delegated-development
+Bounded implementation tasks, agent ownership, worktree/branch isolation and integration.
+distributed-task-execution
+Parallel work for independent modules, queues, timeouts, retries and execution status.
+system-design
+System boundaries, architecture decisions, service contracts, data flow and trade-offs.
+backend-database-specialist
+PostgreSQL/SQL design, migrations, indexing, transactions, query plans and persistence.
+rag-agent-builder
+Document ingestion, chunking, embeddings, retrieval, reranking, grounded synthesis and RAG evaluation.
+document-chat-interface
+Upload and chat experience, source references, document context and conversation UX.
+financial-document-management
+Financial-document handling patterns, metadata, document lifecycle and extraction workflows.
+user-interface-designer
+UI consistency, accessibility, layout and interaction design.
+web-interface-architect
+Frontend architecture, routing, reusable components and application shell.
+application-quality-assurance
+End-to-end test strategy, regression testing and acceptance validation.
+quality-validation
+Independent review, evidence-based acceptance checks and quality gates.
+validation-first-approach
+Test-first implementation and validation before marking work complete.
+planning-documentation
+Phased implementation plan with file paths, commands, tests and expected outcomes.
+workspace-documentation
+Architecture notes, decision records, runbooks and progress persistence.
+generate-swagger-docs
+OpenAPI/Swagger documentation and API contract consistency.
+capability-activation
+Discovering and activating other relevant installed capabilities where applicable.
+
+Skill availability and exact names may differ by agent, installation method or repository revision. Inspect the installed skill folders and descriptions. If a named skill is missing, use the closest available capability or follow the requirements in this document directly. Do not install additional packages or skills without explaining why and checking compatibility.
+4. Target product and architecture
+4.1 Main application modules
+Module
+Expected behaviour
+Executive Overview
+Real KPI aggregates, reporting status, indicator trends, open exceptions, data freshness and recent activity.
+Institutions
+Searchable directory, institution profile, reporting history, indicators, exceptions and drill-down.
+Supervisory Analytics
+KPI/KRI calculations, period comparisons, filters, trend analysis, configurable thresholds and explainable calculations.
+Exceptions & Alerts
+Exception lifecycle, severity, source evidence, annotations, assignment/review state, audit history and event notifications.
+Custom Reports
+Parameterised report builder, preview, saved configurations, CSV/PDF export and report history.
+Data Explorer
+File uploads, dataset preview, schema inference, validation, rejected rows, ingestion jobs and processing lineage.
+AI Supervisory Assistant
+Natural-language query, hybrid search, RAG, analytical tool routing, chart/table answers and cited source records.
+Integrations & System Health
+API health, database status, background jobs, event stream, errors, latency and Java/Python integration demonstration.
+Administration & Settings
+Users/roles, permissions, threshold configuration, feature flags, audit log, model/provider settings and retention policies.
+
+4.2 Recommended logical architecture
+Browser / React + TypeScript
+        |
+        | HTTPS / REST / SSE (WebSocket only when justified)
+        v
+FastAPI Application Layer
+  |-- Authentication / RBAC / tenant and scope enforcement
+  |-- Institution, report, indicator and exception services
+  |-- Search API (lexical + semantic + metadata filters)
+  |-- Document upload and ingestion API
+  |-- Assistant API / agent orchestrator
+  |-- Report generation and export API
+        |
+        +---- PostgreSQL (system of record)
+        |       +-- relational business tables
+        |       +-- pgvector embeddings (if supported)
+        |       +-- JSONB metadata and audit records
+        |
+        +---- Object storage / local development storage
+        |       +-- original uploaded files
+        |       +-- extracted text / derived artifacts
+        |
+        +---- Background worker / job queue
+        |       +-- document parsing and chunking
+        |       +-- embeddings and indexing
+        |       +-- imports, analytics and report exports
+        |
+        +---- LLM / embedding provider abstraction
+        +---- Optional external search provider (explicitly configured)
+Use a modular monolith first unless the existing repository already has a justified service boundary. Do not introduce microservices, Kafka, Redis, Elasticsearch or multiple databases merely to appear sophisticated. Choose the smallest reliable architecture that meets the requirements.
+4.3 Technology defaults (verify the existing project first)
+Layer
+Preferred default
+Rule
+Frontend
+React + TypeScript + Vite; reuse existing setup if sound.
+Do not rewrite a working frontend without a documented reason.
+UI
+Tailwind or existing styling system; component library only if already compatible.
+Match Stitch screens and extracted tokens.
+Backend
+Python + FastAPI + Pydantic.
+Use modular routers, services, repositories and dependency injection.
+Database
+Existing PostgreSQL preferred; SQLAlchemy + Alembic.
+Inspect before creating or migrating anything.
+Vector search
+pgvector extension where available.
+Fallback to a documented local vector index only if PostgreSQL vector support is unavailable.
+Lexical search
+PostgreSQL full-text search / trigram where appropriate.
+Optional OpenSearch only if scale or existing infrastructure justifies it.
+Document storage
+Local storage for dev; S3-compatible/object storage abstraction for deployment.
+Keep binaries outside relational rows; store metadata and references.
+Background work
+Existing queue if present; otherwise a simple worker abstraction.
+Avoid a new broker unless ingestion volume or reliability requires it.
+Agent orchestration
+LangGraph or compatible stateful workflow framework if already installed and suitable.
+Keep orchestration behind an adapter; don't hardwire every business function to one vendor.
+Testing
+Pytest, API integration tests, frontend tests and Playwright/Cypress if available.
+Tests must prove behaviour, not only importability.
+
+5. MASTER BUILD PROMPT — copy this into your coding agent
+The following is the operative instruction. It is intentionally explicit. The coding agent should treat it as the project contract and work through the phases, not stop after generating a plan or a mock UI.
+ROLE AND MISSION
+You are the Lead Engineering Orchestrator for SupTech Monitor, a complete full-stack supervisory intelligence Proof of Concept. You are responsible for delivering a working software system, not just wireframes, static screens, mock APIs or an architectural proposal.
+Act as a principal software architect and delegate implementation to specialist agents. You must inspect the existing repository, the supplied Stitch reference ZIP and the installed agent skills before making changes. Preserve existing working code. Build in small verified phases, keep durable project memory and integrate each specialist's work through reviewable commits or isolated worktrees.
+The target users are supervisory analysts and administrators. All demonstration records must be synthetic or explicitly approved anonymised data. This is a training PoC: do not claim live Bank of Tanzania integration, production approval or regulatory compliance certification.
+NON-NEGOTIABLE FIRST ACTIONS
+1. Inspect the repository structure, package manifests, existing frontend/backend code, tests, environment configuration, database configuration and deployment files.2. Locate and inspect the supplied Stitch ZIP. Extract it into a stable project reference directory such as docs/ui-reference/stitch/ without modifying the original source. Preserve all nine screen.png files, code.html files and DESIGN.md.3. Read DESIGN.md and inspect every screen screenshot. Extract the actual colour, typography, spacing, layout, table, chart and navigation patterns. Build a UI_REFERENCE.md and design tokens file from the actual source.4. Discover installed agent skills in the current environment and read the relevant SKILL.md files. Prioritise multi-agent-orchestration, delegated-development, distributed-task-execution, system-design, backend-database-specialist, rag-agent-builder, document-chat-interface, financial-document-management, user-interface-designer, web-interface-architect, application-quality-assurance, quality-validation, validation-first-approach, planning-documentation, workspace-documentation and generate-swagger-docs when present.5. Report which skills were found, which were read, and which were unavailable. Never fabricate skill activation.6. Create durable project files before implementation: docs/PROJECT_BRIEF.md, docs/ARCHITECTURE.md, docs/IMPLEMENTATION_PLAN.md, docs/AGENT_ROLES.md, docs/DATA_DICTIONARY.md, docs/SECURITY_MODEL.md, docs/TEST_STRATEGY.md, docs/DECISIONS.md and docs/PROGRESS.md.7. Run the existing test suite and record the baseline. Identify current application run commands.8. Inspect database connectivity safely. Never print secrets. Never drop, truncate, overwrite or migrate an existing database without explicit approval and a verified backup.
+MULTI-AGENT ORCHESTRATION — REQUIRED
+Use a hierarchical orchestration architecture with one Lead Orchestrator and bounded specialist agents. Use parallel execution only for tasks that are genuinely independent. Use sequential handoffs where one task depends on another. Use an independent reviewer/QA agent before a phase is accepted.
+Lead Orchestrator:- Owns project plan, shared state, dependency graph, task assignment, integration, risk register and final acceptance.- Breaks work into bounded tasks with acceptance criteria and file ownership.- Prevents overlapping edits to the same files.- Tracks status, blockers, test evidence, decisions and agent outputs.- Rejects unverified claims and incomplete work.- Replans when a dependency or test fails.
+Specialist agents:A. Architecture & Integration Agent: repository assessment, modular architecture, API contracts, dependency graph, ADRs and integration.B. Frontend/UI Agent: React routing, design tokens, shell, pages, components, accessibility and responsive behaviour, following Stitch references exactly.C. Backend/API Agent: FastAPI routers, Pydantic schemas, service layer, error handling, auth and OpenAPI.D. Database/Data Agent: PostgreSQL inspection, schema, migrations, indexes, query performance, synthetic seed data and data integrity.E. Ingestion & Document Processing Agent: uploads, file validation, parsing, extraction, chunking, metadata, processing jobs and storage.F. RAG & Search Agent: lexical search, embeddings, vector retrieval, hybrid ranking, reranking, citations, relevance evaluation and permission-aware retrieval.G. Agent Intelligence Agent: intent classification, tool routing, multi-agent workflow, state, memory, guardrails, answer synthesis and traceability.H. Analytics & Reporting Agent: KPI/KRI definitions, calculations, thresholds, institution comparisons, report builder and exports.I. Real-Time & Integration Agent: event processing, SSE/WebSockets where justified, Java/Python API demonstration, job status and system telemetry.J. QA & Security Agent: unit/integration/E2E tests, threat review, permissions, prompt-injection tests, regression tests and acceptance sign-off.K. Documentation & DevOps Agent: setup scripts, Docker Compose, .env.example, migrations guide, API docs, runbooks, backup/restore and deployment notes.
+Do not spawn every agent for every task. Start with a small core team (architecture, backend/database, frontend, QA); add RAG, ingestion, agent-intelligence, analytics and integration specialists as their phase begins. This controls coordination overhead.
+Agent task contract:- Task ID and objective.- Owned files/directories.- Dependencies.- Required skill(s) actually available.- Expected outputs.- Tests to run and exact commands.- Acceptance criteria.- Risks and assumptions.- Handoff summary.- Commit/branch/worktree reference.
+Communication contract:- Use structured task messages and shared project state.- Do not rely on hidden chat context as the only memory.- Persist decisions and results to docs/PROGRESS.md, docs/DECISIONS.md and task-specific notes.- Include correlation IDs for agent tasks and workflow runs.- Set timeouts, retry limits and explicit failure states.- Avoid infinite agent loops and unbounded tool execution.- Do not let agents change shared production data or secrets.
+DURABLE MEMORY, AUTOSAVING AND RECOVERY
+Create project memory that survives context compaction, agent restarts and interrupted sessions.
+Required files:- docs/PROGRESS.md: current phase, completed tasks, in-progress tasks, blockers, next actions and last verified test status.- docs/DECISIONS.md: dated architecture/product decisions, alternatives and rationale.- docs/IMPLEMENTATION_PLAN.md: phase gates, tasks, file ownership and acceptance criteria.- docs/AGENT_ROLES.md: agent responsibilities and current assignments.- docs/KNOWN_ISSUES.md: reproducible issues and workarounds.- docs/CHANGELOG.md: user-visible changes.- docs/TEST_RESULTS.md: test commands, timestamp, result and evidence.
+At the end of every meaningful task:1. Save changed files.2. Run relevant tests.3. Update progress and decision records.4. Commit a coherent change when version control is configured.5. Record the next exact action.
+Use frequent small commits. Do not commit secrets, uploaded confidential data, raw environment files, temporary embeddings or local database files. Provide a safe .gitignore and .env.example. If the session is interrupted, resume by reading these files and checking git status before continuing.
+STITCH UI/UX FIDELITY
+Treat the supplied Stitch ZIP as the visual source of truth. The nine reference screens are: executive_overview, financial_institutions_directory, supervisory_analytics, exceptions_regulatory_breaches_register, custom_report_builder, data_explorer_regulatory_ingestion_workspace, ai_supervisory_assistant, integrations_system_health and administration_settings.
+Preserve the reference design language:- Institutional light canvas and white surfaces.- Deep navy persistent sidebar and telemetry panels.- Teal primary accent (#14B8A6 / reference token #006B5F).- Cyan analytic accent (#38BDF8).- Geist headings, Inter body text, JetBrains Mono financial/telemetry values.- Compact data-dense layouts, 12-column desktop workspace, crisp borders and restrained shadows.- Consistent table density, filters, status badges, cards, tabs and detail drawers.
+Do not replace the supplied design with a generic dashboard or dark-only theme. Use the HTML exports to understand intended structure and controls, and screenshots to validate visual fidelity. Implement all nine pages in the same application shell. Match responsive behaviour and accessible contrast. Build reusable components and central design tokens rather than styling each page independently.
+FUNCTIONALITY CONTRACT — NO DEAD CONTROLS
+Every visible button, link, menu item, filter, tab, table action, export action, upload control, search field and modal must work.
+For each interactive element, implement:- Defined action and expected result.- Loading/pending state.- Success feedback.- Validation/error feedback.- Permission checks where relevant.- Keyboard and focus behaviour.- Automated test for important flows.
+If a feature cannot be implemented in the current phase, do not render a fake active control. Either disable it with a clear explanation or mark it as a clearly labelled future capability. Do not use alert('TODO'), placeholder click handlers, static fake charts masquerading as live analytics, hardcoded success toasts or buttons with no backend action.
+Connect the UI to actual API endpoints and persisted data. Mock data may seed the database and demonstrate missing domains, but it must flow through the same backend services, APIs, search, analytics and UI as real uploaded data. Clearly mark all mock records as synthetic demonstration data.
+DATABASE DISCOVERY AND SAFE SETUP
+First inspect whether PostgreSQL or another SQL database already exists and is configured. Determine connection method from environment variable names only; never expose credentials. Inspect schemas, tables, indexes, extensions, migrations and sample row counts using read-only queries.
+Decision rules:- If an existing PostgreSQL database is available and approved for this PoC, reuse it. Do not recreate it.- If PostgreSQL is configured but inaccessible, diagnose host/port/network/credentials without logging secrets.- If no database exists, provide Docker Compose for a local PostgreSQL instance and a clear setup command.- If pgvector is supported, enable it through a controlled migration. If not, document a fallback vector index adapter; keep relational records in PostgreSQL.- If only SQLite exists, support it for lightweight local tests if useful, but PostgreSQL remains the main target for the full application.- Use Alembic migrations, constraints, foreign keys, indexes, transactions and rollback strategy.- Never run destructive migrations or data resets against an existing database without approval and backup.- Seed deterministic synthetic data through an explicit seed command; do not silently insert fake values into a connected external database.
+Core entities should include institutions, institution_reports, indicator_definitions, supervisory_indicators, threshold_configurations, supervisory_exceptions, uploaded_documents, document_chunks, ingestion_jobs, report_definitions, report_runs, users, roles, permissions, audit_events, conversations, messages, agent_runs and saved_memory_records. Refine the schema after inspecting existing models and avoid unnecessary duplication.
+FILE UPLOAD AND DOCUMENT INTELLIGENCE
+Implement a real upload-to-search-to-answer pipeline.
+Supported file types should be explicit and validated. Prioritise PDF, DOCX, TXT, CSV, XLSX and JSON. Add image OCR only if an available and tested OCR path exists. Do not claim support for a format until it is implemented and tested.
+Upload workflow:1. Authenticated user uploads a file.2. Validate extension, MIME type, file size and content signature; reject executable or unsafe files.3. Generate a document ID and checksum.4. Store original file in configured object/local storage; store metadata in PostgreSQL.5. Create an ingestion job and return a job ID.6. Parse/extract text and structured tables where supported.7. Preserve page/sheet/row/column provenance.8. Normalize and clean extracted text without discarding source traceability.9. Chunk by structure and semantic boundaries with configurable overlap.10. Generate embeddings using a configured embedding provider.11. Store chunks, metadata and embeddings.12. Index lexical text for keyword search.13. Mark ingestion as completed, partial or failed with actionable error details.
+The UI must show upload progress, processing status, retry action, extraction summary, chunk count, searchable status and error details. Avoid processing duplicate uploads repeatedly by checksum/version. Support deletion/retention with cascading cleanup of derived chunks and embeddings under an explicit policy.
+Treat uploaded documents and retrieved text as untrusted data. Prompt-injection instructions inside documents must never override system policy, tools or access control.
+SEARCH, SEMANTIC RETRIEVAL AND RAG
+Implement search as a first-class backend capability.
+Search modes:- Exact/keyword search.- PostgreSQL full-text search.- Semantic vector search.- Hybrid search combining lexical and semantic scores.- Metadata filters: institution, document type, reporting period, upload date, source and user access scope.- Optional reranking where justified and available.
+Retrieval pipeline:1. Parse query and identify intent/entities/filters.2. Apply permission and scope filters before retrieval.3. Run lexical and semantic retrieval.4. Merge candidates with a documented ranking method such as reciprocal rank fusion.5. Rerank only when an appropriate model is configured.6. Deduplicate overlapping chunks.7. Enforce context limits and source diversity.8. Send retrieved evidence to the answer synthesizer.9. Return citations to document, page/sheet/row and chunk/source IDs.10. Record retrieval trace and latency for evaluation.
+RAG response requirements:- Answer only to the extent supported by retrieved evidence or approved database calculations.- Cite source documents and page/section references.- Distinguish document evidence from live database values and synthetic data.- State when no relevant evidence is found.- Do not fabricate citations or sources.- Display retrieval snippets and allow the user to open the source.- Support document-specific and cross-document questions.- Add retrieval evaluation using a small curated query set, expected source IDs, recall@k, precision@k and groundedness review.
+Provide an admin/debug view showing query, filters, candidate count, retrieval mode, source IDs and latency, with sensitive content redacted as appropriate.
+NLP, INTENT ROUTING AND ANALYTICAL QUERYING
+Implement a robust natural-language interface. Do not make the LLM responsible for inventing SQL or numerical calculations.
+Example requests:- "Which institutions have the highest number of open exceptions?"- "Compare deposit growth for TZ001 and TZ002 over the last three reporting periods."- "Find documents that explain the reporting requirements for this indicator."- "Summarise uploaded quarterly returns and identify missing sections."- "Generate an exception report for October 2026."- "Why was this record flagged?"
+Pipeline:1. Intent classifier identifies analytical query, document search, document Q&A, report request, navigation/help, upload operation or action request.2. Entity extraction identifies institution IDs, indicator names, date ranges, report types and severity terms.3. Validate extracted parameters against schemas and user permissions.4. Ask a concise clarification if essential filters are ambiguous.5. Route to an approved tool/function/query template.6. Execute parameterised SQL or retrieval service.7. Validate numerical output and source provenance.8. Generate a concise explanation with evidence.9. Render structured UI blocks (table, chart, citation list, report preview).10. Log intent, tool calls, duration, result status and feedback.
+Support multi-turn context with explicit scope. The user must be able to see and change the active institution, period and data source. Do not silently carry over stale filters in a way that changes the result.
+MULTI-AGENT INTELLIGENCE LAYER
+Implement a stateful agent workflow for tasks that genuinely need multiple specialist capabilities. Use a central orchestrator (preferably a graph/state-machine pattern if the existing stack supports it) and deterministic tools for data access and calculations.
+Recommended runtime roles:- Supervisor/Router Agent: classifies the request and selects a workflow.- Institution Context Agent: resolves institution identity and permitted scope.- Document Retrieval Agent: searches uploaded documents using hybrid retrieval.- Data Analyst Agent: invokes approved analytical functions and parameterised SQL templates.- Indicator/Exception Agent: evaluates configured indicators and exception evidence.- Report Agent: builds report content from validated outputs.- Verification Agent: checks citations, calculations, source consistency, policy and completeness.- Response Composer: formats the final answer and structured UI payload.
+Workflow examples:A. Document question: Router → Document Retrieval → Evidence Verification → Response Composer.B. Numeric analytics: Router → Scope/Permission Check → Data Analyst → Calculation Verification → Response Composer.C. Combined question: Router → parallel Document Retrieval + Data Analyst → evidence reconciliation → Verification → Response Composer.D. Report request: Router → Parameter Validation → Data/Document retrieval → Report Agent → Verification → Report preview/export.E. Exception explanation: Router → Institution Context → Exception/Indicator Agent → source record retrieval → Verification → explanation.
+Use parallelism only for independent evidence gathering. Never let parallel agents independently mutate the same record. All writes must go through a controlled service with authorization, validation and audit logging.
+Agent state must be typed and explicit: request_id, conversation_id, user_id, intent, scope, filters, task_plan, retrieved_sources, analytical_results, tool_trace, validation_results, response_payload, status and error. Persist appropriate state to PostgreSQL; avoid storing chain-of-thought. Store concise summaries, decisions, tool outputs and references, not hidden reasoning.
+Add bounded retries, timeouts, maximum steps, token/cost budgets, cancellation, fallback to a deterministic workflow, and human confirmation for state-changing actions. The system must work when one specialist agent or external model provider is unavailable.
+MEMORY AND CONVERSATION CONTINUITY
+Implement layered, explicit memory:- Session memory: current conversation messages and active filters.- Conversation summary: concise persisted summary of relevant context.- User preferences: only non-sensitive preferences necessary for the product.- Workflow memory: agent run state, task status and tool results.- Knowledge base: uploaded documents and indexed chunks (not conversational memory).
+Memory rules:- Scope every record by user and conversation/tenant.- Enforce retention and deletion policy.- Provide a way to inspect and clear conversation history where supported.- Do not store secrets, access tokens or sensitive personal information in memory.- Do not store hidden chain-of-thought. Store concise summaries and verifiable outputs.- Avoid cross-user or cross-institution memory leakage.- Resume interrupted agent workflows from durable state with idempotency protection.
+ANALYTICS AND REPORTING
+Implement calculations in tested backend services, not in presentation-only frontend code.
+Provide indicator definitions with name, description, formula, unit, source fields, aggregation grain, reporting frequency, null handling, version and configured thresholds.
+Initial illustrative indicators may include deposit growth %, loan growth %, loan-to-deposit ratio (only if inputs are valid), reporting completeness %, count of open exceptions and data-quality failure rate. Mark all thresholds as training configuration, not official regulatory requirements.
+For every metric:- Document formula and units.- Handle missing/zero denominators and non-comparable periods.- Define rounding and date boundaries.- Preserve source record IDs.- Test boundary conditions.- Explain whether a metric is calculated, imported or estimated.
+Custom reports must support parameter validation, preview, pagination, CSV export and PDF export if implemented. Save report definitions and report-run metadata. Large reports should run asynchronously and expose job status. Ensure exports use the same filters and calculations as the UI.
+REAL-TIME EVENTS AND INTEGRATIONS
+Implement a reliable event flow for the PoC:Synthetic report uploaded → validation completed → indicator recalculated → configured threshold evaluated → exception created/updated → event persisted → notification delivered → dashboard refreshed.
+Use SSE for server-to-client dashboard updates where appropriate. Use WebSockets only for genuinely bidirectional interaction. Implement reconnect, heartbeat, event IDs, duplicate handling and missed-event recovery. Persist events before notifying clients. Do not make a transient browser connection the only record of an alert.
+Provide a documented Java/Python integration demonstration using API contracts and synthetic payloads. Do not claim an actual Java system is connected. Validate payload schemas, authentication, idempotency and error handling.
+SECURITY, PRIVACY AND SAFETY
+Treat the application as sensitive financial software even though the PoC uses synthetic data.
+Implement:- Authentication and role-based authorization.- Object-level and institution-level access checks.- Secure session/token handling.- Parameterised SQL and ORM-safe queries.- Upload allowlists, size limits and content validation.- Secret management through environment variables.- CSRF/CORS protections appropriate to deployment.- Rate limits on expensive assistant/search endpoints.- Audit logs for sensitive reads/actions and all writes.- Safe error messages and structured server logs.- Data retention/deletion controls.- Encryption in transit for deployment.- Least-privilege database credentials.
+Prompt injection controls:- Treat user uploads, retrieved chunks, web content and tool outputs as untrusted.- Never allow retrieved text to redefine agent role, policy or tool permissions.- Use allowlisted tools and validated schemas.- Require explicit confirmation for state-changing actions, bulk exports or external distribution.- Redact secrets and sensitive content from logs.- Add adversarial tests for malicious instructions inside uploaded documents.
+Do not use real confidential Bank of Tanzania records unless explicitly authorised through approved infrastructure and governance. Do not send sensitive records to public LLM providers.
+OBSERVABILITY AND PERFORMANCE
+Instrument API latency, database query duration, background job status, ingestion errors, embedding calls, retrieval latency, agent step counts, token/cost estimates and user-visible failures. Provide correlation IDs across API request, job, agent run and event.
+Performance requirements:- Server-side pagination for large tables.- Database indexes based on actual query patterns.- Query limits and timeouts.- Avoid N+1 queries.- Debounce search.- Cache only where freshness and authorization are respected.- Stream long-running job status.- Do not load all documents/chunks into the browser.- Provide graceful fallback when LLM, embedding or vector services are unavailable.
+Expose system health without revealing secrets or internal stack traces.
+TESTING AND ACCEPTANCE
+Use a test-first approach. Add unit tests, API integration tests, database tests, upload/ingestion tests, retrieval/RAG tests, agent workflow tests, security tests and browser E2E tests.
+Minimum end-to-end acceptance journeys:1. Sign in as an authorised demonstration user.2. Open overview and verify KPI values match database aggregates.3. Search and open an institution.4. Filter analytics by institution and reporting period.5. Open an exception and inspect its source evidence.6. Upload a supported PDF/DOCX/CSV/XLSX file and observe job progress.7. Search the uploaded file by keyword and semantic query.8. Ask a question about the file and receive grounded citations.9. Ask a numeric supervisory question and receive a result derived from approved SQL/calculation tools.10. Ask a combined question requiring document retrieval and database analysis.11. Generate and download a report.12. Trigger a synthetic event and observe a dashboard notification.13. Change a permitted review status and verify it persists with an audit event.14. Verify a user without permission cannot access restricted records.15. Restart the application and verify persisted data and conversation/workflow continuity.
+For every test, capture command, expected result and actual result. Do not mark a phase complete because the code compiles. It is complete only when its acceptance criteria pass and evidence is recorded.
+PHASED DELIVERY AND GATES
+Phase 0 — Discovery and baseline:Inspect repo, skills, Stitch assets, existing database, tests and runtime. Deliver architecture, risks, plan and baseline report. Gate: owner can review the plan before major changes.
+Phase 1 — Foundation:Application shell, design tokens, routing, auth skeleton, database connection, migrations, health endpoint, Docker/dev setup and synthetic seed data. Gate: app starts, DB connects, migrations run, health test passes.
+Phase 2 — Core supervisory backend:Institutions, reports, indicators, thresholds, exceptions, analytics services, pagination, filtering and audit events. Gate: API tests prove calculations and persistence.
+Phase 3 — UI integration:Implement all nine Stitch-referenced screens using real APIs, detail views, working filters and forms. Gate: no dead controls; core UI E2E tests pass.
+Phase 4 — Document ingestion:Upload, secure storage, parsing, metadata, chunking, background jobs, retry and status UI. Gate: supported formats ingest and failures are observable.
+Phase 5 — Search and RAG:Lexical, semantic and hybrid retrieval; citations; metadata filters; relevance evaluation; document Q&A. Gate: curated retrieval tests pass and answers cite evidence.
+Phase 6 — Agentic intelligence:Intent routing, tool registry, specialist agents, graph orchestration, state persistence, memory summaries, verification and fallbacks. Gate: analytical, document and combined workflows pass end-to-end.
+Phase 7 — Reporting and real-time:Custom report generation, CSV/PDF export, event persistence, SSE updates, notifications and Java/Python API demonstration. Gate: export contents match filters and event recovery works.
+Phase 8 — Hardening:Security review, performance checks, accessibility, responsive checks, backup/restore, documentation, regression suite and demo walkthrough. Gate: independent QA sign-off.
+If the full scope is too large, do not silently omit requirements. Maintain a feature matrix with status (implemented/tested, implemented/not tested, mocked, deferred, blocked). Finish a complete vertical slice before starting many incomplete modules.
+DEFINITION OF DONE
+The project is complete only when:- The application starts from documented commands.- The database can be safely initialised or an approved existing DB reused.- All nine Stitch screens are implemented within one coherent UI.- Core records persist in the database.- Search supports keyword and semantic retrieval with filters and citations.- Supported file uploads are parsed, indexed and queryable.- RAG answers are grounded and cite their sources.- NLP requests route to approved retrieval/analytics/report tools.- Multi-agent workflows have bounded state, durable trace, retries and verification.- KPI/KRI calculations and exception rules are tested.- Reports can be previewed and exported.- Simulated real-time events persist and update the UI.- Every visible active control works.- Authorization and audit behaviour are tested.- E2E acceptance journeys pass.- Setup, architecture, API, database, agent workflow and troubleshooting docs are current.- docs/PROGRESS.md clearly states any remaining limitations.
+Never claim production readiness, live regulatory integration or compliance certification. Describe the result accurately as a tested training-level PoC.
+FIRST RESPONSE EXPECTED FROM THE CODING AGENT
+Before coding, respond with:1. Repository and runtime inventory.2. Stitch ZIP contents and design system summary.3. Installed skill discovery table (found/read/not found).4. Existing database status (without revealing secrets).5. Proposed architecture and key decisions.6. Multi-agent role/task assignment with dependencies.7. Phase plan and acceptance gates.8. Risks, security considerations and assumptions.9. Baseline test results.10. Exact first implementation task.
+Then begin Phase 0/Phase 1. Do not stop after writing a plan unless a genuine approval or access dependency blocks implementation.
+6. Suggested agent workflow and dependencies
+Use a task graph rather than a flat list of agents. The lead orchestrator should keep module boundaries explicit and integrate after each gate.
+Phase 0: Orchestrator + Architecture + QA (discovery/baseline)
+                   |
+Phase 1: Architecture + Backend/DB + Frontend shell + DevOps
+                   |
+Phase 2: Backend/DB + Analytics + QA
+                   |
+Phase 3: Frontend + API integration + QA
+                   |
+Phase 4: Ingestion + Storage + DB + QA
+                   |
+Phase 5: RAG/Search + Ingestion + Security/QA
+                   |
+Phase 6: Orchestrator + NLP/Agent Intelligence + RAG + Analytics
+                   |
+Phase 7: Reporting + Real-time/Integration + Frontend
+                   |
+Phase 8: Independent QA + Security + Performance + Documentation
+Parallel tasks are appropriate when interfaces are agreed. For example, frontend page work can proceed in parallel with backend endpoint implementation only after the API contract and schemas are frozen. Shared database migrations should have one owner at a time.
+7. Feature matrix and priority
+Priority
+Capability
+Minimum working result
+P0
+Foundation, auth, database, design shell
+App runs, database persists, protected routes and navigation work.
+P0
+Institutions, reports, indicators, exceptions
+CRUD/read workflows, calculations, filtering, pagination and audit.
+P0
+File upload and ingestion
+Supported documents upload, parse, persist, show status and errors.
+P0
+Keyword + semantic search and RAG
+Search uploaded material and answer with real source citations.
+P0
+NLP routing and analytics tools
+Natural language maps to approved tools and correct numerical results.
+P0
+Multi-agent workflow
+Bounded orchestrator, specialists, persistent state, trace, verifier and fallback.
+P1
+Custom report builder
+Parameterized preview and working CSV/PDF export.
+P1
+Real-time event updates
+Persisted synthetic event and SSE notification with reconnect.
+P1
+System health and integration demo
+Health/status/logs and documented Java/Python contract.
+P2
+Advanced reranking and evaluation dashboard
+Optional reranker, relevance evaluation and metrics view.
+P2
+Advanced OCR, external search engine, distributed queue
+Only if the actual requirements and environment justify them.
+
+8. Important product and data safeguards
+Synthetic data must be clearly labelled in the UI, reports, exports, seed scripts and assistant responses.
+World Bank public indicators are country-level contextual data; do not merge them into institution-level records as though they were the same type of evidence.
+A threshold breach is a review signal, not an automatic finding of misconduct or regulatory non-compliance.
+Do not make up official Bank of Tanzania thresholds, policies, institution names or live statistics.
+Never expose uploaded files across users or institution scopes. Apply access filters before retrieval, not after the LLM has seen the content.
+Do not run arbitrary SQL generated by an LLM. Use allowlisted functions and parameterised queries.
+Do not let agents autonomously change supervisory records, resolve exceptions, distribute reports or change permissions without explicit user authorization.
+Back up an existing database before approved migrations. Never reset a database to make a demo pass.
+Use provider abstractions for LLM and embedding models. If no key is configured, keep deterministic non-LLM functions operational and display a clear configuration status.
+Keep an honest feature matrix. A polished UI must never disguise an unimplemented backend.
+9. Useful references
+Qodex AI Agent Skills repository: https://github.com/qodex-ai/ai-agent-skills
+Multi-agent orchestration skill: https://github.com/qodex-ai/ai-agent-skills/tree/main/skills/multi-agent-orchestration
+Agent Skills overview and repository guidance: https://github.com/qodex-ai/ai-agent-skills
+PostgreSQL: https://www.postgresql.org/docs/
+pgvector: https://github.com/pgvector/pgvector
+FastAPI: https://fastapi.tiangolo.com/
+LangGraph: https://docs.langchain.com/oss/python/langgraph/overview
+Stitch source: supplied archive stitch_suptech_monitor_enterprise_platform.zip (nine screen exports, HTML files and DESIGN.md).
+10. Final operating instruction
+Build a real product, not a visual simulation. Use the supplied Stitch designs for the interface, the installed skills for specialist workflows, and a phased multi-agent engineering process for execution. The backend, data integrity, retrieval quality, agent orchestration, permissions and test evidence are more important than adding a long list of superficial features. Make the core end-to-end journey reliable before expanding scope.

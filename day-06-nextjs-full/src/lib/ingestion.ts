@@ -4,6 +4,7 @@ import { RequestValidationError } from './api-errors';
 export const ACCEPTED_TYPES = {
   'text/plain': '.txt',
   'text/csv': '.csv',
+  'application/json': '.json',
 } as const;
 
 export const MAX_BYTES = 2_000_000;
@@ -36,14 +37,14 @@ export function validateUpload(
   const acceptedExtensions: string[] = Object.values(ACCEPTED_TYPES);
   if (!acceptedExtensions.includes(extension)) {
     throw new RequestValidationError(
-      'Unsupported file extension. Only .txt and .csv files are accepted.',
+      'Unsupported file extension. Only .txt, .csv, and .json files are accepted.',
     );
   }
 
   const normalizedType = baseContentType(contentType);
   if (!Object.prototype.hasOwnProperty.call(ACCEPTED_TYPES, normalizedType)) {
     throw new RequestValidationError(
-      'Unsupported content type. Upload a text/plain or text/csv file.',
+      'Unsupported content type. Upload a text/plain, text/csv, or application/json file.',
     );
   }
 
@@ -60,6 +61,31 @@ export function validateUpload(
   }
 
   return { ok: true };
+}
+
+export function parseJson(
+  text: string,
+): Record<string, unknown> | Array<unknown> {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    throw new RequestValidationError('JSON content is empty.');
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch (error) {
+    const raw = error instanceof Error ? error.message : 'Invalid JSON';
+    throw new RequestValidationError(`JSON is malformed: ${raw}.`);
+  }
+
+  if (parsed === null || typeof parsed !== 'object') {
+    throw new RequestValidationError(
+      'JSON must contain a root object or array.',
+    );
+  }
+
+  return parsed as Record<string, unknown> | Array<unknown>;
 }
 
 export function sha256Hex(buffer: Buffer): string {
@@ -216,6 +242,43 @@ export function buildChunks(contentType: string, buffer: Buffer): BuiltChunks {
     return {
       chunks,
       extractedCharacters: chunks.reduce((total, chunk) => total + chunk.length, 0),
+    };
+  }
+
+  if (normalizedType === 'application/json') {
+    const parsed = parseJson(text);
+    if (Array.isArray(parsed)) {
+      const chunks: string[] = [];
+      for (const item of parsed) {
+        const serialized =
+          typeof item === 'object' && item !== null
+            ? JSON.stringify(item)
+            : String(item).trim();
+        if (!serialized) continue;
+        if (serialized.length > 1200) {
+          chunks.push(...chunkText(serialized));
+        } else {
+          chunks.push(serialized);
+        }
+      }
+      return {
+        chunks,
+        extractedCharacters: chunks.reduce(
+          (total, chunk) => total + chunk.length,
+          0,
+        ),
+      };
+    }
+
+    if (Object.keys(parsed).length === 0) {
+      return { chunks: [], extractedCharacters: 0 };
+    }
+
+    const formatted = JSON.stringify(parsed, null, 2);
+    const chunks = chunkText(formatted);
+    return {
+      chunks,
+      extractedCharacters: formatted.length,
     };
   }
 

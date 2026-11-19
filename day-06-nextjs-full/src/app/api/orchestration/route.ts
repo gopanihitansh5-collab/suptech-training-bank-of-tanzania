@@ -3,6 +3,7 @@ import { errorResponse, readJsonBody, RequestValidationError } from '@/lib/api-e
 import { requireDemoSession } from '@/lib/auth';
 import {
   AGENT_CONFIGS,
+  executeSupervisoryWorkflow,
   MAX_AGENT_MESSAGE_LENGTH,
   MAX_AGENT_REQUESTS,
   orchestrateAgents,
@@ -61,6 +62,45 @@ export async function POST(request: Request) {
     if (!isRecord(body)) {
       throw new RequestValidationError('The request body must be an object.');
     }
+
+    // Workflow Mode
+    if (body.workflow === true) {
+      if (
+        typeof body.question !== 'string' ||
+        body.question.trim().length < 2 ||
+        body.question.length > MAX_AGENT_MESSAGE_LENGTH
+      ) {
+        throw new RequestValidationError(
+          `Workflow question must contain 2-${MAX_AGENT_MESSAGE_LENGTH} characters.`,
+        );
+      }
+
+      let period: string | undefined;
+      if (typeof body.period === 'string' && body.period.trim().length > 0) {
+        const trimmedPeriod = body.period.trim();
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(trimmedPeriod)) {
+          throw new RequestValidationError('period must use YYYY-MM format.');
+        }
+        period = trimmedPeriod;
+      }
+
+      let institutionId: string | undefined;
+      if (typeof body.institutionId === 'string' && body.institutionId.trim().length > 0) {
+        const trimmedInst = body.institutionId.trim();
+        if (!/^[A-Za-z0-9-]{2,24}$/.test(trimmedInst)) {
+          throw new RequestValidationError('institutionId has an invalid format.');
+        }
+        institutionId = trimmedInst.toUpperCase();
+      }
+
+      const workflowResult = await executeSupervisoryWorkflow(body.question.trim(), {
+        period,
+        institutionId,
+      });
+      return NextResponse.json(workflowResult, { status: 200 });
+    }
+
+    // Existing Multi-Role Manual Prompt Mode
     const parallel = body.parallel ?? true;
     if (typeof parallel !== 'boolean') {
       throw new RequestValidationError('Execution mode must be parallel or sequential.');

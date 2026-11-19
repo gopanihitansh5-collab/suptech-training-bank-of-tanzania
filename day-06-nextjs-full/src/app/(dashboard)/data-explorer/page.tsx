@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { RequestValidationError } from '@/lib/api-errors';
+import { listDocuments } from '@/lib/ingestion-store';
 import { getDataExplorerStats, listReports } from '@/lib/repository';
 import { ReportTable } from '@/components/report-table';
 
@@ -25,6 +27,18 @@ export default async function DataExplorerPage({
   const requestedPage = first(params.page);
   const page = requestedPage ? Number(requestedPage) : 1;
   const stats = await getDataExplorerStats();
+  let documentsResult;
+  try {
+    documentsResult = await listDocuments({ page: 1, pageSize: 10 });
+  } catch {
+    documentsResult = {
+      items: [],
+      page: 1,
+      pageSize: 10,
+      total: 0,
+      totalPages: 0,
+    };
+  }
   let result;
   try {
     result = await listReports({ ...filters, page, pageSize: 25 });
@@ -100,6 +114,64 @@ export default async function DataExplorerPage({
           <div><dt>Durable ingestion run history</dt><dd>Not available in this MVP</dd></div>
           <div><dt>Data boundary</dt><dd>Fictional training records only</dd></div>
         </dl>
+      </section>
+      <section className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">Uploaded training documents</h2>
+            <p className="panel-caption">
+              Documents ingested for supervisory RAG, semantic search, and document intelligence.
+            </p>
+          </div>
+          <span className="period-chip">{documentsResult.total} document(s)</span>
+        </div>
+        {documentsResult.items.length > 0 ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Filename</th>
+                  <th>Content type</th>
+                  <th>Size</th>
+                  <th>Chunks</th>
+                  <th>Status</th>
+                  <th>Uploaded by</th>
+                  <th>Uploaded date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentsResult.items.map((doc) => (
+                  <tr key={doc.documentId}>
+                    <td>
+                      {doc.status === 'completed' && doc.chunkCount > 0 ? (
+                        <Link
+                          className="table-link mono"
+                          href={`/documents/${encodeURIComponent(doc.documentId)}?chunk=0`}
+                        >
+                          {doc.originalFilename}
+                        </Link>
+                      ) : (
+                        <span className="mono">{doc.originalFilename}</span>
+                      )}
+                    </td>
+                    <td className="mono">{doc.contentType}</td>
+                    <td className="mono">{doc.byteSize.toLocaleString('en')} B</td>
+                    <td className="mono">{doc.chunkCount}</td>
+                    <td>
+                      <span className="status-pill">{doc.status}</span>
+                    </td>
+                    <td className="mono">{doc.uploadedBy}</td>
+                    <td>{new Date(doc.createdAt).toLocaleDateString('en')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state" role="status">
+            No training documents have been uploaded yet. Training documents (.txt, .csv, .json) can be uploaded via the API (/api/uploads) or document upload pipeline to enable grounded retrieval and supervisory search.
+          </div>
+        )}
       </section>
       <section className="panel">
         <div className="panel-header">

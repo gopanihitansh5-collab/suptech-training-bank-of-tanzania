@@ -728,6 +728,168 @@ export async function listExceptions(
   };
 }
 
+// ─── Exception single-record + triage ───────────────────────────────────────
+
+export async function getExceptionById(exceptionId: string): Promise<ExceptionRow> {
+  if (typeof exceptionId !== 'string' || !/^[A-Za-z0-9-_]{3,120}$/.test(exceptionId.trim())) {
+    throw new RequestValidationError('Exception ID has an invalid format.');
+  }
+  const result = await query(
+    `SELECT e.*, i.institution_name
+     FROM supervisory_exceptions e
+     JOIN institutions i USING (institution_id)
+     WHERE e.exception_id = $1
+     LIMIT 1`,
+    [exceptionId.trim()],
+  );
+  if (!result.rows.length) throw new NotFoundError('Exception not found.');
+  return mapException(result.rows[0]);
+}
+
+export async function updateExceptionStatus(
+  exceptionId: string,
+  newStatus: 'open' | 'under_review' | 'resolved',
+  actorId: string,
+  note?: string,
+): Promise<ExceptionRow> {
+  if (typeof exceptionId !== 'string' || !/^[A-Za-z0-9-_]{3,120}$/.test(exceptionId.trim())) {
+    throw new RequestValidationError('Exception ID has an invalid format.');
+  }
+  const allowed: string[] = ['open', 'under_review', 'resolved'];
+  if (!allowed.includes(newStatus)) {
+    throw new RequestValidationError('Status must be open, under_review, or resolved.');
+  }
+
+  // Enforce: automation must never create under_review (only humans)
+  // but here we explicitly allow it because this is a human action
+  const safeNote = typeof note === 'string' ? note.trim().slice(0, 500) : null;
+  const message = safeNote
+    ? `Status updated to ${newStatus} by ${actorId}. Note: ${safeNote}`
+    : `Status updated to ${newStatus} by ${actorId}.`;
+
+  const result = await query(
+    `UPDATE supervisory_exceptions
+     SET status = $1, message = CASE WHEN $2::text IS NOT NULL
+       THEN message || E'\n' || $2::text
+       ELSE message END,
+       updated_at = now()
+     WHERE exception_id = $3
+     RETURNING *`,
+    [newStatus, message, exceptionId.trim()],
+  );
+  if (!result.rows.length) throw new NotFoundError('Exception not found.');
+
+  // Audit the change
+  await query(
+    `INSERT INTO audit_events (actor_id, action, entity_type, entity_id, details)
+     VALUES ($1, 'exception_status_changed', 'supervisory_exception', $2, $3::jsonb)`,
+    [
+      actorId,
+      exceptionId.trim(),
+      JSON.stringify({ previousStatus: 'unknown', newStatus, note: safeNote }),
+    ],
+  ).catch(() => { /* non-fatal */ });
+
+  // Also record as a system event for SSE
+  await query(
+    `INSERT INTO system_events (event_type, payload)
+     VALUES ('exception_status_changed', $1::jsonb)`,
+    [JSON.stringify({ exceptionId: exceptionId.trim(), newStatus, actorId })],
+  ).catch(() => { /* non-fatal */ });
+
+  return getExceptionById(exceptionId.trim());
+}
+
+// ─── Conversation persistence ─────────────────────────────────────────────────
+
+export interface ConversationSummary {
+  conversationId: string;
+  title: string;
+  activeFilters: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function createConversation(
+  userId: string,
+  title: string,
+  activeFilters: Record<string, unknown> = {},
+): Promise<string> {
+  const safeTitle = title.trim().slice(0, 200) || 'Untitled conversation';
+  const result = await query<{ conversation_id: string }>(
+    `INSERT INTO conversations (user_id, title, active_filters)
+     VALUES ($1, $2, $3::jsonb)
+     RETURNING conversation_id`,
+    [userId, safeTitle, JSON.stringify(activeFilters)],
+  );
+  return result.rows[0].conversation_id;
+}
+
+export async function listConversations(userId: string): Promise<ConversationSummary[]> {
+  const result = await query(
+    `SELECT conversation_id, title, active_filters, created_at, updated_at
+     FROM conversations
+     WHERE user_id = $1
+     ORDER BY updated_at DESC
+     LIMIT 20`,
+    [userId],
+  );
+  return result.rows.map((row) => ({
+    conversationId: row.conversation_id,
+    title: row.title,
+    activeFilters: (typeof row.active_filters === 'object' && row.active_filters !== null)
+      ? row.active_filters as Record<string, unknown>
+      : {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  }));
+}
+
+export async function appendMessage(
+  conversationId: string,
+  role: 'user' | 'assistant' | 'tool',
+  content: string,
+  evidence: unknown[] = [],
+): Promise<void> {
+  await query(
+    `INSERT INTO messages (conversation_id, role, content, evidence)
+     VALUES ($1, $2, $3, $4::jsonb)`,
+    [conversationId, role, content.slice(0, 32_000), JSON.stringify(evidence)],
+  );
+  await query(
+    `UPDATE conversations SET updated_at = now() WHERE conversation_id = $1`,
+    [conversationId],
+  ).catch(() => { /* non-fatal */ });
+}
+
+export async function getConversationMessages(
+  conversationId: string,
+  userId: string,
+): Promise<Array<{ role: string; content: string; evidence: unknown[]; createdAt: string }>> {
+  // Verify ownership
+  const own = await query<{ user_id: string }>(
+    `SELECT user_id FROM conversations WHERE conversation_id = $1 LIMIT 1`,
+    [conversationId],
+  );
+  if (!own.rows.length || own.rows[0].user_id !== userId) {
+    throw new NotFoundError('Conversation not found.');
+  }
+  const result = await query(
+    `SELECT role, content, evidence, created_at
+     FROM messages
+     WHERE conversation_id = $1
+     ORDER BY created_at ASC
+     LIMIT 200`,
+    [conversationId],
+  );
+  return result.rows.map((row) => ({
+    role: row.role,
+    content: row.content,
+    evidence: Array.isArray(row.evidence) ? row.evidence : [],
+    createdAt: new Date(row.created_at).toISOString(),
+  }));
+}
+
 export async function getAnalytics(
   requestedPeriod?: string,
   requestedIndicator?: string,

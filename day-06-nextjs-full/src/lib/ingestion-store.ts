@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { RequestValidationError } from './api-errors';
 import { query, withTransaction } from './db';
 import { buildChunks, sha256Hex, validateUpload } from './ingestion';
@@ -7,6 +9,19 @@ import { buildChunks, sha256Hex, validateUpload } from './ingestion';
 export const STORAGE_BUCKET = 'uploads';
 
 let storageClient: S3Client | undefined;
+
+export function isS3Configured(): boolean {
+  return Boolean(
+    process.env.AWS_REGION &&
+    process.env.AWS_ENDPOINT_URL_S3 &&
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY,
+  );
+}
+
+export function resetStorageClient(): void {
+  storageClient = undefined;
+}
 
 export function getStorageClient(): S3Client {
   const region = process.env.AWS_REGION;
@@ -29,6 +44,67 @@ export function getStorageClient(): S3Client {
     });
   }
   return storageClient;
+}
+
+export function getLocalUploadsDir(): string {
+  if (process.env.LOCAL_UPLOADS_DIR) {
+    return path.resolve(process.env.LOCAL_UPLOADS_DIR);
+  }
+  const cwd = process.cwd();
+  if (path.basename(cwd) === 'day-06-nextjs-full') {
+    return path.resolve(cwd, '.local', 'uploads');
+  }
+  return path.resolve(cwd, 'day-06-nextjs-full', '.local', 'uploads');
+}
+
+export async function saveDocumentFile(
+  storagePath: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<void> {
+  if (isS3Configured()) {
+    await getStorageClient().send(
+      new PutObjectCommand({
+        Bucket: STORAGE_BUCKET,
+        Key: storagePath,
+        Body: buffer,
+        ContentType: contentType,
+        ContentLength: buffer.length,
+      }),
+    );
+  } else {
+    const fullPath = path.join(getLocalUploadsDir(), storagePath);
+    await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+    await fs.promises.writeFile(fullPath, buffer);
+  }
+}
+
+export async function deleteDocumentFile(storagePath: string): Promise<void> {
+  if (isS3Configured()) {
+    try {
+      await getStorageClient().send(
+        new DeleteObjectCommand({
+          Bucket: STORAGE_BUCKET,
+          Key: storagePath,
+        }),
+      );
+    } catch {
+      // Storage deletion is best effort
+    }
+  }
+  try {
+    const fullPath = path.join(getLocalUploadsDir(), storagePath);
+    if (fs.existsSync(fullPath)) {
+      await fs.promises.unlink(fullPath);
+      const parentDir = path.dirname(fullPath);
+      const remaining = await fs.promises.readdir(parentDir);
+      if (remaining.length === 0) {
+        await fs.promises.rmdir(parentDir);
+      }
+    }
+  } catch {
+    // Local deletion is best effort
+  }
 }
 
 export interface IngestDocumentInput {
@@ -162,15 +238,7 @@ export async function ingestDocument(
   const safeName = filename.replace(/[\\/]/g, '_');
   const storagePath = `documents/${documentId}/${safeName}`;
 
-  await getStorageClient().send(
-    new PutObjectCommand({
-      Bucket: STORAGE_BUCKET,
-      Key: storagePath,
-      Body: buffer,
-      ContentType: contentType,
-      ContentLength: buffer.length,
-    }),
-  );
+  await saveDocumentFile(storagePath, buffer, contentType);
 
   try {
     await query(
@@ -296,6 +364,41 @@ export async function ingestDocument(
     });
     throw error;
   }
+}
+
+const DOCUMENT_ID_PATTERN = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+
+export async function deleteDocument(
+  documentId: string,
+  actorId = 'system',
+): Promise<boolean> {
+  if (!DOCUMENT_ID_PATTERN.test(documentId)) {
+    throw new RequestValidationError('Document identifier is invalid.');
+  }
+
+  const existing = await query<{ storage_path: string; original_filename: string }>(
+    `SELECT storage_path, original_filename FROM uploaded_documents
+     WHERE document_id = $1::uuid LIMIT 1`,
+    [documentId],
+  );
+  if (existing.rows.length === 0) {
+    return false;
+  }
+  const { storage_path: storagePath, original_filename: filename } = existing.rows[0];
+
+  await deleteDocumentFile(storagePath);
+
+  await query(
+    `DELETE FROM uploaded_documents WHERE document_id = $1::uuid`,
+    [documentId],
+  );
+
+  await recordAudit(actorId, 'document_deleted', documentId, {
+    filename,
+    storagePath,
+  });
+
+  return true;
 }
 
 export async function listDocuments(

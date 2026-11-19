@@ -124,7 +124,7 @@ export default async function ExceptionsPage({
               <thead>
                 <tr>
                   <th>Period</th><th>Institution</th><th>Signal</th><th>Observed</th>
-                  <th>Training threshold</th><th>Severity</th><th>Status</th><th>Source report</th>
+                  <th>Training threshold</th><th>Severity</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
