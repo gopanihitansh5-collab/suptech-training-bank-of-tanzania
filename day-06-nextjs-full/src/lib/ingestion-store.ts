@@ -6,17 +6,26 @@ import { RequestValidationError } from './api-errors';
 import { query, withTransaction } from './db';
 import { buildChunks, sha256Hex, validateUpload } from './ingestion';
 
-export const STORAGE_BUCKET = 'uploads';
-
 let storageClient: S3Client | undefined;
 
 export function isS3Configured(): boolean {
   return Boolean(
-    process.env.AWS_REGION &&
-    process.env.AWS_ENDPOINT_URL_S3 &&
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY,
+    process.env.AWS_REGION?.trim() &&
+    process.env.AWS_ENDPOINT_URL_S3?.trim() &&
+    process.env.AWS_S3_BUCKET?.trim() &&
+    process.env.AWS_ACCESS_KEY_ID?.trim() &&
+    process.env.AWS_SECRET_ACCESS_KEY?.trim(),
   );
+}
+
+function getStorageBucket(): string {
+  const bucket = process.env.AWS_S3_BUCKET?.trim();
+  if (!bucket) {
+    throw new RequestValidationError(
+      'Object storage is not configured. Set AWS_S3_BUCKET.',
+    );
+  }
+  return bucket;
 }
 
 export function resetStorageClient(): void {
@@ -26,12 +35,13 @@ export function resetStorageClient(): void {
 export function getStorageClient(): S3Client {
   const region = process.env.AWS_REGION;
   const endpoint = process.env.AWS_ENDPOINT_URL_S3;
+  const bucket = process.env.AWS_S3_BUCKET?.trim();
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
-  if (!region || !endpoint || !accessKeyId || !secretAccessKey) {
+  if (!region || !endpoint || !bucket || !accessKeyId || !secretAccessKey) {
     throw new RequestValidationError(
-      'Object storage is not configured. Set AWS_REGION, AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.',
+      'Object storage is not configured. Set AWS_REGION, AWS_ENDPOINT_URL_S3, AWS_S3_BUCKET, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.',
     );
   }
 
@@ -65,7 +75,7 @@ export async function saveDocumentFile(
   if (isS3Configured()) {
     await getStorageClient().send(
       new PutObjectCommand({
-        Bucket: STORAGE_BUCKET,
+        Bucket: getStorageBucket(),
         Key: storagePath,
         Body: buffer,
         ContentType: contentType,
@@ -73,7 +83,12 @@ export async function saveDocumentFile(
       }),
     );
   } else {
-    const fullPath = path.join(getLocalUploadsDir(), storagePath);
+    if (process.env.VERCEL === '1') {
+      throw new RequestValidationError(
+        'Persistent S3-compatible object storage must be configured before uploading documents on Vercel.',
+      );
+    }
+    const fullPath = path.join(/*turbopackIgnore: true*/ getLocalUploadsDir(), storagePath);
     await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.promises.writeFile(fullPath, buffer);
   }
@@ -81,20 +96,22 @@ export async function saveDocumentFile(
 
 export async function deleteDocumentFile(storagePath: string): Promise<void> {
   if (isS3Configured()) {
-    try {
-      await getStorageClient().send(
-        new DeleteObjectCommand({
-          Bucket: STORAGE_BUCKET,
-          Key: storagePath,
-        }),
-      );
-    } catch {
-      // Storage deletion is best effort
-    }
+    await getStorageClient().send(
+      new DeleteObjectCommand({
+        Bucket: getStorageBucket(),
+        Key: storagePath,
+      }),
+    );
+    return;
+  }
+  if (process.env.VERCEL === '1') {
+    throw new RequestValidationError(
+      'Persistent S3-compatible object storage must be configured before deleting documents on Vercel.',
+    );
   }
   try {
-    const fullPath = path.join(getLocalUploadsDir(), storagePath);
-    if (fs.existsSync(fullPath)) {
+    const fullPath = path.join(/*turbopackIgnore: true*/ getLocalUploadsDir(), storagePath);
+    if (fs.existsSync(/*turbopackIgnore: true*/ fullPath)) {
       await fs.promises.unlink(fullPath);
       const parentDir = path.dirname(fullPath);
       const remaining = await fs.promises.readdir(parentDir);

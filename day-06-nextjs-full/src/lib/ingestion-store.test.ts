@@ -49,6 +49,7 @@ describe('ingestion-store module', () => {
     it('detects when S3 is configured and reports true', () => {
       process.env.AWS_REGION = 'us-east-1';
       process.env.AWS_ENDPOINT_URL_S3 = 'http://localhost:9000';
+      process.env.AWS_S3_BUCKET = 'suptech-uploads';
       process.env.AWS_ACCESS_KEY_ID = 'test-key';
       process.env.AWS_SECRET_ACCESS_KEY = 'test-secret';
 
@@ -74,6 +75,14 @@ describe('ingestion-store module', () => {
 
       await deleteDocumentFile(testStoragePath);
       expect(fs.existsSync(expectedFullPath)).toBe(false);
+    });
+
+    it('refuses ephemeral local document storage on Vercel', async () => {
+      vi.stubEnv('VERCEL', '1');
+
+      await expect(
+        saveDocumentFile('documents/test/file.txt', Buffer.from('data'), 'text/plain'),
+      ).rejects.toThrow('Persistent S3-compatible object storage must be configured');
     });
   });
 

@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { AuthError, requireDemoSession } from '@/lib/auth';
+import { PageAssistant } from '@/components/page-assistant';
 import {
   DashboardBreadcrumb,
   DashboardNavigation,
@@ -20,6 +22,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <aside className="sidebar">
         <div>
           <div className="brand">
@@ -54,7 +57,12 @@ export default async function DashboardLayout({
             <LogoutButton />
           </div>
         </header>
-        {children}
+        <div id="main-content" className="dashboard-main" tabIndex={-1}>
+          {children}
+        </div>
+        <Suspense fallback={null}>
+          <PageAssistant />
+        </Suspense>
       </div>
     </div>
   );

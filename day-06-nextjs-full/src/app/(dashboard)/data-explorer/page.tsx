@@ -8,6 +8,11 @@ import {
 import type { IngestionJobRow, IngestionSummary } from '@/lib/ingestion-store';
 import { getDataExplorerStats, listReports } from '@/lib/repository';
 import { ReportTable } from '@/components/report-table';
+import { ReportImportPanel } from '@/components/report-import-panel';
+import {
+  getReportImportSummary,
+  listReportImportBatches,
+} from '@/lib/report-import-store';
 
 type SearchParams = Promise<{
   search?: string | string[];
@@ -60,6 +65,10 @@ export default async function DataExplorerPage({
     ingestionSummary = { documentsByStatus: {}, jobsByStatus: {} };
     ingestionJobs = [];
   }
+  const [reportImportBatches, reportImportSummary] = await Promise.all([
+    listReportImportBatches(10),
+    getReportImportSummary(),
+  ]);
   const totalJobs = Object.values(ingestionSummary.jobsByStatus).reduce(
     (sum, count) => sum + count,
     0,
@@ -80,9 +89,9 @@ export default async function DataExplorerPage({
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Read-only synthetic data explorer.</strong> Counts below come
-          from persisted Day 6 tables. Row-level validation findings are not
-          stored by this MVP.
+          <strong>Synthetic training data explorer.</strong> CSV imports are
+          validated before commit, and accepted reports update dashboard
+          indicators. Never upload real, confidential, or personal data.
         </div>
       </div>
       <section className="page-heading">
@@ -93,6 +102,7 @@ export default async function DataExplorerPage({
         </div>
         <span className="period-chip">{result.total} report(s)</span>
       </section>
+      <ReportImportPanel initialBatches={reportImportBatches} />
       <section className="dataset-grid" aria-label="Persisted synthetic datasets">
         <DatasetCard
           name="Institutions"
@@ -136,7 +146,8 @@ export default async function DataExplorerPage({
         </div>
         <dl className="data-quality-list">
           <div><dt>Latest persisted reporting period</dt><dd>{stats.latestPeriod ?? 'No report period available'}</dd></div>
-          <div><dt>Missing, duplicate, or rejected row counts</dt><dd>Not recorded in Day 6</dd></div>
+          <div><dt>Imported reports accepted / rejected</dt><dd>{reportImportSummary.acceptedRows} / {reportImportSummary.rejectedRows}</dd></div>
+          <div><dt>Persisted import batches</dt><dd>{reportImportSummary.batches}</dd></div>
           <div>
             <dt>Durable ingestion run history</dt>
             <dd>

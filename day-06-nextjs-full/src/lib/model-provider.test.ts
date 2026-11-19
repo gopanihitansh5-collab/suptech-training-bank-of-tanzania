@@ -44,15 +44,16 @@ afterEach(() => {
 });
 
 describe('chat provider selection', () => {
-  it('selects Groq only when MODEL_PROVIDER=groq and an API key is present', () => {
+  it('keeps an explicitly selected Groq provider visible when its key is missing', () => {
     expect(getActiveChatProviderName()).toBe('lmstudio');
 
     vi.stubEnv('MODEL_PROVIDER', 'groq');
-    expect(getActiveChatProviderName()).toBe('lmstudio');
+    expect(getActiveChatProviderName()).toBe('groq');
+    expect(getProviderStatus().configured).toBe(false);
 
     vi.stubEnv('GROQ_API_KEY', 'test-key');
     expect(getActiveChatProviderName()).toBe('groq');
-    expect(getChatModelId()).toBe('openai/gpt-oss-20b');
+    expect(getChatModelId()).toBe('openai/gpt-oss-120b');
   });
 
   it('returns safe provider status without secrets', () => {
@@ -62,7 +63,7 @@ describe('chat provider selection', () => {
     const status = getProviderStatus();
     expect(status).toEqual({
       provider: 'groq',
-      model: 'openai/gpt-oss-20b',
+      model: 'openai/gpt-oss-120b',
       baseUrl: 'https://api.groq.com/openai/v1',
       configured: true,
     });
@@ -88,7 +89,7 @@ describe('Groq chat completions', () => {
     expect(options.headers.Authorization).toBe('Bearer test-groq-key');
     const body = JSON.parse(options.body);
     expect(body).toMatchObject({
-      model: 'openai/gpt-oss-20b',
+      model: 'openai/gpt-oss-120b',
       max_tokens: 500,
       temperature: 0.1,
       messages,
@@ -134,7 +135,7 @@ describe('Groq chat completions', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body);
     const secondBody = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(firstBody.model).toBe('openai/gpt-oss-20b');
+    expect(firstBody.model).toBe('openai/gpt-oss-120b');
     expect(secondBody.model).toBe('llama-3.3-70b-versatile');
   });
 

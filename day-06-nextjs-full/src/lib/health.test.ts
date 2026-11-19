@@ -135,8 +135,6 @@ describe('system health probes', () => {
       lmStudioConfigured: false,
     });
     expect(health.config.missing).toEqual([
-      'AWS_REGION',
-      'AWS_ENDPOINT_URL_S3',
       'LM_STUDIO_BASE_URL',
     ]);
     expect(health.checks.map((check) => [check.name, check.status])).toEqual([
@@ -158,14 +156,14 @@ describe('system health probes', () => {
       .mockResolvedValueOnce(queryResult([{ version: 'PostgreSQL 16.4', database_name: 'suptech_day6' }]))
       .mockResolvedValueOnce(queryResult([countRow()]));
     vi.mocked(access).mockResolvedValue(undefined);
-    stubModelList(['openai/gpt-oss-20b']);
+    stubModelList(['openai/gpt-oss-120b']);
 
     const health = await getSystemHealth();
 
     expect(health.model).toMatchObject({
       provider: 'groq',
       chatAvailable: true,
-      chatModel: 'openai/gpt-oss-20b',
+      chatModel: 'openai/gpt-oss-120b',
       baseUrl: 'https://api.groq.com/openai/v1',
     });
     expect(health.config).toMatchObject({
@@ -235,6 +233,8 @@ describe('system health probes', () => {
     vi.stubEnv('AWS_REGION', 'us-east-1');
     vi.stubEnv('AWS_ENDPOINT_URL_S3', 'http://127.0.0.1:9000');
     vi.stubEnv('AWS_S3_BUCKET', 'suptech-uploads');
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key');
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret');
     vi.mocked(query)
       .mockResolvedValueOnce(queryResult([]))
       .mockResolvedValueOnce(queryResult([{ version: 'PostgreSQL 16.4', database_name: 'suptech_day6' }]))
@@ -249,6 +249,30 @@ describe('system health probes', () => {
     expect(health.storage.writable).toBeNull();
     expect(access).not.toHaveBeenCalled();
     expect(health.checks.find((check) => check.name === 'Upload storage')?.status).toBe('ok');
+  });
+
+  it('marks document storage unavailable on Vercel without persistent object storage', async () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.mocked(query)
+      .mockResolvedValueOnce(queryResult([]))
+      .mockResolvedValueOnce(queryResult([{ version: 'PostgreSQL 16.4', database_name: 'suptech_day6' }]))
+      .mockResolvedValueOnce(queryResult([countRow()]));
+    stubModelList(['qwen/qwen3.6-35b-a3b', 'text-embedding-nomic-embed-text-v1.5']);
+
+    const health = await getSystemHealth();
+
+    expect(health.storage.writable).toBe(false);
+    expect(health.storage.location).toContain('required on Vercel');
+    expect(health.checks.find((check) => check.name === 'Upload storage')?.status)
+      .toBe('unavailable');
+    expect(health.config.missing).toEqual(expect.arrayContaining([
+      'AWS_REGION',
+      'AWS_ENDPOINT_URL_S3',
+      'AWS_S3_BUCKET',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+    ]));
+    expect(access).not.toHaveBeenCalled();
   });
 
   it('marks local upload storage degraded when the directory is not writable', async () => {

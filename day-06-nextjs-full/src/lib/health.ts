@@ -10,6 +10,7 @@ import {
   isChatProviderAvailable,
   type ChatProviderName,
 } from './model-provider';
+import { isS3Configured } from './ingestion-store';
 
 export type HealthCheckStatus = 'ok' | 'degraded' | 'unavailable';
 
@@ -199,19 +200,31 @@ export function describeHealthConfig(): HealthConfig {
   const demoUsername = process.env.DEMO_USERNAME;
   const demoPassword = process.env.DEMO_PASSWORD;
   const demoRole = process.env.DEMO_ROLE?.trim() || 'supervisor';
-  const region = process.env.AWS_REGION?.trim();
-  const endpoint = process.env.AWS_ENDPOINT_URL_S3?.trim();
   const lmStudioBaseUrl = process.env.LM_STUDIO_BASE_URL?.trim();
   const provider = getProviderStatus();
+  const groqApiKeyConfigured = Boolean(process.env.GROQ_API_KEY?.trim());
 
   const missing: string[] = [];
   if (!databaseUrl) missing.push('DATABASE_URL');
   if (!authSecret) missing.push('AUTH_SECRET');
   if (!demoUsername) missing.push('DEMO_USERNAME');
   if (!demoPassword) missing.push('DEMO_PASSWORD');
-  if (!region) missing.push('AWS_REGION');
-  if (!endpoint) missing.push('AWS_ENDPOINT_URL_S3');
-  if (!lmStudioBaseUrl) missing.push('LM_STUDIO_BASE_URL');
+  if (provider.provider === 'groq' && !groqApiKeyConfigured) {
+    missing.push('GROQ_API_KEY');
+  } else if (provider.provider === 'lmstudio' && !lmStudioBaseUrl) {
+    missing.push('LM_STUDIO_BASE_URL');
+  }
+  if (process.env.VERCEL === '1' && !isS3Configured()) {
+    for (const name of [
+      'AWS_REGION',
+      'AWS_ENDPOINT_URL_S3',
+      'AWS_S3_BUCKET',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+    ]) {
+      if (!process.env[name]?.trim()) missing.push(name);
+    }
+  }
 
   return {
     databaseUrlConfigured: Boolean(databaseUrl),
@@ -219,7 +232,7 @@ export function describeHealthConfig(): HealthConfig {
     demoUserConfigured: Boolean(demoUsername && demoPassword),
     demoRole,
     remoteDatabase: isRemoteDatabaseUrl(databaseUrl),
-    s3Configured: Boolean(region && endpoint),
+    s3Configured: isS3Configured(),
     chatProvider: provider.provider,
     chatProviderConfigured: provider.configured,
     groqApiKeyConfigured: Boolean(process.env.GROQ_API_KEY?.trim()),
@@ -287,9 +300,9 @@ async function loadDatabaseSnapshot(available: boolean): Promise<DatabaseSnapsho
 async function describeStorage(snapshot: DatabaseSnapshot): Promise<SystemHealth['storage']> {
   const region = process.env.AWS_REGION?.trim();
   const endpoint = process.env.AWS_ENDPOINT_URL_S3?.trim();
-  const bucket = process.env.AWS_S3_BUCKET?.trim() || 'uploads';
+  const bucket = process.env.AWS_S3_BUCKET?.trim();
 
-  if (region && endpoint) {
+  if (isS3Configured() && region && endpoint && bucket) {
     return {
       mode: 's3',
       location: `${bucket} @ ${endpoint}`,
@@ -303,9 +316,21 @@ async function describeStorage(snapshot: DatabaseSnapshot): Promise<SystemHealth
   }
 
   const configuredDir = process.env.LOCAL_UPLOADS_DIR?.trim() || '.local/uploads';
+  if (process.env.VERCEL === '1') {
+    return {
+      mode: 'local',
+      location: 'Persistent object storage is required on Vercel.',
+      writable: false,
+      documents: snapshot.counts.documents,
+      chunks: snapshot.counts.chunks,
+      pendingJobs: snapshot.pendingJobs,
+      failedJobs: snapshot.failedJobs,
+      lastIngestionAt: snapshot.lastIngestionAt,
+    };
+  }
   let writable: boolean | null = null;
   try {
-    await fs.access(path.resolve(configuredDir), fs.constants.W_OK);
+    await fs.access(path.resolve(/*turbopackIgnore: true*/ configuredDir), fs.constants.W_OK);
     writable = true;
   } catch {
     writable = false;
@@ -337,6 +362,9 @@ function buildChecks(
   if (storage.mode === 's3') {
     storageStatus = 'ok';
     storageDetail = 'S3-compatible object storage is configured; writes are not probed.';
+  } else if (process.env.VERCEL === '1') {
+    storageStatus = 'unavailable';
+    storageDetail = 'Persistent object storage is required before document uploads can run on Vercel.';
   } else if (storage.writable === true) {
     storageStatus = 'ok';
     storageDetail = 'Local upload directory is writable.';

@@ -27,7 +27,7 @@ class GroqModelSelectionError extends Error {
 }
 
 const DEFAULT_GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
-const DEFAULT_GROQ_CHAT_MODEL = 'openai/gpt-oss-20b';
+const DEFAULT_GROQ_CHAT_MODEL = 'openai/gpt-oss-120b';
 const DEFAULT_GROQ_CHAT_MODEL_FALLBACK = 'llama-3.3-70b-versatile';
 const DEFAULT_LM_STUDIO_BASE_URL = 'http://127.0.0.1:1235/v1';
 const DEFAULT_LM_STUDIO_CHAT_MODEL = 'qwen/qwen3.6-35b-a3b';
@@ -106,9 +106,9 @@ function resolveGroqBaseUrl(): string {
 
 export function getActiveChatProviderName(): ChatProviderName {
   const requested = process.env.MODEL_PROVIDER?.trim().toLowerCase();
-  if (requested === 'groq' && Boolean(process.env.GROQ_API_KEY?.trim())) {
-    return 'groq';
-  }
+  if (requested === 'groq') return 'groq';
+  if (requested === 'lmstudio') return 'lmstudio';
+  if (process.env.GROQ_API_KEY?.trim()) return 'groq';
   return 'lmstudio';
 }
 
@@ -248,6 +248,17 @@ function extractContent(payload: unknown): string {
     );
   }
   return content.trim();
+}
+
+export function formatModelResponseText(content: string): string {
+  return content
+    .replace(/\r\n?/g, '\n')
+    .replace(/(^|\n)\s{0,3}#{1,6}\s*/g, '$1')
+    .replace(/(^|\n)\s*[*+-]\s+/g, '$1')
+    .replace(/[*#]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 async function requestLmStudio(

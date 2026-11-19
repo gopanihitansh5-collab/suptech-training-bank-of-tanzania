@@ -1,4 +1,5 @@
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { attachDatabasePool } from '@vercel/functions';
 import dns from 'node:dns';
 import net from 'node:net';
 import { assertSafeDatabaseUrl, isLocalDatabaseUrl } from './db-config';
@@ -13,7 +14,7 @@ export function getPool(): Pool {
     const isLocal = isLocalDatabaseUrl(connectionString);
     dns.setDefaultResultOrder('ipv4first');
     net.setDefaultAutoSelectFamily(false);
-    globalThis.__suptechDay6Pool = new Pool({
+    const pool = new Pool({
       connectionString,
       application_name: 'suptech-monitor-day-06',
       max: 10,
@@ -21,6 +22,8 @@ export function getPool(): Pool {
       idleTimeoutMillis: 30000,
       query_timeout: 10000,
     });
+    if (process.env.VERCEL === '1') attachDatabasePool(pool);
+    globalThis.__suptechDay6Pool = pool;
   }
   return globalThis.__suptechDay6Pool;
 }

@@ -21,13 +21,6 @@ const source = {
   rank: 0.02,
 };
 
-function answerResponse(content: string): Response {
-  return new Response(
-    JSON.stringify({ choices: [{ message: { content } }] }),
-    { status: 200 },
-  );
-}
-
 describe('grounded answer validation', () => {
   it('does not call the model when retrieval returns no evidence', async () => {
     const fetchMock = vi.fn();
@@ -40,32 +33,33 @@ describe('grounded answer validation', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('returns validated model citations when the answer cites retrieved source IDs', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      answerResponse('The reported NPL ratio is 4.2% [S1].'),
-    ));
+  it('answers from retrieved evidence locally without sending source text to a model', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await answerFromEvidence('What is the NPL ratio?', [source]);
 
-    await expect(answerFromEvidence('What is the NPL ratio?', [source])).resolves.toMatchObject({
+    expect(result).toMatchObject({
       status: 'answered',
-      mode: 'model',
+      mode: 'extractive',
       citations: [{ sourceId: 'S1', citation: { reportId: 'R-1' } }],
     });
+    expect(result.text).toContain('NPL ratio 4.2%');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('falls back to an extractive answer when the model cites an unknown source', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      answerResponse('The ratio is 4.2% [S9].'),
-    ));
-
+  it('never sends retrieved source text to the configured provider', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
     const result = await answerFromEvidence('What is the NPL ratio?', [source]);
+
     expect(result).toMatchObject({
       status: 'answered',
       mode: 'extractive',
       citations: [{ sourceId: 'S1' }],
-      error: expect.stringContaining('not retrieved'),
     });
     expect(result.text).toContain('[S1]');
     expect(result.text).toContain('4.2%');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('returns an extractive answer when the model is unavailable', async () => {

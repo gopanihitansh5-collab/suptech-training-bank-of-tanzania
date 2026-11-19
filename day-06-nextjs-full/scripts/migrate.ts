@@ -1,18 +1,21 @@
 import { createRequire } from 'node:module';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { getMigrationDatabaseUrl } from '../src/lib/db-config';
 import { closePool, getPool } from '../src/lib/db';
 
 const require = createRequire(import.meta.url);
 const { loadEnvConfig } = require('@next/env');
 loadEnvConfig(process.cwd());
 
-const migration = {
-  version: '001_initial',
-  file: fileURLToPath(new URL('../src/db/migrations/001_initial.sql', import.meta.url)),
-};
+const migrationsDirectory = new URL('../src/db/migrations/', import.meta.url);
 
 async function main(): Promise<void> {
+  process.env.DATABASE_URL = getMigrationDatabaseUrl(
+    process.env.DATABASE_URL,
+    process.env.DATABASE_URL_UNPOOLED,
+  );
+
   const pool = getPool();
   await pool.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -21,30 +24,36 @@ async function main(): Promise<void> {
     )
   `);
 
-  const { rowCount } = await pool.query(
-    'SELECT version FROM schema_migrations WHERE version = $1',
-    [migration.version],
-  );
-  if (rowCount) {
-    console.info(`Migration ${migration.version} is already applied.`);
-    return;
-  }
+  const migrationFiles = (await readdir(migrationsDirectory))
+    .filter((filename) => /^\d+_[a-z0-9_-]+\.sql$/.test(filename))
+    .sort();
+  for (const filename of migrationFiles) {
+    const version = filename.slice(0, -4);
+    const { rowCount } = await pool.query(
+      'SELECT version FROM schema_migrations WHERE version = $1',
+      [version],
+    );
+    if (rowCount) {
+      console.info(`Migration ${version} is already applied.`);
+      continue;
+    }
 
-  const sql = await readFile(migration.file, 'utf8');
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    await client.query(sql);
-    await client.query('INSERT INTO schema_migrations (version) VALUES ($1)', [
-      migration.version,
-    ]);
-    await client.query('COMMIT');
-    console.info(`Applied migration ${migration.version}.`);
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+    const sql = await readFile(fileURLToPath(new URL(filename, migrationsDirectory)), 'utf8');
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(sql);
+      await client.query('INSERT INTO schema_migrations (version) VALUES ($1)', [
+        version,
+      ]);
+      await client.query('COMMIT');
+      console.info(`Applied migration ${version}.`);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }
 

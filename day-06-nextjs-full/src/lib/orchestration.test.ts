@@ -14,6 +14,13 @@ vi.mock('./grounded-retrieval', () => ({
 
 const providerMocks = vi.hoisted(() => ({
   generateChatCompletion: vi.fn(),
+  formatModelResponseText: vi.fn((content: string) =>
+    content
+      .replace(/(^|\n)\s{0,3}#{1,6}\s*/g, '$1')
+      .replace(/(^|\n)\s*[*+-]\s+/g, '$1')
+      .replace(/[*#]/g, '')
+      .trim(),
+  ),
   isChatProviderAvailable: vi.fn(),
   getActiveChatProviderName: vi.fn(),
 }));
@@ -295,7 +302,7 @@ describe('agent orchestration', () => {
     expect(providerMocks.generateChatCompletion).not.toHaveBeenCalled();
   });
 
-  it('sends work to the provider with live platform context injected', async () => {
+  it('sends work with aggregate dashboard context and omits institution and document details', async () => {
     providerMocks.generateChatCompletion.mockResolvedValue('Synthetic data only.');
 
     const result = await executeAgent({
@@ -310,8 +317,12 @@ describe('agent orchestration', () => {
       response: 'Synthetic data only.',
     });
     const [messages] = providerMocks.generateChatCompletion.mock.calls[0];
-    expect(messages[0].content).toContain('Live platform context');
-    expect(messages[0].content).toContain('latest period 2026-10');
+    expect(messages[0].content).toContain('bounded synthetic aggregate dashboard context');
+    expect(messages[0].content).toContain('reportingPeriod');
+    expect(messages[0].content).toContain('depositsTzsBillions');
+    expect(messages[0].content).not.toContain('Kilimanjaro Commercial Bank');
+    expect(messages[0].content).not.toContain('TZ004');
+    expect(messages[0].content).not.toContain('DOC-01');
   });
 
   it('returns an explicit failure when the provider is unreachable', async () => {
@@ -338,6 +349,20 @@ describe('agent orchestration', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('empty or invalid response');
+  });
+
+  it('formats direct agent output without Markdown markers', async () => {
+    providerMocks.generateChatCompletion.mockResolvedValue(
+      '### Summary\n\n* Review the synthetic sample.',
+    );
+
+    const result = await executeAgent({
+      agentId: 'data-ingestion',
+      userMessage: 'Explain this synthetic example.',
+    });
+
+    expect(result.response).toBe('Summary\nReview the synthetic sample.');
+    expect(result.response).not.toMatch(/[#*]/);
   });
 
   it('checks provider readiness', async () => {
@@ -556,7 +581,7 @@ describe('executeSupervisoryWorkflow model enrichment', () => {
     providerMocks.isChatProviderAvailable.mockResolvedValue(true);
     providerMocks.getActiveChatProviderName.mockReturnValue('groq');
     providerMocks.generateChatCompletion.mockResolvedValue(
-      'Executive summary for 2026-10: 14 institutions reported 31,400 TZS billion in deposits and 19,800 TZS billion in loans, with 3 open review signals and 1 critical signal [S1].\n\nDetailed analysis confirms reporting completeness of 100% across 14 of 14 expected reports, with the NPL ratio and other training thresholds remaining review signals rather than official findings.',
+      'Executive summary for 2026-10: 14 institutions reported 31,400 TZS billion in deposits and 19,800 TZS billion in loans, with 3 open review signals and 1 critical signal.\n\nDetailed analysis confirms reporting completeness of 100% across 14 of 14 expected reports, with the NPL ratio and other training thresholds remaining review signals rather than official findings.',
     );
 
     const result = await executeSupervisoryWorkflow('Analyze portfolio deposits for 2026-10');
@@ -566,11 +591,17 @@ describe('executeSupervisoryWorkflow model enrichment', () => {
     expect(result.response.executiveSummary).toContain('Executive summary for 2026-10');
     expect(result.response.detail).toContain('Detailed analysis');
     const [messages] = providerMocks.generateChatCompletion.mock.calls[0];
-    expect(messages[0].content).toContain('Live platform context');
-    expect(messages[0].content).toContain('14 synthetic institutions');
+    expect(messages[0].content).toContain('supplied synthetic aggregate facts');
+    expect(messages[0].content).not.toContain('Live platform context');
+    expect(messages[0].content).not.toContain('Kilimanjaro Commercial Bank');
+    expect(messages[0].content).not.toContain('TZ004');
+    expect(messages[0].content).not.toContain('DOC-01');
     expect(messages[1].content).toContain('Question: Analyze portfolio deposits');
-    expect(messages[1].content).toContain('Analytical data:');
-    expect(messages[1].content).toContain('Evidence sources:');
+    expect(messages[1].content).toContain('Analytical aggregate facts:');
+    expect(messages[1].content).not.toContain('Evidence sources:');
+    expect(messages[1].content).not.toContain('Kilimanjaro Commercial Bank');
+    expect(messages[1].content).not.toContain('TZ004');
+    expect(messages[1].content).not.toContain('DOC-01');
   });
 
   it('rejects generic model answers and keeps the deterministic narrative', async () => {

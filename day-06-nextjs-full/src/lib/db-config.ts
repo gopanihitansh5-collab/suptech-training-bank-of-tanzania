@@ -35,7 +35,6 @@ export function assertSafeDatabaseUrl(databaseUrl: string | undefined): string {
     }
     return databaseUrl;
   }
-
   const sslmode = parsed.searchParams.get('sslmode');
   if (!sslmode || !REQUIRED_REMOTE_SSLMODES.has(sslmode)) {
     throw new Error('Remote Day 6 connections are only allowed to managed PostgreSQL providers that explicitly require TLS; append ?sslmode=require to the DATABASE_URL.');
@@ -45,4 +44,23 @@ export function assertSafeDatabaseUrl(databaseUrl: string | undefined): string {
   }
 
   return databaseUrl;
+}
+
+export function getMigrationDatabaseUrl(
+  databaseUrl: string | undefined,
+  unpooledDatabaseUrl: string | undefined,
+): string {
+  const migrationUrl = unpooledDatabaseUrl?.trim() || databaseUrl;
+  const safeMigrationUrl = assertSafeDatabaseUrl(migrationUrl);
+  if (
+    !isLocalDatabaseUrl(safeMigrationUrl) &&
+    new URL(safeMigrationUrl).hostname
+      .split('.')
+      .some((label) => label.toLowerCase().endsWith('-pooler'))
+  ) {
+    throw new Error(
+      'Remote database migrations require a direct, non-pooler PostgreSQL endpoint; set DATABASE_URL_UNPOOLED.',
+    );
+  }
+  return safeMigrationUrl;
 }

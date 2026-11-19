@@ -18,7 +18,11 @@ recorded in `docs/FINDINGS_LOG.md`.
   limits. An exception is a **review signal**, never a finding of misconduct
   or non-compliance.
 - Do not use real or Stitch-sample institution values.
-- Do not send documents, records or credentials to a public model provider.
+- Groq may receive only an explicitly submitted user question and bounded,
+  server-derived synthetic aggregate facts after the user confirms the
+  synthetic-only notice. Never send document text, source rows, names,
+  institution/record identifiers, credentials or other confidential data to
+  Groq. Document retrieval answers remain local and extractive.
 - Do not modify the existing port-5432 PostgreSQL cluster or the Python
   Day 1–3 sources. Local runs own **loopback port 5433 only** (`db-config.ts`
   enforces this); managed cloud deployments (Vercel) must connect to a
@@ -155,19 +159,53 @@ boundary is compliant.
 - `viewer < supervisor < admin`; role checks go through
   `requireDemoSession(allowedRoles)` — routes never parse cookies themselves.
 
-## 8. Environment contract
+## 8. Model and deployment boundary
+
+- The shared page assistant is on-demand and contextual to the active
+  dashboard route and allowlisted filters. The server derives page facts from
+  PostgreSQL; clients cannot provide aggregate values. Answers are not cached
+  or persisted, use bounded follow-up history, cite returned fact IDs, and
+  fall back to a deterministic summary when the model is unavailable or fails
+  evidence validation.
+- `MODEL_PROVIDER=groq` selects Groq. `GROQ_API_KEY` must be a Vercel Secret;
+  the default chat model is `openai/gpt-oss-120b`, with the provider's
+  configured fallback. Missing credentials remain visible as an unavailable
+  Groq configuration and do not silently select LM Studio.
+- The Agents module may send the user's explicitly confirmed prompt and
+  aggregate dashboard totals to the configured model. Workflow composer
+  context is allowlisted aggregate data only. Document excerpts and row-level
+  institution, report, and exception details remain server-side.
+- `MODEL_PROVIDER=lmstudio` and `LM_STUDIO_BASE_URL` are for local development.
+  Vercel does not have the developer's loopback model endpoint; use Groq there.
+- Vercel uploads require persistent S3-compatible storage configured with
+  `AWS_REGION`, `AWS_ENDPOINT_URL_S3`, `AWS_S3_BUCKET`, `AWS_ACCESS_KEY_ID`
+  and `AWS_SECRET_ACCESS_KEY`. The local filesystem fallback is disabled on
+  Vercel; upload health reports storage as unavailable until configured.
+- A production deployment also requires `DATABASE_URL` with enforced TLS,
+  `AUTH_SECRET` (32+ characters), `DEMO_USERNAME` and `DEMO_PASSWORD`.
+  Production one-click login is public supervisor access for synthetic demos,
+  not production identity or an authorization system.
+
+## 9. Environment contract
 
 | Variable | Used by | Rules |
 | --- | --- | --- |
-| `DATABASE_URL` | db.ts, scripts | **Local:** `postgres(ql)://…@localhost|127.0.0.1|::1:5433/…`. **Managed (Vercel):** a provider URL that explicitly sets `?sslmode=require` (or `verify-ca`/`verify-full`) — enforced in `db-config.ts`. |
+| `DATABASE_URL` | db.ts | **Local:** `postgres(ql)://…@localhost|127.0.0.1|::1:5433/…`. **Vercel runtime:** managed PostgreSQL URL with TLS (`sslmode=require` or stronger); use Neon's pooled endpoint for application traffic. |
+| `DATABASE_URL_UNPOOLED` | scripts/migrate.ts | Preferred direct, non-pooler Neon PostgreSQL URL with TLS for remote migrations. If absent, the migration script accepts `DATABASE_URL` only when it is a direct endpoint and fails closed on pooler hosts. Never use a pooled endpoint for schema migrations. |
 | `AUTH_SECRET` | auth | ≥ 32 chars; must not contain `replace-with`. |
 | `DEMO_USERNAME` / `DEMO_PASSWORD` | auth | Must not be `replace-before-use`. Username is also the seeded `users.user_id`. |
 | `DEMO_ROLE` | auth | Optional, default `supervisor`. |
+| `MODEL_PROVIDER` | model-provider.ts | `groq` on Vercel; `lmstudio` is local development only. |
+| `GROQ_API_KEY` | model-provider.ts | Required Vercel Secret when Groq is selected; never commit or print its value. |
+| `GROQ_CHAT_MODEL` / `GROQ_BASE_URL` | model-provider.ts | Optional Groq model/HTTPS endpoint overrides; defaults are production Groq settings. |
+| `AWS_REGION`, `AWS_ENDPOINT_URL_S3`, `AWS_S3_BUCKET` | ingestion-store.ts | Required on Vercel for persistent document uploads. |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | ingestion-store.ts | Required storage credentials; provision as deployment secrets only. |
+| `LM_STUDIO_BASE_URL` | model-provider.ts | Optional loopback endpoint for local development; not available in Vercel. |
 
 Secrets stay in local `.env` (never committed). `.env.example` carries
 placeholders only.
 
-## 9. API contract
+## 10. API contract
 
 - The machine-readable contract is **`docs/openapi.yaml`** (OpenAPI 3.1).
   Any route/param/schema change must update it in the same commit.
@@ -176,8 +214,26 @@ placeholders only.
   404 not found, 429 rate limit, 503 misconfigured, 500 generic).
 - Response envelope for lists: `{ items, page, pageSize, total, totalPages }`.
 - Pagination bounds: `page ≥ 1`, `1 ≤ pageSize ≤ 50`.
+- `GET /api/report-imports` lists persisted synthetic CSV import batches for
+  signed-in sessions. `POST /api/report-imports` requires supervisor/admin,
+  exact same-origin `Origin`, multipart CSV, and explicit synthetic-data
+  confirmation. Preview before commit; limits are 1 MB, 500 rows and 64
+  columns. Required report fields support automatic aliases or explicit
+  mapping, valid rows are imported while invalid rows are retained as
+  validation results, unmapped columns are stored as metadata, and existing
+  institution/period reports are never overwritten. Migration
+  `002_report_imports.sql` stores batch/row provenance and audit history.
+- `POST /api/assistant/contextual-answer` requires a signed-in session,
+  same-origin request and explicit synthetic-only confirmation. It accepts a
+  question plus the active dashboard route and allowlisted filters, derives
+  aggregate context server-side, returns citations, and disables response
+  caching. Never add client-supplied metric values or source rows to this
+  request.
+- `POST /api/orchestration` also requires synthetic-only confirmation. When
+  Groq is selected, prompts are accompanied only by bounded dashboard
+  aggregates; document excerpts and row-level records are never sent.
 
-## 10. Agent working rules (multi-agent coordination)
+## 11. Agent working rules (multi-agent coordination)
 
 - **File ownership:** an agent edits only the files its task lists. Default
   zones: `metrics.ts`/`catalog.ts`/`demo-data.ts` = logic owner;
@@ -197,7 +253,7 @@ placeholders only.
 - **Boundaries in §1 are also agent boundaries.** Prompts to reviewer agents
   must contain no credentials, no confidential records and no user documents.
 
-## 11. Verification commands (definition of done)
+## 12. Verification commands (definition of done)
 
 ```sh
 npm run typecheck     # tsc --noEmit
@@ -208,7 +264,7 @@ npm run build         # production build (optional per slice)
 Database slices additionally require `npm run db:migrate && npm run db:seed`
 against the port-5433 instance.
 
-## 12. Document map
+## 13. Document map
 
 | Doc | Role |
 | --- | --- |

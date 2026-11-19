@@ -1,8 +1,45 @@
 # Day 6 progress
 
-## Current checkpoint — 2026-11-18
+## Current release checkpoint
 
-The Day 6 frontend MVP slice is implemented. Overview filtering, report CSV
+The CSV report-import flow, shared page-aware assistant, Groq-backed agents and
+Vercel storage safeguards are implemented. The dashboard shell has a shared
+visual refresh with more readable hierarchy, responsive navigation and a
+keyboard skip link.
+
+- Verification: `npm run build` passed; `npm test` passed (28 files, 219
+  tests); TypeScript passed as part of the build; the OpenAPI YAML parses.
+- The production build no longer reports dynamic filesystem tracing warnings.
+  This local machine reports an unrelated `package-lock.json` in the user
+  profile outside the repository; no repository change was made for it.
+- Browser verification confirmed the sign-in surface at desktop and mobile
+  widths with no horizontal overflow. A full authenticated dashboard visual
+  pass is blocked because local PostgreSQL on port 5433 is unavailable.
+- The application uses PostgreSQL through Node's `pg` driver. The local
+  Compose database is PostgreSQL 16 isolated on loopback port 5433. The owner
+  identified Production as Neon; its URL remains an uninspected Vercel Secret.
+- Configure `DATABASE_URL` as the Neon pooled endpoint for Vercel runtime
+  traffic; the connection pool is attached to Vercel's lifecycle.
+  `DATABASE_URL_UNPOOLED` is not present yet; the migration runner can use
+  `DATABASE_URL` only when it is already a direct endpoint and fails closed on
+  Neon pooler hosts.
+- Vercel Production has `DATABASE_URL`, demo-auth, Groq and AWS storage
+  variable names configured, but `AWS_S3_BUCKET` is missing. Do not inspect
+  or print any secret values.
+- Migration `002_report_imports.sql` is included in the working tree but has
+  not been applied to Production. The owner confirmed a restorable backup and
+  explicitly authorized it. Apply only through a direct PostgreSQL endpoint;
+  never use decrypted environment values.
+- The owner reports that no S3 bucket has been created yet. Uploads stay
+  explicitly unavailable until a persistent bucket is provisioned and
+  `AWS_S3_BUCKET` is configured.
+- Pushing `main` triggers the Production deployment. No commit or push has
+  been made yet; wait for the direct Neon migration URL and bucket setup
+  before releasing.
+
+## Original frontend MVP checkpoint — 2026-11-18
+
+At this checkpoint, the Day 6 frontend MVP slice was implemented. Overview filtering, report CSV
 download, dataset/schema exploration, keyword citations/source previews,
 deterministic assistant plan/confirm/execute, local-agent workflows, chart
 series controls and local model health are connected to their underlying
@@ -29,7 +66,7 @@ process environment variables and were not committed. The Day 6 project,
 Stitch reference inputs and PAUL files are already tracked on `main` and the
 branch was clean at resume. Do not amend the existing commits.
 
-## Implemented
+## MVP-era implementation notes
 
 - Created the standalone `day-06-nextjs-full/` Next.js App Router application.
   Existing Python training days and the Day 3 FastAPI-proxied dashboard remain
@@ -163,15 +200,18 @@ branch was clean at resume. Do not amend the existing commits.
 - Do not treat the failed review as independent approval. Phase 1 was
   finalized from direct inspection and the recorded verification evidence.
 
-## Exact next steps
+## Release readiness steps
 
-1. Rerun typecheck, tests and production build after the bounded JSON-body
-   parser tests and documentation updates.
-2. Complete a browser visual smoke test when the local app/database are
-   available; inspect responsive layouts and interactive states.
-3. Implement upload/ingestion, semantic retrieval, persisted event replay,
-   report templates, admin writes or external integrations only as separately
-   scoped and verified work. Keep their unavailable states explicit.
+1. Confirm `DATABASE_URL` uses Neon's pooled endpoint for Vercel runtime and
+   add `DATABASE_URL_UNPOOLED` as a Vercel Production Secret with a direct URL
+   if the runtime URL is pooled. Never share the value in chat.
+2. Apply migration 002 through a direct endpoint, then verify the migration
+   ledger and report-import tables. Backup and migration approval are
+   confirmed by the owner.
+3. Provision a persistent S3-compatible bucket and set `AWS_S3_BUCKET` to its
+   non-secret bucket name (the other AWS variable names are present).
+4. Confirm the authenticated dashboard on the live database, then commit and
+   push `main`, which triggers Vercel Production deployment.
 
 ## Boundaries and cautions
 
@@ -181,19 +221,20 @@ branch was clean at resume. Do not amend the existing commits.
   relevant view.
 - Keep real credentials in an untracked local `.env`; do not commit test
   credentials, `.env`, dependency directories, or generated build output.
-- Do not send confidential records, credentials, or user files to a model.
-  Current model probes and the delegated review use local LM Studio only.
-- Do not claim that document uploads, semantic retrieval, SSE, administration
-  writes or external system integrations are implemented.
+- Do not use real or confidential supervisory data. Groq receives only
+  explicitly confirmed prompts and bounded synthetic aggregate context;
+  document text and source rows remain local.
+- Vercel uploads remain unavailable until `AWS_S3_BUCKET` is configured.
+- Production migration is authorized after the backup confirmation; it still
+  requires the direct migration URL and post-migration verification.
 - The existing Python test baseline remains blocked at collection because
   `fastapi` is missing from the repository's `.venv`; no Python dependencies
   were installed or changed.
 
 ## Last known repository state
 
-- Branch: `main`, at `86de783` (Phase 2 milestone), matching `origin/main`
-  before the pending Phase 3 commit.
-- Phase 3 changes are limited to Day 6 source and documentation. Build output
-  and `node_modules` remain ignored under Day 6.
-- The Stitch design inputs were not modified; they were used only as visual
-  references.
+- Branch: `main`; the requested Day 6 feature, documentation and layout changes
+  are uncommitted. No push has occurred.
+- Build output and `node_modules` remain ignored under Day 6.
+- The Stitch design inputs and pasted design brief were not modified; they
+  were used only as references.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertSafeDatabaseUrl } from './db-config';
+import { assertSafeDatabaseUrl, getMigrationDatabaseUrl } from './db-config';
 
 describe('Day 6 database connection guard', () => {
   it('requires an explicit local PostgreSQL connection', () => {
@@ -28,5 +28,22 @@ describe('Day 6 database connection guard', () => {
       .toThrow(/sslmode=require/);
     expect(() => assertSafeDatabaseUrl('postgresql://user:pass@ep-day6.eu-central-1.aws.neon.tech/suptech_day6'))
       .toThrow(/sslmode=require/);
+  });
+
+  it('uses a direct remote endpoint for migrations and refuses pooled URLs', () => {
+    const pooledUrl = 'postgresql://user:pass@ep-day6-pooler.eu-central-1.aws.neon.tech/suptech_day6?sslmode=require';
+    const directUrl = 'postgresql://user:pass@ep-day6.eu-central-1.aws.neon.tech/suptech_day6?sslmode=require';
+
+    expect(getMigrationDatabaseUrl(pooledUrl, directUrl)).toBe(directUrl);
+    expect(getMigrationDatabaseUrl(directUrl, undefined)).toBe(directUrl);
+    expect(() => getMigrationDatabaseUrl(pooledUrl, undefined))
+      .toThrow(/DATABASE_URL_UNPOOLED/);
+    expect(() => getMigrationDatabaseUrl(pooledUrl, pooledUrl))
+      .toThrow(/direct, non-pooler/);
+  });
+
+  it('continues to allow the isolated local database for migrations', () => {
+    const localUrl = 'postgresql://user:pass@127.0.0.1:5433/suptech_day6';
+    expect(getMigrationDatabaseUrl(localUrl, undefined)).toBe(localUrl);
   });
 });

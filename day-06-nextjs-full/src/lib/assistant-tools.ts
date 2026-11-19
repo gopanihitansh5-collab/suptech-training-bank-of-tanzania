@@ -516,7 +516,7 @@ export async function runTool(name: string, rawArguments: unknown): Promise<Tool
         arguments: argumentsUsed,
         result,
         summary: answer.status === 'answered'
-          ? `Retrieved ${evidence.hits.length} synthetic evidence source(s) with ${evidence.mode} retrieval and generated a cited local-model answer.`
+          ? `Retrieved ${evidence.hits.length} synthetic evidence source(s) with ${evidence.mode} retrieval and produced a locally extracted citation answer.`
           : `Retrieved ${evidence.hits.length} synthetic evidence source(s) with ${evidence.mode} retrieval; ${answer.text}`,
         narrative: narrateToolResult(name, result),
       };

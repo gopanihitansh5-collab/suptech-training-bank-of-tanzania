@@ -283,6 +283,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
   const [workflowResult, setWorkflowResult] = useState<SupervisoryWorkflowResult | null>(null);
   const [workflowLoading, setWorkflowLoading] = useState(false);
   const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const [workflowSyntheticConfirmed, setWorkflowSyntheticConfirmed] = useState(false);
 
   // Manual Direct Prompt State
   const [selectedAgents, setSelectedAgents] = useState<Set<string>>(new Set());
@@ -290,6 +291,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
   const [directResult, setDirectResult] = useState<OrchestrationResult | null>(null);
   const [directLoading, setDirectLoading] = useState(false);
   const [parallel, setParallel] = useState(true);
+  const [directSyntheticConfirmed, setDirectSyntheticConfirmed] = useState(false);
 
   const workflowFacts = workflowResult ? narrowFacts(workflowResult.facts) : [];
   const followUps = workflowResult ? buildFollowUps(workflowResult) : [];
@@ -302,6 +304,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
     else setWorkflowInstitutionId('');
     setWorkflowResult(null);
     setWorkflowError(null);
+    setWorkflowSyntheticConfirmed(false);
   }
 
   // Handle Workflow Execution
@@ -328,6 +331,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
           question: query,
           period: period || undefined,
           institutionId: institutionId || undefined,
+          syntheticOnlyConfirmed: workflowSyntheticConfirmed,
         }),
       });
 
@@ -358,7 +362,9 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
     setWorkflowQuestion(chip.question);
     if (chip.period !== undefined) setWorkflowPeriod(chip.period);
     if (chip.institutionId !== undefined) setWorkflowInstitutionId(chip.institutionId);
-    void runWorkflow(chip.question, { period: chip.period, institutionId: chip.institutionId });
+    setWorkflowSyntheticConfirmed(false);
+    setWorkflowResult(null);
+    setWorkflowError(null);
   }
 
   // Handle Manual Direct Prompt Submission
@@ -390,6 +396,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
             userMessage: message,
           })),
           parallel,
+          syntheticOnlyConfirmed: directSyntheticConfirmed,
         }),
       });
 
@@ -571,6 +578,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   setWorkflowQuestion(event.target.value);
                   setWorkflowResult(null);
                   setWorkflowError(null);
+                  setWorkflowSyntheticConfirmed(false);
                 }}
                 placeholder="e.g. Analyze portfolio deposits and NPL trends for 2026-10, or investigate high-severity exceptions for TZ004..."
                 maxLength={MAX_MESSAGE_LENGTH}
@@ -592,7 +600,10 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                     type="text"
                     placeholder="YYYY-MM (e.g. 2026-10)"
                     value={workflowPeriod}
-                    onChange={(e) => setWorkflowPeriod(e.target.value)}
+                    onChange={(e) => {
+                      setWorkflowPeriod(e.target.value);
+                      setWorkflowSyntheticConfirmed(false);
+                    }}
                     style={{
                       width: '100%',
                       padding: '8px 12px',
@@ -614,7 +625,10 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                     type="text"
                     placeholder="e.g. TZ001, TZ004"
                     value={workflowInstitutionId}
-                    onChange={(e) => setWorkflowInstitutionId(e.target.value)}
+                    onChange={(e) => {
+                      setWorkflowInstitutionId(e.target.value);
+                      setWorkflowSyntheticConfirmed(false);
+                    }}
                     style={{
                       width: '100%',
                       padding: '8px 12px',
@@ -626,6 +640,17 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 </div>
               </div>
 
+              <label className="agent-synthetic-consent">
+                <input
+                  type="checkbox"
+                  checked={workflowSyntheticConfirmed}
+                  onChange={(event) => setWorkflowSyntheticConfirmed(event.target.checked)}
+                />
+                <span>
+                  I confirm this request uses synthetic training data only. The question and
+                  aggregate dashboard context may be sent to the configured model.
+                </span>
+              </label>
               <div className="agent-prompt-footer" style={{ marginTop: '12px' }}>
                 <span className="panel-caption">
                   {workflowQuestion.length}/{MAX_MESSAGE_LENGTH} characters · Fallback: Deterministic Synthesis
@@ -633,7 +658,11 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 <button
                   className="button-primary"
                   type="submit"
-                  disabled={workflowQuestion.trim().length < 2 || workflowLoading}
+                  disabled={
+                    workflowQuestion.trim().length < 2 ||
+                    !workflowSyntheticConfirmed ||
+                    workflowLoading
+                  }
                 >
                   {workflowLoading ? 'Orchestrating Workflow…' : 'Execute Supervisory Workflow'}
                 </button>
@@ -1142,8 +1171,11 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
           <form className="panel agent-prompt-panel" onSubmit={handleDirectSubmit}>
             <div className="panel-header">
               <div>
-                <h2 className="panel-title">Prompt the local model</h2>
-                <p className="panel-caption">Use fictional examples only. Do not include real institution or personal data.</p>
+                <h2 className="panel-title">Prompt the selected model</h2>
+                <p className="panel-caption">
+                  The prompt and aggregate dashboard totals may be sent to Groq when configured.
+                  Never include real institution or personal data.
+                </p>
               </div>
             </div>
             <div className="panel-body agent-prompt-body">
@@ -1155,12 +1187,24 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 onChange={(event) => {
                   setDirectMessage(event.target.value);
                   setDirectResult(null);
+                  setDirectSyntheticConfirmed(false);
                 }}
                 placeholder="Ask for a bounded explanation of a synthetic example..."
                 maxLength={MAX_MESSAGE_LENGTH}
                 minLength={2}
                 required
               />
+              <label className="agent-synthetic-consent">
+                <input
+                  type="checkbox"
+                  checked={directSyntheticConfirmed}
+                  onChange={(event) => setDirectSyntheticConfirmed(event.target.checked)}
+                />
+                <span>
+                  I confirm this request uses synthetic training data only. The question and
+                  aggregate dashboard context may be sent to the configured model.
+                </span>
+              </label>
               <div className="agent-prompt-footer">
                 <span className="panel-caption">{directMessage.length}/{MAX_MESSAGE_LENGTH} characters</span>
                 <div className="agent-prompt-actions">
@@ -1185,7 +1229,12 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   <button
                     className="button-primary"
                     type="submit"
-                    disabled={selectedAgents.size === 0 || directMessage.trim().length < 2 || directLoading}
+                    disabled={
+                      selectedAgents.size === 0 ||
+                      directMessage.trim().length < 2 ||
+                      !directSyntheticConfirmed ||
+                      directLoading
+                    }
                   >
                     {directLoading ? 'Analyzing...' : 'Run selected roles'}
                   </button>

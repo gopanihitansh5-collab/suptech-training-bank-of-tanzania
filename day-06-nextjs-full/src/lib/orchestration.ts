@@ -13,11 +13,11 @@ import {
 import { searchGroundedEvidence } from './grounded-retrieval';
 import {
   generateChatCompletion,
+  formatModelResponseText,
   getActiveChatProviderName,
   isChatProviderAvailable,
   type ChatMessage,
 } from './model-provider';
-import { getPlatformContext } from './platform-context';
 import {
   getAnalytics,
   getInstitutionDetail,
@@ -348,6 +348,130 @@ function isValidComposerOutput(
   return true;
 }
 
+function buildModelAggregateFacts(
+  analyticalResults: Record<string, unknown>,
+  scope: SupervisoryScope,
+): Record<string, unknown> {
+  const facts: Record<string, unknown> = {
+    scope: scope.institutionId ? 'single synthetic institution aggregate' : 'portfolio aggregate',
+  };
+  if (scope.period) facts.reportingPeriod = scope.period;
+
+  const overview = analyticalResults.overview as OverviewData | undefined;
+  if (overview) {
+    facts.reportingPeriod = overview.period ?? scope.period ?? 'not available';
+    facts.portfolio = overview.summary;
+    facts.portfolioTrend = overview.trend.slice(-6).map((point) => ({
+      period: point.period,
+      depositsTzsBillions: point.depositsTzsBillions,
+      loansTzsBillions: point.loansTzsBillions,
+      completenessPercent: point.completenessPercent,
+      reviewSignalCount: point.exceptions,
+    }));
+  }
+
+  const institution = analyticalResults.institution as InstitutionDetail | undefined;
+  if (institution) {
+    const reports = institution.reports;
+    const aggregates: Record<string, unknown> = {
+      reportingPeriods: reports.length,
+      openReviewSignals: institution.institution.openExceptions,
+    };
+    for (const [label, values] of [
+      ['depositsTzsBillions', reports.map((row) => row.depositsTzsBillions)],
+      ['loansTzsBillions', reports.map((row) => row.loansTzsBillions)],
+      ['capitalAdequacyPercent', reports.map((row) => row.capitalAdequacyRatioPercent)],
+      ['liquidityPercent', reports.map((row) => row.liquidityRatioPercent)],
+      ['nplPercent', reports.map((row) => row.nplRatioPercent)],
+      ['completenessPercent', reports.map((row) => row.completenessPercent)],
+    ] as const) {
+      aggregates[label] = numericStats([...values]);
+    }
+    if (reports.length > 0) {
+      aggregates.latestReportingPeriod = reports[0].period;
+    }
+    facts.institutionHistoryAggregates = aggregates;
+    facts.reviewSignalStatusCounts = countValues(
+      institution.exceptions,
+      (row) => row.status,
+    );
+    facts.reviewSignalSeverityCounts = countValues(
+      institution.exceptions,
+      (row) => row.severity,
+    );
+  }
+
+  const analytics = analyticalResults.analytics as {
+    period: string | null;
+    indicators: Array<{ label: string; unit: string; value: number | null }>;
+    trend: Array<{
+      period: string;
+      deposits: number;
+      loans: number;
+      completeness: number | null;
+    }>;
+  } | undefined;
+  if (analytics) {
+    facts.reportingPeriod = analytics.period ?? facts.reportingPeriod ?? 'not available';
+    facts.indicatorAggregates = analytics.indicators.map(({ label, unit, value }) => ({
+      label,
+      unit,
+      value,
+    }));
+    facts.portfolioTrend = analytics.trend.slice(-6).map((point) => ({
+      period: point.period,
+      depositsTzsBillions: point.deposits,
+      loansTzsBillions: point.loans,
+      completenessPercent: point.completeness,
+    }));
+  }
+
+  const exceptions = analyticalResults.exceptions as ExceptionRow[] | undefined;
+  if (exceptions) {
+    facts.reviewSignalSampleCount = exceptions.length;
+    facts.reviewSignalStatusCounts = countValues(exceptions, (row) => row.status);
+    facts.reviewSignalSeverityCounts = countValues(exceptions, (row) => row.severity);
+    facts.reviewSignalValueAggregates = {
+      observed: numericStats(exceptions.map((row) => row.observedValue)),
+      illustrativeThreshold: numericStats(exceptions.map((row) => row.thresholdValue)),
+    };
+  }
+
+  const institutions = analyticalResults.institutions as InstitutionRow[] | undefined;
+  if (institutions) {
+    facts.institutionSampleCount = institutions.length;
+    facts.institutionStatusCounts = countValues(institutions, (row) => row.status);
+    facts.institutionAggregates = {
+      depositsTzsBillions: numericStats(
+        institutions.map((row) => row.depositsTzsBillions),
+      ),
+      capitalAdequacyPercent: numericStats(
+        institutions.map((row) => row.capitalAdequacyRatioPercent),
+      ),
+      nplPercent: numericStats(institutions.map((row) => row.nplRatioPercent)),
+    };
+  }
+
+  return facts;
+}
+
+function extractNumbers(text: string): number[] {
+  return [...text.replace(/\[S\d+\]/g, '').matchAll(/(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?/g)]
+    .map(([token]) => Number(token.replace(/[% ,]/g, '')))
+    .filter(Number.isFinite);
+}
+
+function usesOnlySupportedNumbers(
+  answer: string,
+  question: string,
+  aggregateFacts: Record<string, unknown>,
+): boolean {
+  const allowed = new Set(
+    extractNumbers(`${question} ${JSON.stringify(aggregateFacts)}`),
+  );
+  return extractNumbers(answer).every((number) => allowed.has(number));
+}
+
 export async function isLocalModelAvailable(): Promise<boolean> {
   return isChatProviderAvailable();
 }
@@ -363,7 +487,18 @@ async function callChatProvider(
   const startTime = Date.now();
 
   try {
-    const platformContext = await getPlatformContext();
+    const overview = await getOverview();
+    const aggregateContext = {
+      reportingPeriod: overview.period,
+      portfolio: overview.summary,
+      trend: overview.trend.slice(-6).map((point) => ({
+        period: point.period,
+        depositsTzsBillions: point.depositsTzsBillions,
+        loansTzsBillions: point.loansTzsBillions,
+        completenessPercent: point.completenessPercent,
+        reviewSignalCount: point.exceptions,
+      })),
+    };
     const history: ChatMessage[] = (conversationHistory || []).map((message) => ({
       role:
         message.role === 'system'
@@ -376,16 +511,16 @@ async function callChatProvider(
     const messages: ChatMessage[] = [
       {
         role: 'system',
-        content: `${agentConfig.systemPrompt}\n\nLive platform context (synthetic):\n${platformContext.text}`,
+        content: `${agentConfig.systemPrompt}\n\nUse only this bounded synthetic aggregate dashboard context. Do not infer or reveal institution names, identifiers, source rows, document text, credentials, or user information.\n\n${JSON.stringify(aggregateContext)}`,
       },
       ...history,
       { role: 'user', content: userMessage },
     ];
 
-    const content = await generateChatCompletion(
+    const content = formatModelResponseText(await generateChatCompletion(
       messages,
       agentConfig.maxTokens || 512,
-    );
+    ));
     if (content.trim().length === 0) {
       throw new Error('The chat provider returned an empty or invalid response.');
     }
@@ -1518,10 +1653,8 @@ export async function executeSupervisoryWorkflow(
   // 5. Response Composer Agent: synthesize grounded output
   activeAgents.push('response-composer');
 
-  const platformContext = await getPlatformContext();
-  const contextUsed =
-    platformContext.text.length > 0 &&
-    !platformContext.text.toLowerCase().includes('context unavailable');
+  const aggregateFacts = buildModelAggregateFacts(analyticalResults, scope);
+  const contextUsed = Object.keys(aggregateFacts).length > 1;
   const modelProvider = getActiveChatProviderName();
 
   let modelUsed: 'groq' | 'local-qwen' | 'deterministic-fallback' = 'deterministic-fallback';
@@ -1533,43 +1666,44 @@ export async function executeSupervisoryWorkflow(
     retrievedSources,
   });
 
-  const isOnline = await isChatProviderAvailable();
+  const canEnrich =
+    classification.intent !== 'document' &&
+    classification.intent !== 'general' &&
+    contextUsed;
+  const isOnline = canEnrich ? await isChatProviderAvailable() : false;
   if (isOnline) {
     try {
-      const evidencePrompt = (retrievedSources ?? [])
-        .slice(0, 4)
-        .map((source, idx) => `[S${idx + 1}] ${source.title}: ${source.excerpt}`)
-        .join('\n\n');
+      const dataPrompt = JSON.stringify(aggregateFacts, null, 2).slice(0, 4_000);
 
-      const dataPrompt = JSON.stringify(analyticalResults, null, 2).slice(0, 4000);
-
-      const enrichedNarrative = await generateChatCompletion(
+      const enrichedNarrative = formatModelResponseText(await generateChatCompletion(
         [
           {
             role: 'system',
             content: `You are the Response Composer Agent for SupTech Monitor.
-Use only the supplied facts, figures, and evidence. Do not invent thresholds, institutions, periods, or records.
-Include exact numbers from the supplied analytical data and cite evidence as [S1], [S2] only when the provided sources support the statement.
-State missing evidence explicitly instead of guessing.
+Use only the supplied synthetic aggregate facts. Do not invent thresholds, institutions, identifiers, records, sources, or policy conclusions.
+Do not cite sources: document text and source rows are deliberately not sent to the model. State missing evidence instead of guessing.
 Threshold breaches are training review signals, not official findings. All data is synthetic training material.
 Reply with two paragraphs: an executive summary first, then detailed analysis.
-
-Live platform context (synthetic):
-${platformContext.text}`,
+Use clear plain text only. Do not use Markdown, headings, bullets, asterisks, or hash signs.
+Avoid generic boilerplate and answer the exact question.`,
           },
           {
             role: 'user',
             content: `Question: ${trimmed}
 Intent: ${classification.intent}
-Scope: ${JSON.stringify(scope)}
-Analytical data: ${dataPrompt}
-Evidence sources: ${evidencePrompt || 'None'}`,
+Scope: ${scope.institutionId ? 'single synthetic institution aggregate' : 'portfolio aggregate'}
+Reporting period: ${scope.period ?? 'latest available'}
+Analytical aggregate facts: ${dataPrompt}`,
           },
         ],
         800,
-      );
+      ));
 
-      if (isValidComposerOutput(enrichedNarrative, analyticalResults, retrievedSources)) {
+      if (
+        isValidComposerOutput(enrichedNarrative, aggregateFacts) &&
+        !/\[S\d+\]/.test(enrichedNarrative) &&
+        usesOnlySupportedNumbers(enrichedNarrative, trimmed, aggregateFacts)
+      ) {
         const paragraphs = enrichedNarrative
           .split('\n\n')
           .filter((paragraph) => paragraph.trim().length > 0);

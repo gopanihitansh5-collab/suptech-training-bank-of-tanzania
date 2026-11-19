@@ -37,13 +37,19 @@ export default async function SystemHealthPage() {
     { label: 'Report runs', value: health.database.tableCounts.reportRuns },
   ];
 
-  const storageLabel = health.storage.mode === 's3' ? 'S3 object storage' : 'Local filesystem';
+  const storageLabel = health.storage.mode === 's3'
+    ? 'S3 object storage'
+    : health.storage.writable === false
+      ? 'Unavailable storage'
+      : 'Local filesystem';
   const storageFoot =
     health.storage.writable === null
       ? 'Configured · writes not probed'
       : health.storage.writable
         ? 'Directory writable'
-        : 'Directory not writable';
+        : health.storage.location.includes('required on Vercel')
+          ? 'Persistent object storage required'
+          : 'Directory not writable';
 
   return (
     <main className="page-content">
@@ -95,7 +101,13 @@ export default async function SystemHealthPage() {
         </article>
         <article className="metric-card">
           <div className="metric-label">Upload storage</div>
-          <div className="metric-value">{health.storage.mode === 's3' ? 'S3' : 'Local'}</div>
+          <div className="metric-value">
+            {health.storage.mode === 's3'
+              ? 'S3'
+              : health.storage.writable === false
+                ? 'Unavailable'
+                : 'Local'}
+          </div>
           <div className="metric-foot">{storageFoot}</div>
         </article>
         <article className="metric-card">

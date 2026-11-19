@@ -238,8 +238,6 @@ describe('administration overview', () => {
     expect(serialized).not.toContain(demoPassword);
     expect(serialized).not.toContain(databasePassword);
     expect(overview.config.missing).toEqual([
-      'AWS_REGION',
-      'AWS_ENDPOINT_URL_S3',
       'LM_STUDIO_BASE_URL',
     ]);
   });

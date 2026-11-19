@@ -21,10 +21,13 @@ export default async function AgentsPage() {
       <section className="page-heading">
         <div>
           <div className="eyebrow">Experimental analysis</div>
-          <h1>Local model workspace</h1>
-          <p className="subtitle">Assign bounded analysis roles to the configured local Qwen service.</p>
+          <h1>AI agent workspace</h1>
+          <p className="subtitle">
+            Assign bounded analysis roles to Groq when configured, using only the question and
+            synthetic aggregate dashboard context.
+          </p>
         </div>
-        <span className="period-chip">Local runtime · may be unavailable</span>
+        <span className="period-chip">Groq when configured · aggregates only</span>
       </section>
       <AgentsWorkspace availableAgents={agents} />
     </main>

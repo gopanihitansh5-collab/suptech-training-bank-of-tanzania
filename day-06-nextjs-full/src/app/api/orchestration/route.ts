@@ -1,6 +1,8 @@
+import { metric } from '@vercel/functions';
 import { NextResponse } from 'next/server';
 import { errorResponse, readJsonBody, RequestValidationError } from '@/lib/api-errors';
 import { requireDemoSession } from '@/lib/auth';
+import { getActiveChatProviderName } from '@/lib/model-provider';
 import {
   AGENT_CONFIGS,
   executeSupervisoryWorkflow,
@@ -56,15 +58,25 @@ function parseRequests(value: unknown): AgentRequest[] {
 }
 
 export async function POST(request: Request) {
+  const startedAt = performance.now();
+  let outcome: 'success' | 'rejected' | 'denied' | 'error' = 'error';
+  let mode = 'unknown';
+  const provider = getActiveChatProviderName();
   try {
     await requireDemoSession();
     const body = await readJsonBody(request, 32_000);
     if (!isRecord(body)) {
       throw new RequestValidationError('The request body must be an object.');
     }
+    if (body.syntheticOnlyConfirmed !== true) {
+      throw new RequestValidationError(
+        'Confirm that the question and dashboard use synthetic training data only.',
+      );
+    }
 
     // Workflow Mode
     if (body.workflow === true) {
+      mode = 'workflow';
       if (
         typeof body.question !== 'string' ||
         body.question.trim().length < 2 ||
@@ -97,19 +109,40 @@ export async function POST(request: Request) {
         period,
         institutionId,
       });
-      return NextResponse.json(workflowResult, { status: 200 });
+      outcome = 'success';
+      const response = NextResponse.json(workflowResult, { status: 200 });
+      response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+      return response;
     }
 
     // Existing Multi-Role Manual Prompt Mode
+    mode = 'direct';
     const parallel = body.parallel ?? true;
     if (typeof parallel !== 'boolean') {
       throw new RequestValidationError('Execution mode must be parallel or sequential.');
     }
 
     const result = await orchestrateAgents(parseRequests(body.requests), parallel);
-    return NextResponse.json(result, { status: result.success ? 200 : 502 });
+    outcome = result.success ? 'success' : 'error';
+    const response = NextResponse.json(result, { status: result.success ? 200 : 502 });
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    return response;
   } catch (error) {
-    return errorResponse(error);
+    const response = errorResponse(error);
+    outcome = response.status === 401 || response.status === 403
+      ? 'denied'
+      : response.status < 500
+        ? 'rejected'
+        : 'error';
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    return response;
+  } finally {
+    metric('agent_orchestration.completed', 1, { outcome, mode, provider });
+    metric('agent_orchestration.duration_ms', performance.now() - startedAt, {
+      outcome,
+      mode,
+      provider,
+    });
   }
 }
 

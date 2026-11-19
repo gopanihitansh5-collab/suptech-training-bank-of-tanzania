@@ -87,7 +87,7 @@ export default async function OverviewPage({
         </div>
       )}
 
-      <div className="content-grid" style={{ marginTop: 16 }}>
+      <div className="content-grid dashboard-content-grid">
         <section className="panel">
           <div className="panel-header">
             <div>

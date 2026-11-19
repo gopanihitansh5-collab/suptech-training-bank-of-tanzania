@@ -389,7 +389,6 @@ function GroundedEvidence({ result }: { result: GroundedResult }) {
       <section className={`grounded-response grounded-response-${result.answer.status}`}>
         <h3>Grounded response</h3>
         <p>{result.answer.text}</p>
-        {result.answer.error && <p className="panel-caption">Local model: {result.answer.error}</p>}
         {result.answer.citations.length > 0 && (
           <div className="grounded-citations" aria-label="Cited sources">
             {result.answer.citations.map((citation) => (
