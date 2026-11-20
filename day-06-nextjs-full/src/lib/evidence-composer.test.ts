@@ -22,4 +22,15 @@ describe('evidence-bound composition', () => {
     expect(result.validated).toBe(false);
     expect(result.text).toContain('One row');
   });
+
+  it('calculates an average from returned rows instead of returning a generic summary', () => {
+    const packet = buildEvidencePacket('What is the average capital ratio from June to October in 2026?', [
+      { period: '2026-06', capitalAdequacy: 14.7 },
+      { period: '2026-07', capitalAdequacy: 14.8 },
+      { period: '2026-08', capitalAdequacy: 14.8 },
+      { period: '2026-09', capitalAdequacy: 15 },
+      { period: '2026-10', capitalAdequacy: 9.4 },
+    ]);
+    expect(composeValidatedSummary(packet).text).toContain('13.74');
+  });
 });

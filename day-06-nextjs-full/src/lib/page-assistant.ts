@@ -326,6 +326,12 @@ export async function buildPageAssistantContext(
           formatNumber(latest.nplRatioPercent - first.nplRatioPercent),
         );
       }
+      for (const report of reports) {
+        addFact(
+          `Institution reporting history ${report.period}`,
+          `deposits ${formatNumber(report.depositsTzsBillions)} TZS bn; loans ${formatNumber(report.loansTzsBillions)} TZS bn; capital adequacy ${formatNumber(report.capitalAdequacyRatioPercent)}%; liquidity ${formatNumber(report.liquidityRatioPercent)}%; NPL ratio ${formatNumber(report.nplRatioPercent)}%; completeness ${formatNumber(report.completenessPercent)}%`,
+        );
+      }
     }
     addFact('Recent review-signal status distribution', countBy(
       detail.exceptions.map((exception) => exception.status),
@@ -479,6 +485,154 @@ function relevantFacts(question: string, facts: PageAssistantFact[]): PageAssist
     .map(({ fact }) => fact);
 }
 
+function requestedInstitutionMetricOperation(
+  question: string,
+  context: PageAssistantContext,
+): { answer: string; citations: PageAssistantFact[] } | null {
+  if (context.pageLabel !== PAGE_LABELS.institution_detail) return null;
+
+  const normalized = question.toLowerCase();
+  const metricDefinitions: Array<{
+    key: string;
+    label: string;
+    pattern: RegExp;
+    valuePattern: RegExp;
+    suffix: string;
+  }> = [
+    { key: 'capital', label: 'capital adequacy', pattern: /\b(?:capital|captical|car|capital adequacy|capital ratio)\b/, valuePattern: /capital adequacy ([+-]?\d+(?:\.\d+)?)%/, suffix: '%' },
+    { key: 'npl', label: 'NPL ratio', pattern: /\b(?:npl|non[- ]performing|npl ratio)\b/, valuePattern: /NPL ratio ([+-]?\d+(?:\.\d+)?)%/i, suffix: '%' },
+    { key: 'liquidity', label: 'liquidity', pattern: /\bliquidity\b/, valuePattern: /liquidity ([+-]?\d+(?:\.\d+)?)%/i, suffix: '%' },
+    { key: 'completeness', label: 'completeness', pattern: /\b(?:completeness|complete|completion)\b/, valuePattern: /completeness ([+-]?\d+(?:\.\d+)?)%/i, suffix: '%' },
+    { key: 'deposits', label: 'deposits', pattern: /\b(?:deposits?|deposit)\b/, valuePattern: /deposits ([+-]?\d+(?:\.\d+)?) TZS bn/i, suffix: ' TZS bn' },
+    { key: 'loans', label: 'loans', pattern: /\b(?:loans?|loan)\b/, valuePattern: /loans ([+-]?\d+(?:\.\d+)?) TZS bn/i, suffix: ' TZS bn' },
+  ];
+  const metric = metricDefinitions.find((candidate) => candidate.pattern.test(normalized));
+  if (!metric) return null;
+
+  const operation =
+    /\b(?:average|avg|mean)\b/.test(normalized) ? 'average'
+      : /\b(?:total|sum|combined)\b/.test(normalized) ? 'sum'
+        : /\b(?:change|difference|diff|grew|growth|increase|decrease)\b/.test(normalized) ? 'change'
+          : /\b(?:highest|max|maximum|peak)\b/.test(normalized) ? 'maximum'
+            : /\b(?:lowest|min|minimum)\b/.test(normalized) ? 'minimum'
+              : /\b(?:latest|most recent|current)\b/.test(normalized) ? 'latest'
+                : /\b(?:how many|count|number of)\b/.test(normalized) ? 'count'
+                  : null;
+  if (!operation) return null;
+
+  const monthNames: Record<string, number> = {
+    january: 1,
+    february: 2,
+    march: 3,
+    april: 4,
+    may: 5,
+    june: 6,
+    july: 7,
+    august: 8,
+    september: 9,
+    october: 10,
+    november: 11,
+    december: 12,
+  };
+
+  let startMonth: number | null = null;
+  let endMonth: number | null = null;
+  const namedMonths = [...normalized.matchAll(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/g)]
+    .map((match) => monthNames[match[1]]);
+  if (namedMonths.length >= 2) {
+    [startMonth, endMonth] = namedMonths;
+  } else {
+    const numericRange = normalized.match(
+      /\b(0?[1-9]|10|11|12)\s*(?:to|through|thru|-|–|—)\s*(0?[1-9]|10|11|12)\b/,
+    );
+    if (numericRange) {
+      startMonth = Number(numericRange[1]);
+      endMonth = Number(numericRange[2]);
+    }
+  }
+
+  const yearMatch = normalized.match(/\b(20\d{2})\b/);
+  const year = yearMatch?.[1] ?? context.period?.slice(0, 4);
+  if (!year) return null;
+
+  const observations: Array<{ period: string; value: number; fact: PageAssistantFact }> = [];
+  for (const fact of context.facts) {
+    const periodMatch = fact.label.match(/^Institution reporting history (\d{4}-\d{2})$/);
+    if (!periodMatch) continue;
+    const [factYear, factMonthText] = periodMatch[1].split('-');
+    const factMonth = Number(factMonthText);
+    if (factYear !== year) continue;
+    if (startMonth !== null && factMonth < startMonth) continue;
+    if (endMonth !== null && factMonth > endMonth) continue;
+    const valueMatch = fact.value.match(metric.valuePattern);
+    if (!valueMatch) continue;
+    const value = Number(valueMatch[1]);
+    if (Number.isFinite(value)) observations.push({ period: periodMatch[1], value, fact });
+  }
+  observations.sort((left, right) => left.period.localeCompare(right.period));
+
+  if (observations.length === 0) return null;
+  const values = observations.map((observation) => observation.value);
+  const scope = startMonth !== null && endMonth !== null
+    ? `${year}-${String(startMonth).padStart(2, '0')} through ${year}-${String(endMonth).padStart(2, '0')}`
+    : `${year}`;
+
+  if (operation === 'count') {
+    return {
+      answer: `There are ${observations.length} reporting periods with ${metric.label} data for ${scope}.`,
+      citations: observations.map((observation) => observation.fact),
+    };
+  }
+  if (operation === 'latest') {
+    const latest = observations[observations.length - 1];
+    return {
+      answer: `The latest ${metric.label} for ${scope} is ${NUMBER_FORMAT.format(latest.value)}${metric.suffix} in ${latest.period}.`,
+      citations: [latest.fact],
+    };
+  }
+  if (operation === 'maximum') {
+    const highest = observations.reduce((best, observation) =>
+      observation.value > best.value ? observation : best,
+    );
+    return {
+      answer: `The highest ${metric.label} for ${scope} is ${NUMBER_FORMAT.format(highest.value)}${metric.suffix} in ${highest.period}.`,
+      citations: [highest.fact],
+    };
+  }
+  if (operation === 'minimum') {
+    const lowest = observations.reduce((best, observation) =>
+      observation.value < best.value ? observation : best,
+    );
+    return {
+      answer: `The lowest ${metric.label} for ${scope} is ${NUMBER_FORMAT.format(lowest.value)}${metric.suffix} in ${lowest.period}.`,
+      citations: [lowest.fact],
+    };
+  }
+  if (operation === 'sum') {
+    const total = values.reduce((sum, value) => sum + value, 0);
+    return {
+      answer: `The sum of ${metric.label} across ${observations.length} reporting periods in ${scope} is ${NUMBER_FORMAT.format(total)}${metric.suffix}.`,
+      citations: observations.map((observation) => observation.fact),
+    };
+  }
+  if (operation === 'change') {
+    const first = observations[0];
+    const latest = observations[observations.length - 1];
+    const change = latest.value - first.value;
+    const direction = change > 0 ? 'increased' : change < 0 ? 'decreased' : 'did not change';
+    const changeUnit = metric.suffix === '%' ? 'percentage points' : 'TZS bn';
+    return {
+      answer: `${metric.label} ${direction} from ${NUMBER_FORMAT.format(first.value)}${metric.suffix} in ${first.period} to ${NUMBER_FORMAT.format(latest.value)}${metric.suffix} in ${latest.period}, a change of ${NUMBER_FORMAT.format(change)} ${changeUnit}.`,
+      citations: [first.fact, latest.fact],
+    };
+  }
+  const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return {
+    answer: `The average ${metric.label} for ${scope} is ${NUMBER_FORMAT.format(average)}${metric.suffix} across ${values.length} reporting periods.`,
+    citations: observations.map((observation) => observation.fact),
+  };
+}
+
 function deterministicFallback(
   question: string,
   context: PageAssistantContext,
@@ -507,6 +661,19 @@ export async function answerPageAssistantQuestion(input: {
 }): Promise<PageAssistantAnswer> {
   const provider = getActiveChatProviderName();
   const model = getChatModelId();
+  const calculated = requestedInstitutionMetricOperation(input.question, input.context);
+  if (calculated) {
+    return {
+      answer: calculated.answer,
+      citations: calculated.citations,
+      pageLabel: input.context.pageLabel,
+      contextScope: input.context.scope,
+      period: input.context.period,
+      provider,
+      model,
+      mode: 'deterministic_fallback',
+    };
+  }
   const evidence = input.context.facts
     .map((fact) => `[${fact.id}] ${fact.label}: ${fact.value}`)
     .join('\n');

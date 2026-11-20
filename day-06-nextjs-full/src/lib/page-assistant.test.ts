@@ -165,6 +165,48 @@ describe('buildPageAssistantContext', () => {
       label: 'Average deposits across reporting history (TZS bn)',
       value: '20',
     });
+    expect(context.facts).toContainEqual({
+      id: expect.any(String),
+      label: 'Institution reporting history 2026-10',
+      value: expect.stringContaining('capital adequacy 15%'),
+    });
+  });
+
+  it('calculates a June-to-October institution capital average from period evidence', async () => {
+    repositoryMocks.getInstitutionDetail.mockResolvedValue({
+      institution: {
+        institutionId: 'TZ004',
+        name: 'Kipepeo Finance House',
+        type: 'Commercial Bank',
+        region: 'Arusha',
+        tier: 'Tier 1',
+        status: 'monitoring',
+        latestPeriod: '2026-10',
+        depositsTzsBillions: 22.5,
+        capitalAdequacyRatioPercent: 9.4,
+        nplRatioPercent: 4.4,
+        openExceptions: 13,
+      },
+      reports: [
+        { reportId: 'R10', period: '2026-10', depositsTzsBillions: 22.5, loansTzsBillions: 15.5, capitalAdequacyRatioPercent: 9.4, liquidityRatioPercent: 149.4, nplRatioPercent: 4.4, completenessPercent: 97, sourceRecordIds: ['ROW10'] },
+        { reportId: 'R09', period: '2026-09', depositsTzsBillions: 21.7, loansTzsBillions: 14.8, capitalAdequacyRatioPercent: 15, liquidityRatioPercent: 151.8, nplRatioPercent: 4.4, completenessPercent: 94, sourceRecordIds: ['ROW09'] },
+        { reportId: 'R08', period: '2026-08', depositsTzsBillions: 22, loansTzsBillions: 14.8, capitalAdequacyRatioPercent: 14.8, liquidityRatioPercent: 154.2, nplRatioPercent: 4.4, completenessPercent: 96, sourceRecordIds: ['ROW08'] },
+        { reportId: 'R07', period: '2026-07', depositsTzsBillions: 22.2, loansTzsBillions: 14.8, capitalAdequacyRatioPercent: 14.8, liquidityRatioPercent: 156.3, nplRatioPercent: 4.5, completenessPercent: 93, sourceRecordIds: ['ROW07'] },
+        { reportId: 'R06', period: '2026-06', depositsTzsBillions: 16.4, loansTzsBillions: 10.7, capitalAdequacyRatioPercent: 14.7, liquidityRatioPercent: 157.9, nplRatioPercent: 4.5, completenessPercent: 98, sourceRecordIds: ['ROW06'] },
+      ],
+      exceptions: [],
+    });
+
+    const context = await buildPageAssistantContext('/institutions/TZ004');
+    const answer = await answerPageAssistantQuestion({
+      question: 'What is the average captical ratio from 06 to 10 in 2026 like June to October?',
+      context,
+    });
+
+    expect(answer.answer).toContain('13.74');
+    expect(answer.answer).toContain('2026-06 through 2026-10');
+    expect(answer.citations).toHaveLength(5);
+    expect(answer.mode).toBe('deterministic_fallback');
   });
 
   it('rejects unsupported routes, filters, and small-period typos', async () => {

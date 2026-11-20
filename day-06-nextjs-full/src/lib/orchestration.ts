@@ -7,6 +7,7 @@
  */
 import { RequestValidationError } from './api-errors';
 import { INDICATOR_DEFINITIONS } from './catalog';
+import { buildEvidencePacket, composeDataSummary } from './evidence-composer';
 import {
   formatNumber,
 } from './assistant-tools';
@@ -1111,6 +1112,34 @@ function synthesizeDeterministicResponse(params: {
         const reports = [...institutionDetail.reports].sort(
           (left, right) => right.period.localeCompare(left.period),
         );
+        const operationRequested = /\b(?:average|avg|mean|sum|total|change|difference|highest|max|maximum|lowest|min|minimum|latest|current|how many|count)\b/i.test(question);
+        const metricRequested = /\b(?:capital|captical|car|npl|liquidity|completeness|deposits?|loans?)\b/i.test(question);
+        if (operationRequested && metricRequested) {
+          const packet = buildEvidencePacket(
+            question,
+            reports.map((report) => ({
+              period: report.period,
+              deposits: report.depositsTzsBillions,
+              loans: report.loansTzsBillions,
+              capitalAdequacy: report.capitalAdequacyRatioPercent,
+              liquidity: report.liquidityRatioPercent,
+              nplRatio: report.nplRatioPercent,
+              completeness: report.completenessPercent,
+            })),
+          );
+          const operationAnswer = composeDataSummary(packet);
+          if (!operationAnswer.startsWith(`${packet.rowCount} rows were returned`) &&
+              !operationAnswer.startsWith('No rows matched')) {
+            executiveSummary = operationAnswer;
+            detail = `Calculated from ${packet.rowCount} institution reporting record(s) available in the current evidence window. No source identifiers or external records were used.`;
+            facts.push({
+              label: 'Evidence-derived calculation',
+              value: operationAnswer,
+              detail: `${packet.rowCount} reporting record(s)`,
+            });
+            break;
+          }
+        }
         const latest = reports[0];
         const previous = reports[1];
         const oldest = reports.length > 1 ? reports[reports.length - 1] : null;
