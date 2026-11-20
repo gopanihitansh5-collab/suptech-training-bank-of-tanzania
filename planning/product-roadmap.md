@@ -236,6 +236,10 @@ actions.
 
 ## End-to-end demonstration journey
 
+For the full page-by-page navigation flow, user tasks, page value, cross-page
+handoffs and current implementation caveats, see the
+[end-to-end user journey](./end-to-end-user-journey.md).
+
 1. Open the dashboard without a login or token.
 2. Select a synthetic institution and inspect its indicators and reporting
    history.
