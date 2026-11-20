@@ -37,6 +37,7 @@ gopanigithub.txt
 gopanihitansh.txt
 *.txt.local
 milestone/groq.txt
+milestone/neon.docx
 
 .vercel
 .env*

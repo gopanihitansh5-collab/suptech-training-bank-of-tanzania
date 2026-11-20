@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const config = getDemoAuthConfig();
-    const role = vercelEnvironment === 'production' ? 'supervisor' : config.role;
+    const role = 'admin' as const;
     await query(
       `INSERT INTO audit_events (actor_id, action, entity_type, entity_id, details)
        VALUES ($1, $2, $3, $4, $5)`,

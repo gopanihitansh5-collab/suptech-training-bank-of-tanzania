@@ -7,18 +7,18 @@ export default function AssistantPage() {
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Controlled synthetic-data assistant.</strong> This page uses
-          a deterministic planner and allowlisted, read-only tools. It does not
-          generate SQL or provide official regulatory conclusions.
+          <strong>Controlled synthetic-data assistant.</strong> This page only
+          reads approved training records. It does not change data or provide
+          official regulatory conclusions.
         </div>
       </div>
       <section className="page-heading">
         <div>
-          <div className="eyebrow">Grounded analysis</div>
+          <div className="eyebrow">Guided analysis</div>
           <h1>AI supervisory assistant</h1>
-          <p className="subtitle">Preview an evidence-scoped query, confirm it, and inspect its source records.</p>
+          <p className="subtitle">Preview a question, confirm it, and inspect the records behind each answer.</p>
         </div>
-        <span className="period-chip">Mock planner · no external model</span>
+        <span className="period-chip">Read-only · source-linked</span>
       </section>
       <AssistantWorkspace />
       <section className="assistant-alternatives" aria-label="Explore source pages">

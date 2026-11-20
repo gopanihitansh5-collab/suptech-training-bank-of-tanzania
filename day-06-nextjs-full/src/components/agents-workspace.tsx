@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { AgentsCharts } from './agents-charts';
+import { WorkflowNodeGraph } from './workflow-node-graph';
 
 export interface AgentSummary {
   id: string;
@@ -161,12 +162,6 @@ function responseError(value: unknown): string {
   return 'The supervisory analysis request could not be completed.';
 }
 
-const MODEL_LABELS: Record<string, string> = {
-  groq: 'Groq',
-  'local-qwen': 'Local Qwen',
-  'deterministic-fallback': 'Deterministic fallback',
-};
-
 interface WorkflowFact {
   label: string;
   value: string;
@@ -178,10 +173,6 @@ interface FollowUpChip {
   question: string;
   period?: string;
   institutionId?: string;
-}
-
-function modelLabel(modelUsed: string): string {
-  return MODEL_LABELS[modelUsed] ?? modelUsed;
 }
 
 function narrowFacts(value: unknown): WorkflowFact[] {
@@ -424,17 +415,11 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
         success: false,
         agents: [],
         totalLatencyMs: 0,
-        error: 'The local analysis service could not be reached. Check the local model and retry.',
+        error: 'The AI analysis service could not be reached. Check the service and retry.',
       });
     } finally {
       setDirectLoading(false);
     }
-  }
-
-  // Helper for graph stage highlight
-  function isAgentActive(agentIds: string[]): boolean {
-    if (!workflowResult) return false;
-    return agentIds.some((id) => workflowResult.activeAgents.includes(id));
   }
 
   return (
@@ -558,17 +543,17 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
           <form className="panel agent-prompt-panel" onSubmit={handleWorkflowSubmit}>
             <div className="panel-header">
               <div>
-                <h2 className="panel-title">Orchestrate Supervisory Workflow</h2>
+                <h2 className="panel-title">Run a supervisory analysis</h2>
                 <p className="panel-caption">
-                  Routes automatically across Router, Context, Data Analyst, Document Retrieval, Verifier, and Composer.
+                  Automatically coordinates context, data analysis, document research, quality checks and summary writing.
                 </p>
               </div>
-              <span className="period-chip">Multi-Agent Graph</span>
+              <span className="period-chip">Guided workflow</span>
             </div>
 
             <div className="panel-body agent-prompt-body">
               <label className="agent-message-label" htmlFor="workflow-question">
-                Supervisory Question or Mandate
+                Your question
               </label>
               <textarea
                 id="workflow-question"
@@ -648,12 +633,12 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 />
                 <span>
                   I confirm this request uses synthetic training data only. The question and
-                  aggregate dashboard context may be sent to the configured model.
+                  aggregate dashboard context may be sent to the configured AI service.
                 </span>
               </label>
               <div className="agent-prompt-footer" style={{ marginTop: '12px' }}>
                 <span className="panel-caption">
-                  {workflowQuestion.length}/{MAX_MESSAGE_LENGTH} characters · Fallback: Deterministic Synthesis
+                  {workflowQuestion.length}/{MAX_MESSAGE_LENGTH} characters · Approved calculations are used when needed
                 </span>
                 <button
                   className="button-primary"
@@ -684,7 +669,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
             <section className="panel agent-loading" role="status">
               <span className="agent-loading-indicator" aria-hidden="true" />
               <span>
-                Running supervisory workflow graph (Classifying intent → Resolving context → Parallel query & retrieval → Verification → Synthesis)…
+                Working through your question (understanding the request → gathering context → checking records → verifying → preparing the summary)…
               </span>
             </section>
           )}
@@ -697,7 +682,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 <div className="panel-header">
                   <div>
                     <h3 className="panel-title" id="execution-graph-title">
-                      Active Supervisory Execution Graph
+                      Workflow summary
                     </h3>
                     <p className="panel-caption">
                       Request ID: <code>{workflowResult.requestId}</code> · Intent:{' '}
@@ -709,168 +694,30 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span className="period-chip">
-                      Model: {modelLabel(workflowResult.modelUsed)}
-                      {workflowResult.modelProvider ? ` · ${workflowResult.modelProvider}` : ''}
+                      {workflowResult.modelUsed === 'deterministic-fallback'
+                        ? 'Calculated result'
+                        : 'AI service'}
                     </span>
-                    <span className="status-pill">Graph Completed</span>
+                    <span className="status-pill">Completed</span>
                   </div>
                 </div>
 
                 <div className="panel-body">
                   {workflowResult.modelUsed === 'deterministic-fallback' && (
                     <p className="panel-caption" style={{ margin: '0 0 12px' }}>
-                      Deterministic fallback uses approved database calculations and still shows the evidence.
+                      This answer uses approved calculations from the available records and still shows the sources.
                     </p>
                   )}
-                  {/* Graph Pipeline Diagram */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-                      gap: '8px',
-                      alignItems: 'stretch',
-                      marginBottom: '16px',
-                    }}
-                  >
-                    {/* Node 1: Router */}
-                    <div
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: isAgentActive(['supervisor-router']) ? 'var(--teal)' : 'var(--line)',
-                        backgroundColor: isAgentActive(['supervisor-router']) ? '#f0faf7' : '#f8fafc',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>STEP 1</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginTop: '2px' }}>
-                        Supervisor Router
-                      </div>
-                      <span
-                        className="severity-pill severity-low"
-                        style={{ marginTop: '6px', fontSize: '8px' }}
-                      >
-                        {workflowResult.intent}
-                      </span>
-                    </div>
-
-                    {/* Node 2: Context */}
-                    <div
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: isAgentActive(['institution-context']) ? 'var(--teal)' : 'var(--line)',
-                        backgroundColor: isAgentActive(['institution-context']) ? '#f0faf7' : '#f8fafc',
-                        textAlign: 'center',
-                        opacity: isAgentActive(['institution-context']) ? 1 : 0.6,
-                      }}
-                    >
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>STEP 2</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginTop: '2px' }}>
-                        Institution Scope
-                      </div>
-                      <span
-                        className={`severity-pill ${
-                          workflowResult.scope.institutionId ? 'severity-low' : 'severity-info'
-                        }`}
-                        style={{ marginTop: '6px', fontSize: '8px' }}
-                      >
-                        {workflowResult.scope.institutionId || 'Portfolio Scope'}
-                      </span>
-                    </div>
-
-                    {/* Node 3: Specialist Execution */}
-                    <div
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: isAgentActive([
-                          'data-analyst',
-                          'document-retrieval',
-                          'exception-indicator',
-                          'report-agent',
-                        ])
-                          ? 'var(--teal)'
-                          : 'var(--line)',
-                        backgroundColor: '#f0faf7',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>STEP 3 (SPECIALISTS)</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginTop: '2px' }}>
-                        Analyst / Retrieval
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '3px', marginTop: '6px', flexWrap: 'wrap' }}>
-                        {isAgentActive(['data-analyst']) && (
-                          <span className="severity-pill severity-low" style={{ fontSize: '8px' }}>
-                            Data Analyst
-                          </span>
-                        )}
-                        {isAgentActive(['document-retrieval']) && (
-                          <span className="severity-pill severity-low" style={{ fontSize: '8px' }}>
-                            Hybrid RAG
-                          </span>
-                        )}
-                        {isAgentActive(['exception-indicator']) && (
-                          <span className="severity-pill severity-low" style={{ fontSize: '8px' }}>
-                            Exception Agent
-                          </span>
-                        )}
-                        {isAgentActive(['report-agent']) && (
-                          <span className="severity-pill severity-low" style={{ fontSize: '8px' }}>
-                            Report Agent
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Node 4: Verification */}
-                    <div
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid',
-                        borderColor: workflowResult.verification.verified ? 'var(--teal)' : '#f87171',
-                        backgroundColor: workflowResult.verification.verified ? '#f0faf7' : '#fef2f2',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>STEP 4</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginTop: '2px' }}>
-                        Verification Agent
-                      </div>
-                      <span
-                        className={`severity-pill ${
-                          workflowResult.verification.verified ? 'severity-low' : 'severity-high'
-                        }`}
-                        style={{ marginTop: '6px', fontSize: '8px' }}
-                      >
-                        {workflowResult.verification.verified ? 'Verified (3/3 Checks)' : 'Review'}
-                      </span>
-                    </div>
-
-                    {/* Node 5: Response Composer */}
-                    <div
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--teal)',
-                        backgroundColor: '#f0faf7',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>STEP 5</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginTop: '2px' }}>
-                        Response Composer
-                      </div>
-                      <span className="severity-pill severity-low" style={{ marginTop: '6px', fontSize: '8px' }}>
-                        Grounded Synthesis
-                      </span>
-                    </div>
-                  </div>
+                  <WorkflowNodeGraph
+                    intent={workflowResult.intent}
+                    institutionId={workflowResult.scope.institutionId}
+                    period={workflowResult.scope.period}
+                    activeAgents={workflowResult.activeAgents}
+                    verified={workflowResult.verification.verified}
+                    checksPassed={workflowResult.verification.checks.filter((check) => check.status === 'passed').length}
+                    checkCount={workflowResult.verification.checks.length}
+                    latencyMs={workflowResult.latencyMs}
+                  />
 
                   {/* Plan Steps List */}
                   <details style={{ marginTop: '10px', fontSize: '11px', color: '#475569' }}>
@@ -951,7 +798,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   <div className="panel-header">
                     <div>
                       <h3 className="panel-title" id="workflow-facts-title">
-                        Grounded facts
+                        Key facts
                       </h3>
                       <p className="panel-caption">
                         Structured facts returned with this workflow result.
@@ -981,7 +828,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                     <h3 className="panel-title" id="workflow-response-title">
                       Supervisory Briefing
                     </h3>
-                    <p className="panel-caption">Grounded findings synthesized by Response Composer</p>
+                    <p className="panel-caption">Findings prepared from the available records</p>
                   </div>
                   <span className="period-chip">
                     {workflowResult.scope.period || 'Portfolio Current'}
@@ -1031,10 +878,10 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 <div className="panel-header">
                   <div>
                     <h3 className="panel-title" id="verification-checks-title">
-                      Automated Supervisory Verification & Policy Gates
+                      Automated checks
                     </h3>
                     <p className="panel-caption">
-                      Automated guardrails executed by Verification Agent before answer finalization
+                      Automatic checks run before the answer is finalized
                     </p>
                   </div>
                   <span
@@ -1081,11 +928,11 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   <div className="panel-header">
                     <div>
                       <h3 className="panel-title" id="citations-title">
-                        Retrieved Evidence & Regulatory Citations ({workflowResult.response.citations.length})
+                        Sources ({workflowResult.response.citations.length})
                       </h3>
-                      <p className="panel-caption">Grounded sources indexed from the synthetic corpus</p>
+                      <p className="panel-caption">Reference material used for this answer</p>
                     </div>
-                    <span className="period-chip">Hybrid RAG</span>
+                    <span className="period-chip">Sources</span>
                   </div>
                   <div className="panel-body">
                     <div style={{ display: 'grid', gap: '8px' }}>
@@ -1171,9 +1018,9 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
           <form className="panel agent-prompt-panel" onSubmit={handleDirectSubmit}>
             <div className="panel-header">
               <div>
-                <h2 className="panel-title">Prompt the selected model</h2>
+                <h2 className="panel-title">Ask for an analysis</h2>
                 <p className="panel-caption">
-                  The prompt and aggregate dashboard totals may be sent to Groq when configured.
+                  Your question and aggregate dashboard totals may be sent to the configured AI service.
                   Never include real institution or personal data.
                 </p>
               </div>
@@ -1202,20 +1049,20 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                 />
                 <span>
                   I confirm this request uses synthetic training data only. The question and
-                  aggregate dashboard context may be sent to the configured model.
+                  aggregate dashboard context may be sent to the configured AI service.
                 </span>
               </label>
               <div className="agent-prompt-footer">
                 <span className="panel-caption">{directMessage.length}/{MAX_MESSAGE_LENGTH} characters</span>
                 <div className="agent-prompt-actions">
-                  <div className="agent-mode" role="group" aria-label="Execution mode">
+                  <div className="agent-mode" role="group" aria-label="Run style">
                     <button
                       type="button"
                       aria-pressed={parallel}
                       className={parallel ? 'selected' : ''}
                       onClick={() => setParallel(true)}
                     >
-                      Parallel
+                      At once
                     </button>
                     <button
                       type="button"
@@ -1223,7 +1070,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                       className={!parallel ? 'selected' : ''}
                       onClick={() => setParallel(false)}
                     >
-                      Sequential
+                      Step by step
                     </button>
                   </div>
                   <button
@@ -1236,7 +1083,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                       directLoading
                     }
                   >
-                    {directLoading ? 'Analyzing...' : 'Run selected roles'}
+                    {directLoading ? 'Analyzing...' : 'Run analysis'}
                   </button>
                 </div>
               </div>
@@ -1247,7 +1094,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
             {directLoading && (
               <section className="panel agent-loading" role="status">
                 <span className="agent-loading-indicator" aria-hidden="true" />
-                <span>Waiting for the local model…</span>
+                <span>Waiting for the analysis service…</span>
               </section>
             )}
             {directResult && (
@@ -1256,7 +1103,7 @@ export function AgentsWorkspace({ availableAgents }: { availableAgents: AgentSum
                   <div>
                     <h2 className="panel-title" id="agent-results-title">Analysis responses</h2>
                     <p className="panel-caption">
-                      {directResult.agents.length} role(s) · {directResult.totalLatencyMs} ms
+                      {directResult.agents.length} analysis area(s) · {directResult.totalLatencyMs} ms
                     </p>
                   </div>
                   <span className={`status-pill${directResult.success ? '' : ' agent-failed-pill'}`}>

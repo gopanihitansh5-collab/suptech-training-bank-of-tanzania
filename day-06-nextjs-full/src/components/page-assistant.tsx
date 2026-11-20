@@ -243,7 +243,7 @@ export function PageAssistant() {
             </header>
             <div className="page-assistant-data-note">
               Uses server-derived synthetic aggregates only. No document text, source rows,
-              credentials, or record identifiers are sent to Groq.
+              credentials, or record identifiers are sent to the configured AI service.
             </div>
             <div className="page-assistant-thread" aria-live="polite">
               {turns.length === 0 && (
@@ -262,7 +262,6 @@ export function PageAssistant() {
                     <div className="page-assistant-answer">
                       <div className="page-assistant-answer-meta">
                         <span>{turn.result.mode === 'model' ? 'AI answer' : 'Grounded fallback'}</span>
-                        <span>{turn.result.provider === 'groq' ? 'Groq' : 'LM Studio'} · {turn.result.model}</span>
                       </div>
                       <p>{turn.result.answer}</p>
                       {turn.result.citations.length > 0 && (

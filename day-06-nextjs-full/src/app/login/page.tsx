@@ -16,7 +16,10 @@ export default async function LoginPage() {
           </div>
         </div>
         <h1>Sign in to SupTech Monitor</h1>
-        <p>Use the demo account configured for this training environment.</p>
+        <p>
+          Use the demo account configured for this training environment, or use
+          one-click admin access on the hosted deployment.
+        </p>
         <LoginForm
           showOneClickLogin={
             process.env.VERCEL_ENV === 'preview' ||

@@ -897,6 +897,7 @@ export async function getAnalytics(
   period: string | null;
   indicators: Array<{ id: string; label: string; unit: string; value: number | null; formula: string }>;
   trend: Array<{ period: string; deposits: number; loans: number; completeness: number | null }>;
+  indicatorTrend?: Array<{ period: string; value: number | null }>;
 }> {
   const periodFilter = normalizePeriod(requestedPeriod) ?? null;
   const selectedIndicator = requestedIndicator?.trim() ?? '';
@@ -912,7 +913,7 @@ export async function getAnalytics(
     [periodFilter],
   );
   const period = periodResult.rows[0]?.period ?? null;
-  if (!period) return { period: null, indicators: [], trend: [] };
+  if (!period) return { period: null, indicators: [], trend: [], indicatorTrend: [] };
   const definitions = await query(
     `SELECT d.indicator_id, d.label, d.unit, d.formula,
        COALESCE(sec.indicator_value, inst.avg_value)::float8 AS value
@@ -946,6 +947,38 @@ export async function getAnalytics(
      LIMIT 12`,
     [period],
   );
+  const indicatorTrend = selectedIndicator
+    ? await query<{ period: string; value: number | null }>(
+        `SELECT p.reporting_period AS period,
+           COALESCE(
+             (
+               SELECT s.indicator_value
+               FROM supervisory_indicators s
+               WHERE s.indicator_id = $2
+                 AND s.reporting_period = p.reporting_period
+                 AND s.grain = 'sector'
+                 AND s.subject_key = 'SECTOR'
+               LIMIT 1
+             ),
+             (
+               SELECT avg(s2.indicator_value)::float8
+               FROM supervisory_indicators s2
+               WHERE s2.indicator_id = $2
+                 AND s2.reporting_period = p.reporting_period
+                 AND s2.grain = 'institution'
+             )
+           )::float8 AS value
+         FROM (
+           SELECT DISTINCT reporting_period
+           FROM institution_reports
+           WHERE reporting_period <= $1
+           ORDER BY reporting_period DESC
+           LIMIT 12
+         ) p
+         ORDER BY p.reporting_period`,
+        [period, selectedIndicator],
+      )
+    : { rows: [] };
   return {
     period,
     indicators: definitions.rows.map((row) => ({
@@ -960,6 +993,10 @@ export async function getAnalytics(
       deposits: numericValue(row.deposits),
       loans: numericValue(row.loans),
       completeness: numeric(row.completeness),
+    })),
+    indicatorTrend: indicatorTrend.rows.map((row) => ({
+      period: row.period,
+      value: numeric(row.value),
     })),
   };
 }

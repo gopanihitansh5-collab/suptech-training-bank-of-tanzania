@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Page, ReportRow } from '@/lib/repository';
+import { SelectableTable } from './selectable-table';
 
 export function ReportTable({
   result,
@@ -20,7 +21,7 @@ export function ReportTable({
   return (
     <>
       {result.items.length ? (
-        <div className="table-wrap">
+        <SelectableTable>
           <table>
             <thead>
               <tr>
@@ -53,7 +54,7 @@ export function ReportTable({
               ))}
             </tbody>
           </table>
-        </div>
+        </SelectableTable>
       ) : (
         <div className="empty-state" role="status">No reports match these filters.</div>
       )}

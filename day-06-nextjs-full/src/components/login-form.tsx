@@ -67,7 +67,7 @@ export function LoginForm({ showOneClickLogin = false }: { showOneClickLogin?: b
           onClick={oneClickLogin}
           type="button"
         >
-          {pending ? 'Signing in…' : 'One-click login'}
+          {pending ? 'Signing in…' : 'One-click admin sign-in'}
         </button>
       )}
       <label>

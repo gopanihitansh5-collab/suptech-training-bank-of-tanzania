@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { RequestValidationError } from '@/lib/api-errors';
 import { listExceptions } from '@/lib/repository';
+import { SelectableTable } from '@/components/selectable-table';
 
 type SearchParams = Promise<{
   search?: string | string[];
@@ -119,7 +120,7 @@ export default async function ExceptionsPage({
         </form>
 
         {result.items.length ? (
-          <div className="table-wrap">
+          <SelectableTable>
             <table>
               <thead>
                 <tr>
@@ -147,7 +148,7 @@ export default async function ExceptionsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </SelectableTable>
         ) : (
           <div className="empty-state" role="status">No signals match these filters.</div>
         )}

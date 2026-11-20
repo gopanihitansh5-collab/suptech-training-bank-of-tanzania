@@ -27,12 +27,12 @@ describe('one-click demo login route', () => {
     vi.clearAllMocks();
   });
 
-  it('creates a secure session using the configured role in Preview', async () => {
+  it('creates a secure admin session in Preview', async () => {
     const response = await POST(request());
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ userId: 'demo.supervisor', role: 'supervisor' });
+    expect(body).toEqual({ userId: 'demo.supervisor', role: 'admin' });
     expect(response.headers.get('set-cookie')).toContain('suptech_demo_session=');
     expect(response.headers.get('set-cookie')).toContain('HttpOnly');
     expect(response.headers.get('set-cookie')).toContain('Secure');
@@ -47,12 +47,12 @@ describe('one-click demo login route', () => {
         expect.any(String),
         expect.any(String),
         expect.any(String),
-        JSON.stringify({ role: 'supervisor', method: 'one_click_demo' }),
+        JSON.stringify({ role: 'admin', method: 'one_click_demo' }),
       ]),
     );
   });
 
-  it('creates a supervisor session in Production regardless of the configured demo role', async () => {
+  it('creates a full-admin session in Production regardless of the configured demo role', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('DEMO_ROLE', 'admin');
 
@@ -60,7 +60,7 @@ describe('one-click demo login route', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ userId: 'demo.supervisor', role: 'supervisor' });
+    expect(body).toEqual({ userId: 'demo.supervisor', role: 'admin' });
     expect(response.headers.get('set-cookie')).toContain('suptech_demo_session=');
     expect(vi.mocked(query)).toHaveBeenCalledWith(
       expect.any(String),
@@ -69,7 +69,7 @@ describe('one-click demo login route', () => {
         expect.any(String),
         expect.any(String),
         expect.any(String),
-        JSON.stringify({ role: 'supervisor', method: 'one_click_demo' }),
+        JSON.stringify({ role: 'admin', method: 'one_click_demo' }),
       ]),
     );
   });

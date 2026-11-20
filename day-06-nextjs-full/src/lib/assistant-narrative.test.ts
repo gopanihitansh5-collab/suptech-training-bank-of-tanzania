@@ -346,10 +346,10 @@ describe('assistant narrative', () => {
       },
     });
 
-    expect(answered.headline).toContain('2 sources');
-    expect(answered.headline).toContain('hybrid');
+    expect(answered.headline).toContain('2 matching sources');
+    expect(answered.headline).toContain('answer ready');
     expect(answered.summary).toBe('Deposits reached 120 TZS bn in 2026-10 [S2].');
-    expect(factValue(answered.facts, 'Cited sources')).toBe('1');
+    expect(factValue(answered.facts, 'Sources cited')).toBe('1');
 
     const unavailable = narrateToolResult('search_corpus', {
       retrievalMode: 'keyword',
@@ -379,12 +379,12 @@ describe('assistant narrative', () => {
       },
     });
 
-    expect(unavailable.headline).toContain('2 sources');
-    expect(unavailable.headline).toContain('keyword');
+    expect(unavailable.headline).toContain('2 matching sources');
+    expect(unavailable.headline).toContain('no direct answer');
     expect(unavailable.summary).toContain('[S1]');
     expect(unavailable.summary).toContain('9 percent');
     expect(unavailable.summary).toContain('[S2]');
-    expect(unavailable.detail).toContain('could not be validated');
+    expect(unavailable.detail).toContain('could not be prepared');
     expect(unavailable.summary).not.toContain('query processed');
   });
 

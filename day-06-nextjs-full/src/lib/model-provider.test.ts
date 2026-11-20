@@ -22,11 +22,19 @@ function chatResponse(content: string): Response {
   );
 }
 
-function modelsResponse(): Response {
+function modelsResponse(ids: string[] = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile']): Response {
   return new Response(
-    JSON.stringify({ data: [{ id: 'test-model' }] }),
+    JSON.stringify({ data: ids.map((id) => ({ id })) }),
     { status: 200, headers: { 'content-type': 'application/json' } },
   );
+}
+
+function isModelsRequest(url: unknown): boolean {
+  return typeof url === 'string' && url.endsWith('/models');
+}
+
+function modelFromInit(init: RequestInit | undefined): string {
+  return JSON.parse(String(init?.body)).model;
 }
 
 beforeEach(() => {
@@ -77,14 +85,17 @@ describe('Groq chat completions', () => {
     vi.stubEnv('GROQ_API_KEY', 'test-groq-key');
   });
 
-  it('posts to the configured Groq endpoint with Bearer auth', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(chatResponse('Grounded answer.'));
+  it('discovers free models, then posts to the fastest candidate with Bearer auth', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) =>
+      isModelsRequest(url) ? modelsResponse() : chatResponse('Grounded answer.'),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(generateChatCompletion(messages, 500)).resolves.toBe('Grounded answer.');
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, options] = fetchMock.mock.calls[0];
+    const chatCalls = fetchMock.mock.calls.filter(([url]) => !isModelsRequest(url));
+    expect(chatCalls).toHaveLength(1);
+    const [url, options] = chatCalls[0];
     expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
     expect(options.headers.Authorization).toBe('Bearer test-groq-key');
     const body = JSON.parse(options.body);
@@ -98,13 +109,17 @@ describe('Groq chat completions', () => {
 
   it('allows an explicitly configured HTTPS host', async () => {
     vi.stubEnv('GROQ_BASE_URL', 'https://gateway.example.com/v1');
-    const fetchMock = vi.fn().mockResolvedValue(chatResponse('Hosted answer.'));
+    const fetchMock = vi.fn().mockImplementation(async (url: string) =>
+      isModelsRequest(url) ? modelsResponse() : chatResponse('Hosted answer.'),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(generateChatCompletion(messages)).resolves.toBe('Hosted answer.');
-    expect(fetchMock.mock.calls[0][0]).toBe(
-      'https://gateway.example.com/v1/chat/completions',
-    );
+    expect(
+      fetchMock.mock.calls.some(
+        ([url]) => url === 'https://gateway.example.com/v1/chat/completions',
+      ),
+    ).toBe(true);
   });
 
   it('rejects non-HTTPS and credentialed base URLs before sending data', async () => {
@@ -124,35 +139,103 @@ describe('Groq chat completions', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('retries once with the fallback model on a model-selection error', async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response('model not found', { status: 404 }))
-      .mockResolvedValueOnce(chatResponse('Fallback answer.'));
+  it('falls back to the next free model on a model-selection error', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      if (isModelsRequest(url)) {
+        return modelsResponse(['openai/gpt-oss-120b', 'llama-3.3-70b-versatile']);
+      }
+      return modelFromInit(init) === 'openai/gpt-oss-120b'
+        ? new Response('model not found', { status: 404 })
+        : chatResponse('Fallback answer.');
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(generateChatCompletion(messages, 400)).resolves.toBe('Fallback answer.');
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body);
-    const secondBody = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(firstBody.model).toBe('openai/gpt-oss-120b');
-    expect(secondBody.model).toBe('llama-3.3-70b-versatile');
+    const attemptedModels = fetchMock.mock.calls
+      .filter(([url]) => !isModelsRequest(url))
+      .map(([, init]) => modelFromInit(init));
+    expect(attemptedModels).toEqual([
+      'openai/gpt-oss-120b',
+      'llama-3.3-70b-versatile',
+    ]);
   });
 
-  it('throws a safe unavailable error on rate limiting', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response('rate limited by upstream', { status: 429 }),
-    );
+  it('falls through rate-limited and failing free models to the next candidate', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      if (isModelsRequest(url)) {
+        return modelsResponse([
+          'openai/gpt-oss-120b',
+          'llama-3.3-70b-versatile',
+          'llama-3.1-8b-instant',
+        ]);
+      }
+      const model = modelFromInit(init);
+      if (model === 'openai/gpt-oss-120b') {
+        return new Response('rate limited', { status: 429 });
+      }
+      if (model === 'llama-3.3-70b-versatile') {
+        return new Response('upstream error', { status: 503 });
+      }
+      return chatResponse('Third model answer.');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(generateChatCompletion(messages)).resolves.toBe('Third model answer.');
+
+    const attemptedModels = fetchMock.mock.calls
+      .filter(([url]) => !isModelsRequest(url))
+      .map(([, init]) => modelFromInit(init));
+    expect(attemptedModels).toEqual([
+      'openai/gpt-oss-120b',
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
+    ]);
+  });
+
+  it('ranks measured models by lowest observed latency on later requests', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      if (isModelsRequest(url)) {
+        return modelsResponse(['openai/gpt-oss-120b', 'llama-3.1-8b-instant']);
+      }
+      return chatResponse(`answer from ${modelFromInit(init)}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await generateChatCompletion(messages);
+    await generateChatCompletion(messages);
+
+    const secondRequestModels = fetchMock.mock.calls
+      .filter(([url]) => !isModelsRequest(url))
+      .slice(1)
+      .map(([, init]) => modelFromInit(init));
+    expect(secondRequestModels).toEqual(['openai/gpt-oss-120b']);
+  });
+
+  it('throws a safe unavailable error when every free model is rate limited', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (isModelsRequest(url)) return modelsResponse();
+      return new Response('rate limited by upstream', { status: 429 });
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     const error = await generateChatCompletion(messages).catch((failure) => failure);
     expect(error).toBeInstanceOf(ModelProviderUnavailableError);
     expect(error.message).toContain('temporarily unavailable');
+    expect(error.message).toContain('free chat models');
     expect(error.message).not.toContain('test-groq-key');
+    expect(
+      fetchMock.mock.calls.filter(([url]) => !isModelsRequest(url)).length,
+    ).toBeGreaterThan(1);
   });
 
   it('throws a response error for malformed model output', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(chatResponse('   ')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: string) =>
+        isModelsRequest(url) ? modelsResponse() : chatResponse('   '),
+      ),
+    );
     await expect(generateChatCompletion(messages)).rejects.toBeInstanceOf(
       ModelProviderResponseError,
     );

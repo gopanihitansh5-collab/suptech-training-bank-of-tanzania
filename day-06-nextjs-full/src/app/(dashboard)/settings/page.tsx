@@ -398,9 +398,8 @@ export default async function SettingsPage() {
               <div><dt>Demo role</dt><dd>{overview.config.demoRole}</dd></div>
               <div><dt>Remote database</dt><dd>{overview.config.remoteDatabase ? 'Yes' : 'No'}</dd></div>
               <div><dt>S3-compatible storage</dt><dd>{configuredLabel(overview.config.s3Configured)}</dd></div>
-              <div><dt>Chat provider</dt><dd>{overview.config.chatProvider}</dd></div>
-              <div><dt>Groq API key</dt><dd>{configuredLabel(overview.config.groqApiKeyConfigured)}</dd></div>
-              <div><dt>LM Studio embedding endpoint</dt><dd>{configuredLabel(overview.config.lmStudioConfigured)}</dd></div>
+              <div><dt>AI service</dt><dd>{configuredLabel(overview.config.chatProviderConfigured)}</dd></div>
+              <div><dt>Embedding service</dt><dd>{configuredLabel(overview.config.lmStudioConfigured)}</dd></div>
               <div>
                 <dt>Missing variables</dt>
                 <dd className="mono">

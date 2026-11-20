@@ -181,7 +181,7 @@ export async function searchGroundedEvidence(
     return {
       hits: lexicalHits.slice(0, limit),
       mode: 'keyword',
-      fallbackReason: 'No indexed synthetic evidence is available for semantic ranking.',
+      fallbackReason: 'No searchable documents are available yet.',
     };
   }
 
@@ -196,7 +196,7 @@ export async function searchGroundedEvidence(
     return {
       hits: lexicalHits.slice(0, limit),
       mode: 'keyword',
-      fallbackReason: 'The local embedding model is unavailable; showing keyword matches.',
+      fallbackReason: 'Showing basic matches from available records.',
     };
   }
 }

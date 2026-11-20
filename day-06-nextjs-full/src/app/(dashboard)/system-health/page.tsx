@@ -86,18 +86,16 @@ export default async function SystemHealthPage() {
           </div>
         </article>
         <article className="metric-card">
-          <div className="metric-label">
-            {health.model.provider === 'groq' ? 'Groq chat' : 'LM Studio chat'}
-          </div>
+          <div className="metric-label">AI service</div>
           <div className="metric-value">{health.model.chatAvailable ? 'Available' : 'Unavailable'}</div>
-          <div className="metric-foot">Configured chat endpoint · checked at page load</div>
+          <div className="metric-foot">Grounded analysis service · checked at page load</div>
         </article>
         <article className="metric-card">
           <div className="metric-label">Embeddings</div>
           <div className="metric-value">
             {health.model.embeddingAvailable ? 'Available' : 'Unavailable'}
           </div>
-          <div className="metric-foot">LM Studio embedding probe</div>
+          <div className="metric-foot">Embedding service probe</div>
         </article>
         <article className="metric-card">
           <div className="metric-label">Upload storage</div>
@@ -166,16 +164,14 @@ export default async function SystemHealthPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Model services</h2>
-              <p className="panel-caption">Chat provider and local embedding service status.</p>
+              <h2 className="panel-title">AI services</h2>
+              <p className="panel-caption">Availability of the grounded analysis and embedding services.</p>
             </div>
           </div>
           <dl className="settings-list" style={{ padding: '0 18px' }}>
-            <div><dt>Base URL</dt><dd className="mono">{health.model.baseUrl}</dd></div>
-            <div><dt>Chat model</dt><dd className="mono">{health.model.chatModel}</dd></div>
-            <div><dt>Embedding model</dt><dd className="mono">{health.model.embeddingModel}</dd></div>
-            <div><dt>Chat availability</dt><dd>{health.model.chatAvailable ? 'Available' : 'Unavailable'}</dd></div>
-            <div><dt>Embedding availability</dt><dd>{health.model.embeddingAvailable ? 'Available' : 'Unavailable'}</dd></div>
+            <div><dt>Analysis service</dt><dd>{health.model.chatAvailable ? 'Available' : 'Unavailable'}</dd></div>
+            <div><dt>Embedding service</dt><dd>{health.model.embeddingAvailable ? 'Available' : 'Unavailable'}</dd></div>
+            <div><dt>Backend details</dt><dd>Not exposed</dd></div>
           </dl>
         </section>
       </div>
@@ -221,11 +217,10 @@ export default async function SystemHealthPage() {
             <div><dt>AUTH_SECRET</dt><dd>{configuredLabel(health.config.authSecretConfigured)}</dd></div>
             <div><dt>Demo user</dt><dd>{configuredLabel(health.config.demoUserConfigured)}</dd></div>
             <div><dt>Demo role</dt><dd>{health.config.demoRole}</dd></div>
-            <div><dt>Chat provider</dt><dd>{health.config.chatProvider}</dd></div>
-            <div><dt>Groq API key</dt><dd>{configuredLabel(health.config.groqApiKeyConfigured)}</dd></div>
+            <div><dt>AI service</dt><dd>{configuredLabel(health.config.chatProviderConfigured)}</dd></div>
             <div><dt>Remote database</dt><dd>{health.config.remoteDatabase ? 'Yes' : 'No'}</dd></div>
             <div><dt>S3-compatible storage</dt><dd>{configuredLabel(health.config.s3Configured)}</dd></div>
-            <div><dt>LM Studio embedding endpoint</dt><dd>{configuredLabel(health.config.lmStudioConfigured)}</dd></div>
+            <div><dt>Embedding service</dt><dd>{configuredLabel(health.config.lmStudioConfigured)}</dd></div>
             <div>
               <dt>Missing variables</dt>
               <dd className="mono">

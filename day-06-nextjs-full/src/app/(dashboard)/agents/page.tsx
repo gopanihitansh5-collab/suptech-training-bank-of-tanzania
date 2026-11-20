@@ -13,7 +13,7 @@ export default async function AgentsPage() {
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Experimental local-model workspace.</strong> Use synthetic
+          <strong>Experimental AI analysis workspace.</strong> Use synthetic
           examples only. Responses are not verified findings, official policy,
           or a substitute for checking persisted records.
         </div>
@@ -23,11 +23,10 @@ export default async function AgentsPage() {
           <div className="eyebrow">Experimental analysis</div>
           <h1>AI agent workspace</h1>
           <p className="subtitle">
-            Assign bounded analysis roles to Groq when configured, using only the question and
-            synthetic aggregate dashboard context.
+            Assign bounded analysis roles to the configured AI service, using only the question and synthetic aggregate dashboard context.
           </p>
         </div>
-        <span className="period-chip">Groq when configured · aggregates only</span>
+        <span className="period-chip">AI service when configured · aggregates only</span>
       </section>
       <AgentsWorkspace availableAgents={agents} />
     </main>

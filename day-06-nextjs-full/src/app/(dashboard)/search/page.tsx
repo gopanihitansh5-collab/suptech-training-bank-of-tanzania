@@ -49,7 +49,7 @@ function citationChips(hit: SearchHit): string[] {
   if (hit.kind === 'document') {
     chips.push(`source: ${hit.title}`);
     if (hit.citation.chunkIndex !== undefined) {
-      chips.push(`chunk #${hit.citation.chunkIndex}`);
+      chips.push(`section #${hit.citation.chunkIndex}`);
     }
     if (hit.citation.documentId) chips.push(`document ${hit.citation.documentId}`);
     return chips;
@@ -188,22 +188,22 @@ export default async function SearchPage({
       <div className="synthetic-banner">
         <span aria-hidden="true">ⓘ</span>
         <div>
-          <strong>Synthetic training corpus only.</strong> Local semantic and
-          keyword retrieval is used when available; the page never sends
-          records to a public model provider or treats review signals as official findings.
+          <strong>Synthetic training records only.</strong> Search runs inside
+          this application and never sends records to an external service or
+          treats review signals as official findings.
         </div>
       </div>
 
       <section className="page-heading">
         <div>
-          <div className="eyebrow">Evidence retrieval</div>
+          <div className="eyebrow">Search records</div>
           <h1>Search</h1>
           <p className="subtitle">
             Find cited synthetic documents, monthly reports and institution records.
           </p>
         </div>
         <span className="period-chip">
-          {hasQuery ? `${hits.length} result(s)` : 'Evidence search'}
+          {hasQuery ? `${hits.length} result(s)` : 'Search records'}
         </span>
       </section>
 
@@ -211,9 +211,9 @@ export default async function SearchPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Search the training corpus</h2>
+              <h2 className="panel-title">Search training records</h2>
               <p className="panel-caption">
-                Enter 2–200 characters. Semantic ranking uses the configured local embedding model; keyword search remains available when it is offline.
+                Enter 2–200 characters to search across documents, reports and institutions.
               </p>
             </div>
           </div>
@@ -239,9 +239,8 @@ export default async function SearchPage({
         {!hasQuery ? (
           <section className="panel">
             <div className="empty-state" role="status">
-              Enter a phrase, institution, region or reporting period to search the
-              synthetic corpus. Results cite their source document chunk, report or
-              institution record.
+              Enter a phrase, institution, region or reporting period to search
+              training records. Each result shows where the match came from.
             </div>
           </section>
         ) : null}
@@ -258,15 +257,15 @@ export default async function SearchPage({
           <>
             {retrievalMode && (
               <p className="retrieval-status" role="status">
-                {retrievalMode === 'hybrid' ? 'Hybrid semantic + keyword retrieval' : 'Keyword retrieval'}
+                {retrievalMode === 'hybrid' ? 'Search complete · related matches included' : 'Search complete'}
                 {fallbackReason ? ` · ${fallbackReason}` : ''}
               </p>
             )}
             <ResultGroup
               title="Documents"
-              caption="Completed ingestion chunks ranked by full-text relevance."
+              caption="Document excerpts ranked by relevance."
               hits={documentHits}
-              emptyMessage="No completed synthetic document chunks matched this query."
+              emptyMessage="No document excerpts matched this query."
             />
             <ResultGroup
               title="Review signals"

@@ -72,10 +72,16 @@ describe('local model gateway', () => {
     vi.stubEnv('MODEL_PROVIDER', 'groq');
     vi.stubEnv('GROQ_API_KEY', 'test-groq-key');
     vi.stubEnv('GROQ_BASE_URL', 'https://api.groq.com/openai/v1');
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: 'Groq answer.' } }] }), {
-        status: 200,
-      }),
+    const fetchMock = vi.fn().mockImplementation(async (url: string) =>
+      url.endsWith('/models')
+        ? new Response(
+            JSON.stringify({ data: [{ id: 'openai/gpt-oss-120b' }] }),
+            { status: 200 },
+          )
+        : new Response(
+            JSON.stringify({ choices: [{ message: { content: 'Groq answer.' } }] }),
+            { status: 200 },
+          ),
     );
     vi.stubGlobal('fetch', fetchMock);
 

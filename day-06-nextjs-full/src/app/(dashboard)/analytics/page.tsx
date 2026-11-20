@@ -2,6 +2,24 @@ import { getAnalytics } from '@/lib/repository';
 import { INDICATOR_DEFINITIONS } from '@/lib/catalog';
 import { RequestValidationError } from '@/lib/api-errors';
 import { PortfolioChart } from '@/components/portfolio-chart';
+import { AnalyticsFilters } from '@/components/analytics-filters';
+import { IndicatorTrendChart } from '@/components/indicator-trend-chart';
+
+const HEADLINE_INDICATORS = ['deposits', 'loans', 'capital_adequacy', 'npl_ratio', 'liquidity'];
+
+const INDICATOR_TONES: Record<string, string> = {
+  deposits: 'teal',
+  loans: 'blue',
+  loan_to_deposit: 'violet',
+  deposit_growth: 'teal',
+  loan_growth: 'blue',
+  capital_adequacy: 'violet',
+  npl_ratio: 'rose',
+  liquidity: 'amber',
+  completeness: 'teal',
+  quality_failure_rate: 'rose',
+  late_submission: 'amber',
+};
 
 type SearchParams = Promise<{
   period?: string | string[];
@@ -38,6 +56,12 @@ export default async function AnalyticsPage({
     exceptions: 0,
   }));
   const numberFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 2 });
+  const visibleIndicators = indicator
+    ? analytics.indicators
+    : analytics.indicators.filter((item) => HEADLINE_INDICATORS.includes(item.id));
+  const selectedDefinition = indicator
+    ? INDICATOR_DEFINITIONS.find((definition) => definition.id === indicator)
+    : undefined;
 
   return (
     <main className="page-content">
@@ -65,35 +89,21 @@ export default async function AnalyticsPage({
         <div className="panel-header">
           <div>
             <h2 className="panel-title">Analytics filters</h2>
-            <p className="panel-caption">Choose a period or indicator from the seeded catalog.</p>
+            <p className="panel-caption">Change a filter and the page updates immediately.</p>
           </div>
-          <form className="filter-form" method="get" action="/analytics">
-            <label>
-              Reporting period
-              <select name="period" defaultValue={period ?? ''}>
-                {analytics.trend.map((point) => (
-                  <option key={point.period} value={point.period}>{point.period}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Indicator
-              <select name="indicator" defaultValue={indicator ?? ''}>
-                <option value="">All indicators</option>
-                {INDICATOR_DEFINITIONS.map((definition) => (
-                  <option key={definition.id} value={definition.id}>{definition.label}</option>
-                ))}
-              </select>
-            </label>
-            <button className="button-primary" type="submit">Apply</button>
-          </form>
+          <AnalyticsFilters
+            period={period}
+            indicator={indicator}
+            periods={analytics.trend.map((point) => point.period)}
+            indicators={INDICATOR_DEFINITIONS.map((definition) => ({ id: definition.id, label: definition.label }))}
+          />
         </div>
       </section>
 
-      {analytics.indicators.length ? (
+      {visibleIndicators.length ? (
         <section className="metric-grid" aria-label="Synthetic indicator values">
-          {analytics.indicators.map((item) => (
-            <article className="metric-card" key={item.id}>
+          {visibleIndicators.map((item) => (
+            <article className={`metric-card tone-${INDICATOR_TONES[item.id] ?? 'slate'}`} key={item.id}>
               <div className="metric-label">{item.label}</div>
               <div className="metric-value">
                 {item.value === null ? '—' : `${numberFormat.format(item.value)}${item.unit === '%' ? '%' : ''}`}
@@ -109,18 +119,37 @@ export default async function AnalyticsPage({
         </div>
       )}
 
-      <section className="panel" style={{ marginTop: 16 }}>
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title">Reported portfolio trend</h2>
-            <p className="panel-caption">Deposits and loans · TZS billions · monthly synthetic data</p>
+      {indicator && selectedDefinition ? (
+        <section className="panel" style={{ marginTop: 16 }}>
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title">{selectedDefinition.label} trend</h2>
+              <p className="panel-caption">Historical values for the selected indicator · use the slider to zoom.</p>
+            </div>
+            <span className="period-chip">{(analytics.indicatorTrend ?? []).length} periods</span>
           </div>
-          <span className="period-chip">{analytics.trend.length} periods</span>
-        </div>
-        <div className="panel-body">
-          <PortfolioChart data={chartData} />
-        </div>
-      </section>
+          <div className="panel-body">
+            <IndicatorTrendChart
+              data={analytics.indicatorTrend ?? []}
+              label={selectedDefinition.label}
+              unit={selectedDefinition.unit}
+            />
+          </div>
+        </section>
+      ) : (
+        <section className="panel" style={{ marginTop: 16 }}>
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title">Reported portfolio trend</h2>
+              <p className="panel-caption">Deposits and loans · TZS billions · monthly synthetic data</p>
+            </div>
+            <span className="period-chip">{analytics.trend.length} periods</span>
+          </div>
+          <div className="panel-body">
+            <PortfolioChart data={chartData} />
+          </div>
+        </section>
+      )}
     </main>
   );
 }

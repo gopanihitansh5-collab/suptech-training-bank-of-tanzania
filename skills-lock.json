@@ -1,6 +1,12 @@
 {
   "version": 2,
   "skills": {
+    "apple-design": {
+      "source": "dickwu/apple-design-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "005936ddc7582e408c92b37ad8aaba7dfcb4166bafeb67116bd1a5692eb32e48"
+    },
     "neon": {
       "source": "neondatabase/agent-skills",
       "commit": "6f435c42a984b6b3d2024fc8305b4236635aa601",

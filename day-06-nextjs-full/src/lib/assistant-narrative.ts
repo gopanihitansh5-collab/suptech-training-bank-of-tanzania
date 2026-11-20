@@ -1022,8 +1022,6 @@ function extractSentences(hits: RecordValue[], query: string | null): string[] {
 
 function narrateSearch(result: RecordValue): AssistantNarrative {
   const hits = records(result.hits);
-  const mode = stringValue(result.retrievalMode) ?? 'keyword';
-  const modeLabel = mode === 'hybrid' ? 'hybrid retrieval' : 'keyword retrieval';
   const answer = asRecord(result.answer);
   const status = answer ? stringValue(answer.status) ?? 'no_evidence' : 'no_evidence';
   const answerText = answer ? stringValue(answer.text) : null;
@@ -1033,33 +1031,37 @@ function narrateSearch(result: RecordValue): AssistantNarrative {
   const searchQuery = stringValue(result.query);
 
   const headline = status === 'answered'
-    ? `Search: ${hits.length} sources via ${mode}; validated answer`
-    : `Search: ${hits.length} sources via ${mode}; answer ${status === 'unavailable' ? 'unavailable' : 'not found in evidence'}`;
+    ? `Search: ${hits.length} matching sources found; answer ready`
+    : hits.length === 0
+      ? 'Search: 0 sources found; no direct answer'
+      : `Search: ${hits.length} matching sources found; no direct answer`;
 
   const extractive = extractSentences(hits, searchQuery);
   const summaryText = status === 'answered' && answerText
     ? answerText
     : extractive.length > 0
       ? extractive.join(' ')
-      : 'No synthetic evidence sources were retrieved.';
+      : hits.length === 0
+        ? 'No synthetic evidence sources matched this search.'
+        : 'No matching source records were found.';
 
   const detailParts = [
-    `Retrieved ${plural(hits.length, 'synthetic source')} with ${modeLabel}${fallbackReason ? ` (${fallbackReason})` : ''}.`,
+    `Found ${plural(hits.length, 'matching source')}${fallbackReason ? ` (${fallbackReason})` : ''}.`,
   ];
   if (status === 'answered') {
-    detailParts.push(`The validated answer cites ${plural(citations, 'source')}.`);
+    detailParts.push(`The answer cites ${plural(citations, 'source')}.`);
   } else if (status === 'unavailable') {
-    detailParts.push('The local answer could not be validated, so the summary quotes the retrieved sources directly.');
+    detailParts.push('The answer could not be prepared, so the summary quotes the source records directly.');
   } else {
-    detailParts.push('Retrieval found no evidence that directly answers the question.');
+    detailParts.push('The search found no records that directly answer the question.');
   }
-  if (answerError) detailParts.push(`Local model note: ${answerError}.`);
+  if (answerError) detailParts.push(`Analysis note: ${answerError}.`);
 
   const facts: AssistantNarrative['facts'] = [
-    { label: 'Retrieved sources', value: formatNumber(hits.length) },
-    { label: 'Retrieval mode', value: mode },
-    { label: 'Answer status', value: status },
-    { label: 'Cited sources', value: formatNumber(citations) },
+    { label: 'Sources found', value: formatNumber(hits.length) },
+    { label: 'Search', value: 'Complete' },
+    { label: 'Answer', value: status === 'answered' ? 'Ready' : status === 'unavailable' ? 'Quotes sources' : 'No direct match' },
+    { label: 'Sources cited', value: formatNumber(citations) },
     ...hits.slice(0, 3).map((hit, index) => ({
       label: `Source S${index + 1}`,
       value: stringValue(hit.title) ?? stringValue(hit.id) ?? 'untitled source',

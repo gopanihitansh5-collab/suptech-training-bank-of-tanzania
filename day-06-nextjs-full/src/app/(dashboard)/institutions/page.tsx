@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { listInstitutions } from '@/lib/repository';
+import { SelectableTable } from '@/components/selectable-table';
 
 type SearchParams = Promise<{
   search?: string | string[];
@@ -51,7 +52,7 @@ export default async function InstitutionsPage({
           </form>
         </div>
         {result.items.length ? (
-          <div className="table-wrap">
+          <SelectableTable>
             <table>
               <thead>
                 <tr>
@@ -79,7 +80,7 @@ export default async function InstitutionsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </SelectableTable>
         ) : <div className="empty-state">No institutions matched “{search}”. Try a different name or identifier.</div>}
         <div className="pagination">
           <span>Page {result.page} of {Math.max(result.totalPages, 1)} · {result.total} results</span>

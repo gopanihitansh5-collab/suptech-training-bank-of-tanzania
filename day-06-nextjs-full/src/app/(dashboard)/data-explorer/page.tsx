@@ -149,11 +149,11 @@ export default async function DataExplorerPage({
           <div><dt>Imported reports accepted / rejected</dt><dd>{reportImportSummary.acceptedRows} / {reportImportSummary.rejectedRows}</dd></div>
           <div><dt>Persisted import batches</dt><dd>{reportImportSummary.batches}</dd></div>
           <div>
-            <dt>Durable ingestion run history</dt>
+            <dt>Document processing history</dt>
             <dd>
               {totalJobs > 0
-                ? `${totalJobs.toLocaleString('en')} job(s) persisted; latest status: ${latestJobStatus ?? 'unknown'}`
-                : 'No ingestion jobs recorded'}
+                ? `${totalJobs.toLocaleString('en')} run(s) recorded; latest status: ${latestJobStatus ?? 'unknown'}`
+                : 'No document processing runs recorded'}
             </dd>
           </div>
           <div><dt>Data boundary</dt><dd>Fictional training records only</dd></div>
@@ -162,12 +162,12 @@ export default async function DataExplorerPage({
       <section className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Ingestion history</h2>
+            <h2 className="panel-title">Document processing history</h2>
             <p className="panel-caption">
-              Recent persisted ingestion jobs with their document processing evidence.
+              Recent document uploads and their processing status.
             </p>
           </div>
-          <span className="period-chip">{totalJobs} job(s)</span>
+          <span className="period-chip">{totalJobs} run(s)</span>
         </div>
         {ingestionJobs.length > 0 ? (
           <div className="table-wrap">
@@ -178,7 +178,7 @@ export default async function DataExplorerPage({
                   <th>Document status</th>
                   <th>Job status</th>
                   <th>Attempts</th>
-                  <th>Chunks</th>
+                  <th>Sections</th>
                   <th>Created</th>
                 </tr>
               </thead>
@@ -213,7 +213,7 @@ export default async function DataExplorerPage({
           </div>
         ) : (
           <div className="empty-state" role="status">
-            No ingestion jobs recorded. Uploaded documents will appear here once an ingestion job runs.
+            No document processing runs recorded. Uploaded documents will appear here once processing begins.
           </div>
         )}
       </section>
@@ -222,7 +222,7 @@ export default async function DataExplorerPage({
           <div>
             <h2 className="panel-title">Uploaded training documents</h2>
             <p className="panel-caption">
-              Documents ingested for supervisory RAG, semantic search, and document intelligence.
+              Reference documents available for search and review.
             </p>
           </div>
           <span className="period-chip">{documentsResult.total} document(s)</span>
@@ -235,7 +235,7 @@ export default async function DataExplorerPage({
                   <th>Filename</th>
                   <th>Content type</th>
                   <th>Size</th>
-                  <th>Chunks</th>
+                  <th>Sections</th>
                   <th>Status</th>
                   <th>Uploaded by</th>
                   <th>Uploaded date</th>
@@ -271,7 +271,7 @@ export default async function DataExplorerPage({
           </div>
         ) : (
           <div className="empty-state" role="status">
-            No training documents have been uploaded yet. Training documents (.txt, .csv, .json) can be uploaded via the API (/api/uploads) or document upload pipeline to enable grounded retrieval and supervisory search.
+            No training documents have been uploaded yet. Upload a .txt, .csv or .json file to make it available for search and review.
           </div>
         )}
       </section>
@@ -325,7 +325,7 @@ function DatasetCard({
       </div>
       <p className="panel-caption">{grain}</p>
       <details>
-        <summary>View table and schema fields</summary>
+        <summary>View data fields</summary>
         <p className="dataset-table-name mono">{tableName}</p>
         <ul className="dataset-fields">
           {fields.map((field) => <li className="mono" key={field}>{field}</li>)}

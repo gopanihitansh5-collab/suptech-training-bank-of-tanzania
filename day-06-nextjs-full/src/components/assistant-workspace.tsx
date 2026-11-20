@@ -277,7 +277,7 @@ function EvidenceView({ result }: { result: ToolResult }) {
     return <GroundedEvidence result={result.result} />;
   }
   if (!isRecord(result.result)) {
-    return <p className="assistant-evidence-empty">No structured evidence was returned.</p>;
+    return <p className="assistant-evidence-empty">No matching records were returned.</p>;
   }
   return (
     <div className="assistant-evidence">
@@ -334,8 +334,8 @@ function NarrativeView({
         </div>
       )}
       <AssistantCharts tool={result.tool} result={result.result} />
-      <section className="assistant-narrative-evidence" aria-label="Returned evidence">
-        <h3 className="assistant-evidence-heading">Evidence</h3>
+      <section className="assistant-narrative-evidence" aria-label="Source records">
+        <h3 className="assistant-evidence-heading">Source records</h3>
         <EvidenceView result={result} />
       </section>
     </div>
@@ -379,7 +379,7 @@ function GroundedEvidence({ result }: { result: GroundedResult }) {
     <div className="grounded-answer">
       <div className="grounded-answer-header">
         <span className="dataset-layer">
-          {result.retrievalMode === 'hybrid' ? 'Local semantic + keyword retrieval' : 'Keyword retrieval'}
+          {result.retrievalMode === 'hybrid' ? 'Search complete · related matches included' : 'Search complete'}
         </span>
         <span className="panel-caption">{result.hits.length} source(s)</span>
       </div>
@@ -387,10 +387,10 @@ function GroundedEvidence({ result }: { result: GroundedResult }) {
         <p className="grounded-fallback" role="status">{result.fallbackReason}</p>
       )}
       <section className={`grounded-response grounded-response-${result.answer.status}`}>
-        <h3>Grounded response</h3>
+        <h3>Answer</h3>
         <p>{result.answer.text}</p>
         {result.answer.citations.length > 0 && (
-          <div className="grounded-citations" aria-label="Cited sources">
+          <div className="grounded-citations" aria-label="Sources">
             {result.answer.citations.map((citation) => (
               <a
                 className="period-chip"
@@ -409,8 +409,8 @@ function GroundedEvidence({ result }: { result: GroundedResult }) {
           </div>
         )}
       </section>
-      <section className="grounded-sources" aria-label="Retrieved evidence">
-        <h3>Retrieved evidence</h3>
+      <section className="grounded-sources" aria-label="Source records">
+        <h3>Source records</h3>
         {result.hits.map((source, index) => (
           <article className="grounded-source" key={`${source.kind}:${source.id}`}>
             <div className="grounded-source-heading">
@@ -422,7 +422,7 @@ function GroundedEvidence({ result }: { result: GroundedResult }) {
           </article>
         ))}
         {result.hits.length === 0 && (
-          <p className="assistant-evidence-empty">No matching synthetic records were retrieved.</p>
+          <p className="assistant-evidence-empty">No matching records were found.</p>
         )}
       </section>
     </div>
@@ -550,7 +550,7 @@ export function AssistantWorkspace() {
         return;
       }
       if (!isRecord(payload) || !isAssistantPlan(payload.plan)) {
-        setError('The planner returned an invalid response.');
+        setError('The assistant returned an unexpected response.');
         return;
       }
       const nextPlan = payload.plan;
@@ -560,7 +560,7 @@ export function AssistantWorkspace() {
         { role: 'assistant', content: `Proposed: ${nextPlan.purpose}` },
       ]);
     } catch {
-      setError('The local planner could not be reached. Retry the request.');
+      setError('The assistant could not be reached. Try again.');
     } finally {
       setBusy(false);
     }
@@ -597,7 +597,7 @@ export function AssistantWorkspace() {
       ]);
       void refreshSuggestions();
     } catch {
-      setError('The query service could not be reached. Check the local database and retry.');
+      setError('The records service could not be reached. Try again.');
     } finally {
       setBusy(false);
     }
@@ -615,7 +615,7 @@ export function AssistantWorkspace() {
           <div>
             <h2 className="panel-title">Ask about synthetic records</h2>
             <p className="panel-caption">
-              The planner selects only an allowlisted read operation. Review the plan before execution.
+              The assistant only reads records. Review the request before running it.
             </p>
           </div>
           <span className="period-chip">Read only</span>
@@ -761,7 +761,7 @@ export function AssistantWorkspace() {
           <ol className="assistant-conversation">
             {conversation.map((entry, index) => (
               <li className={`assistant-message ${entry.role}`} key={`${entry.role}-${index}`}>
-                <span className="assistant-message-role">{entry.role === 'user' ? 'You' : 'Planner'}</span>
+                <span className="assistant-message-role">{entry.role === 'user' ? 'You' : 'Assistant'}</span>
                 <p>{entry.content}</p>
               </li>
             ))}
@@ -781,7 +781,7 @@ export function AssistantWorkspace() {
           <div className="panel-body">
             <dl className="assistant-plan-details">
               <div><dt>Data source</dt><dd>{plan.source}</dd></div>
-              <div><dt>Arguments</dt><dd><code>{JSON.stringify(plan.arguments)}</code></dd></div>
+              <div><dt>Details</dt><dd><code>{JSON.stringify(plan.arguments)}</code></dd></div>
               <div><dt>Confirmation</dt><dd>{plan.confirmation}</dd></div>
             </dl>
             {plan.inferred && Object.keys(plan.inferred).length > 0 && (
@@ -825,7 +825,7 @@ export function AssistantWorkspace() {
               </>
             )}
             <p className="assistant-limit">
-              This result reflects only the returned synthetic records. Review the source period and evidence;
+              This result reflects only the returned synthetic records. Review the source period and records;
               it is not an official assessment.
             </p>
           </div>

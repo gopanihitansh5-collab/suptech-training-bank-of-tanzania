@@ -26,6 +26,20 @@ class GroqModelSelectionError extends Error {
   }
 }
 
+class GroqFatalError extends ModelProviderUnavailableError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GroqFatalError';
+  }
+}
+
+class GroqAbortedError extends Error {
+  constructor() {
+    super('The Groq request was superseded by a faster model.');
+    this.name = 'GroqAbortedError';
+  }
+}
+
 const DEFAULT_GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
 const DEFAULT_GROQ_CHAT_MODEL = 'openai/gpt-oss-120b';
 const DEFAULT_GROQ_CHAT_MODEL_FALLBACK = 'llama-3.3-70b-versatile';
@@ -33,15 +47,52 @@ const DEFAULT_LM_STUDIO_BASE_URL = 'http://127.0.0.1:1235/v1';
 const DEFAULT_LM_STUDIO_CHAT_MODEL = 'qwen/qwen3.6-35b-a3b';
 const AVAILABILITY_TTL_MS = 15_000;
 const AVAILABILITY_TIMEOUT_MS = 2_500;
+const GROQ_MODEL_LIST_TIMEOUT_MS = 5_000;
+const GROQ_MODEL_LIST_TTL_MS = 10 * 60 * 1000;
+const GROQ_MODEL_FAILURE_COOLDOWN_MS = 60 * 1000;
+const GROQ_MODEL_EXPLORATION_INTERVAL = 5;
 const MAX_MESSAGES = 4;
 const MIN_MESSAGES = 2;
 const MAX_MESSAGE_CHARS = 10_000;
 const MAX_TOKENS = 1_200;
 const MAX_RESPONSE_CHARS = 6_000;
 
+/**
+ * Seed order used until real latency is observed. Every model returned by
+ * Groq's /models endpoint is still eligible; this list only decides the first
+ * attempt and the tie-break order for unmeasured models.
+ */
+const DEFAULT_GROQ_MODEL_PRIORITY = [
+  'openai/gpt-oss-20b',
+  'llama-3.1-8b-instant',
+  'openai/gpt-oss-120b',
+  'llama-3.3-70b-versatile',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'meta-llama/llama-4-maverick-17b-128e-instruct',
+  'qwen/qwen3-32b',
+  'moonshotai/kimi-k2-instruct',
+  'allam-2-7b',
+];
+
+const NON_CHAT_GROQ_MODEL_PATTERN =
+  /(whisper|tts|playai|guard|embed|distil|audio|speech)/i;
+
+interface GroqModelStat {
+  samples: number;
+  totalLatencyMs: number;
+  failures: number;
+  lastFailureAt: number;
+}
+
 let availabilityCache:
   | { key: string; available: boolean; expiresAt: number }
   | null = null;
+let groqModelCache:
+  | { key: string; models: string[]; expiresAt: number }
+  | null = null;
+const groqModelStats = new Map<string, GroqModelStat>();
+let groqRequestCount = 0;
+let groqExplorationCursor = 0;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -104,6 +155,185 @@ function resolveGroqBaseUrl(): string {
   return url.toString().replace(/\/+$/, '');
 }
 
+function readGroqModelAttempts(): number {
+  const parsed = Number(process.env.GROQ_MODEL_ATTEMPTS);
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 12) return 6;
+  return Math.trunc(parsed);
+}
+
+function readGroqParallelAttempts(): number {
+  const parsed = Number(process.env.GROQ_PARALLEL_ATTEMPTS);
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 4) return 2;
+  return Math.trunc(parsed);
+}
+
+function readGroqHedgeDelay(): number {
+  const parsed = Number(process.env.GROQ_HEDGE_DELAY_MS);
+  if (!Number.isFinite(parsed) || parsed < 100 || parsed > 5_000) return 600;
+  return Math.trunc(parsed);
+}
+
+function isChatCapableGroqModel(modelId: string): boolean {
+  return Boolean(modelId) && !NON_CHAT_GROQ_MODEL_PATTERN.test(modelId);
+}
+
+function groqModelPriority(modelId: string): number {
+  const configured =
+    process.env.GROQ_CHAT_MODEL?.trim() || DEFAULT_GROQ_CHAT_MODEL;
+  if (modelId === configured) return -2;
+  const fallback =
+    process.env.GROQ_CHAT_MODEL_FALLBACK?.trim() ||
+    DEFAULT_GROQ_CHAT_MODEL_FALLBACK;
+  if (modelId === fallback) return -1;
+  const index = DEFAULT_GROQ_MODEL_PRIORITY.indexOf(modelId);
+  return index === -1 ? 500 : index;
+}
+
+function averageLatency(modelId: string): number {
+  const stat = groqModelStats.get(modelId);
+  if (!stat || stat.samples === 0) return Number.POSITIVE_INFINITY;
+  return stat.totalLatencyMs / stat.samples;
+}
+
+function recordGroqSuccess(modelId: string, latencyMs: number): void {
+  const stat = groqModelStats.get(modelId) ?? {
+    samples: 0,
+    totalLatencyMs: 0,
+    failures: 0,
+    lastFailureAt: 0,
+  };
+  stat.samples += 1;
+  stat.totalLatencyMs += latencyMs;
+  stat.failures = 0;
+  groqModelStats.set(modelId, stat);
+}
+
+function recordGroqFailure(modelId: string): void {
+  const stat = groqModelStats.get(modelId) ?? {
+    samples: 0,
+    totalLatencyMs: 0,
+    failures: 0,
+    lastFailureAt: 0,
+  };
+  stat.failures += 1;
+  stat.lastFailureAt = Date.now();
+  groqModelStats.set(modelId, stat);
+}
+
+/**
+ * Fetches every chat-capable model the configured Groq key can use. The list
+ * is cached briefly so a completion does not pay for discovery every time.
+ * When discovery fails we fall back to the configured seed order rather than
+ * failing closed, because the chat endpoint may still be reachable.
+ */
+export async function listGroqChatModels(
+  baseUrl: string,
+  apiKey: string,
+  options: { bypassCache?: boolean } = {},
+): Promise<string[]> {
+  if (
+    !options.bypassCache &&
+    groqModelCache &&
+    groqModelCache.key === baseUrl &&
+    groqModelCache.expiresAt > Date.now()
+  ) {
+    return groqModelCache.models;
+  }
+
+  let models: string[] = [];
+  try {
+    const response = await fetch(`${baseUrl}/models`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(GROQ_MODEL_LIST_TIMEOUT_MS),
+    });
+    if (response.ok) {
+      const payload: unknown = await response.json();
+      const rows =
+        isRecord(payload) && Array.isArray(payload.data) ? payload.data : [];
+      const seen = new Set<string>();
+      for (const row of rows) {
+        if (!isRecord(row) || typeof row.id !== 'string') continue;
+        const id = row.id.trim();
+        if (!isChatCapableGroqModel(id) || seen.has(id)) continue;
+        seen.add(id);
+        models.push(id);
+      }
+    }
+  } catch {
+    models = [];
+  }
+
+  if (models.length > 0) {
+    groqModelCache = {
+      key: baseUrl,
+      models,
+      expiresAt: Date.now() + GROQ_MODEL_LIST_TTL_MS,
+    };
+  }
+  return models;
+}
+
+/**
+ * Orders candidate models by observed latency, then by the seed priority for
+ * models that have not been measured yet. Every few requests one unmeasured
+ * model is promoted to the front so newly added free models can be discovered
+ * without giving up the fastest known model on normal traffic.
+ */
+export function rankGroqModels(available: string[]): string[] {
+  const candidates = new Set<string>();
+  const configured =
+    process.env.GROQ_CHAT_MODEL?.trim() || DEFAULT_GROQ_CHAT_MODEL;
+  const fallback =
+    process.env.GROQ_CHAT_MODEL_FALLBACK?.trim() ||
+    DEFAULT_GROQ_CHAT_MODEL_FALLBACK;
+  candidates.add(configured);
+  candidates.add(fallback);
+  for (const model of available) candidates.add(model);
+  if (candidates.size === 0) {
+    for (const model of DEFAULT_GROQ_MODEL_PRIORITY) candidates.add(model);
+  }
+
+  const now = Date.now();
+  const all = [...candidates];
+  const notCoolingDown = all.filter((model) => {
+    const stat = groqModelStats.get(model);
+    if (!stat) return true;
+    return !(
+      stat.failures >= 2 &&
+      now - stat.lastFailureAt < GROQ_MODEL_FAILURE_COOLDOWN_MS
+    );
+  });
+  const pool = notCoolingDown.length > 0 ? notCoolingDown : all;
+
+  const measured = pool
+    .filter((model) => (groqModelStats.get(model)?.samples ?? 0) > 0)
+    .sort(
+      (left, right) =>
+        averageLatency(left) - averageLatency(right) ||
+        left.localeCompare(right),
+    );
+  const unmeasured = pool
+    .filter((model) => (groqModelStats.get(model)?.samples ?? 0) === 0)
+    .sort(
+      (left, right) =>
+        groqModelPriority(left) - groqModelPriority(right) ||
+        left.localeCompare(right),
+    );
+
+  let ordered = [...measured, ...unmeasured];
+  if (
+    unmeasured.length > 0 &&
+    groqRequestCount > 0 &&
+    groqRequestCount % GROQ_MODEL_EXPLORATION_INTERVAL === 0
+  ) {
+    const probe = unmeasured[groqExplorationCursor % unmeasured.length];
+    groqExplorationCursor += 1;
+    ordered = [probe, ...ordered.filter((model) => model !== probe)];
+  }
+
+  return ordered.slice(0, readGroqModelAttempts());
+}
+
 export function getActiveChatProviderName(): ChatProviderName {
   const requested = process.env.MODEL_PROVIDER?.trim().toLowerCase();
   if (requested === 'groq') return 'groq';
@@ -144,6 +374,10 @@ export function getProviderStatus(): {
 
 export function clearChatProviderAvailabilityCache(): void {
   availabilityCache = null;
+  groqModelCache = null;
+  groqModelStats.clear();
+  groqRequestCount = 0;
+  groqExplorationCursor = 0;
 }
 
 export async function isChatProviderAvailable(
@@ -151,13 +385,12 @@ export async function isChatProviderAvailable(
 ): Promise<boolean> {
   const provider = getActiveChatProviderName();
   let baseUrl: string;
-  let headers: Record<string, string> = {};
+  let apiKey = '';
   try {
     if (provider === 'groq') {
       baseUrl = resolveGroqBaseUrl();
-      const apiKey = process.env.GROQ_API_KEY?.trim();
+      apiKey = process.env.GROQ_API_KEY?.trim() ?? '';
       if (!apiKey) return false;
-      headers = { Authorization: `Bearer ${apiKey}` };
     } else {
       baseUrl = getLmStudioBaseUrl();
     }
@@ -177,16 +410,22 @@ export async function isChatProviderAvailable(
 
   let available = false;
   try {
-    const response = await fetch(`${baseUrl}/models`, {
-      headers,
-      signal: AbortSignal.timeout(AVAILABILITY_TIMEOUT_MS),
-    });
-    if (response.ok) {
-      const payload: unknown = await response.json();
+    if (provider === 'groq') {
       available =
-        isRecord(payload) &&
-        Array.isArray(payload.data) &&
-        payload.data.length > 0;
+        (await listGroqChatModels(baseUrl, apiKey, {
+          bypassCache: options.bypassCache,
+        })).length > 0;
+    } else {
+      const response = await fetch(`${baseUrl}/models`, {
+        signal: AbortSignal.timeout(AVAILABILITY_TIMEOUT_MS),
+      });
+      if (response.ok) {
+        const payload: unknown = await response.json();
+        available =
+          isRecord(payload) &&
+          Array.isArray(payload.data) &&
+          payload.data.length > 0;
+      }
     }
   } catch {
     available = false;
@@ -317,7 +556,12 @@ async function requestGroqModel(
   model: string,
   messages: ChatMessage[],
   maxTokens: number,
+  supersededBy?: AbortSignal,
 ): Promise<string> {
+  const timeoutSignal = AbortSignal.timeout(readTimeout());
+  const signal = supersededBy
+    ? AbortSignal.any([supersededBy, timeoutSignal])
+    : timeoutSignal;
   let response: Response;
   try {
     response = await fetch(`${baseUrl}/chat/completions`, {
@@ -332,13 +576,16 @@ async function requestGroqModel(
         max_tokens: maxTokens,
         temperature: 0.1,
       }),
-      signal: AbortSignal.timeout(readTimeout()),
+      signal,
     });
   } catch (error) {
-    if (
-      error instanceof Error &&
-      (error.name === 'AbortError' || error.name === 'TimeoutError')
-    ) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      if (supersededBy?.aborted) throw new GroqAbortedError();
+      throw new ModelProviderUnavailableError(
+        'The chat provider request timed out.',
+      );
+    }
+    if (error instanceof Error && error.name === 'TimeoutError') {
       throw new ModelProviderUnavailableError(
         'The chat provider request timed out.',
       );
@@ -361,6 +608,20 @@ async function requestGroqModel(
       !/rate limit|quota/i.test(diagnostic)
     ) {
       throw new GroqModelSelectionError();
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new GroqFatalError(
+        'The chat provider rejected the configured credentials.',
+      );
+    }
+    if (
+      response.status === 400 ||
+      response.status === 413 ||
+      response.status === 422
+    ) {
+      throw new GroqFatalError(
+        `The chat provider rejected the request (HTTP ${response.status}).`,
+      );
     }
     if (response.status === 429 || response.status >= 500) {
       throw new ModelProviderUnavailableError(
@@ -394,45 +655,120 @@ async function requestGroq(
     );
   }
   const baseUrl = resolveGroqBaseUrl();
-  const primaryModel =
-    process.env.GROQ_CHAT_MODEL?.trim() || DEFAULT_GROQ_CHAT_MODEL;
-  const fallbackModel =
-    process.env.GROQ_CHAT_MODEL_FALLBACK?.trim() ||
-    DEFAULT_GROQ_CHAT_MODEL_FALLBACK;
-
-  try {
-    return await requestGroqModel(
-      baseUrl,
-      apiKey,
-      primaryModel,
-      messages,
-      maxTokens,
+  groqRequestCount += 1;
+  const discovered = await listGroqChatModels(baseUrl, apiKey);
+  const models = rankGroqModels(discovered);
+  if (models.length === 0) {
+    throw new ModelProviderUnavailableError(
+      'The configured chat provider models are not available.',
     );
-  } catch (error) {
-    if (!(error instanceof GroqModelSelectionError)) throw error;
-    if (!fallbackModel || fallbackModel === primaryModel) {
-      throw new ModelProviderUnavailableError(
-        'The configured chat provider model is not available.',
-      );
-    }
   }
 
-  try {
-    return await requestGroqModel(
-      baseUrl,
-      apiKey,
-      fallbackModel,
-      messages,
-      maxTokens,
-    );
-  } catch (error) {
-    if (error instanceof GroqModelSelectionError) {
-      throw new ModelProviderUnavailableError(
-        'The configured chat provider models are not available.',
-      );
+  const parallel = Math.min(readGroqParallelAttempts(), models.length);
+  const hedgeDelay = readGroqHedgeDelay();
+
+  return new Promise<string>((resolve, reject) => {
+    const controllers = new Set<AbortController>();
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+    let nextIndex = 0;
+    let inFlight = 0;
+    let settled = false;
+    let lastError: unknown = null;
+
+    const finish = (complete: () => void) => {
+      if (settled) return;
+      settled = true;
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+      complete();
+    };
+
+    const abortAll = () => {
+      for (const controller of controllers) controller.abort();
+      controllers.clear();
+    };
+
+    const rejectExhausted = () => {
+      finish(() => {
+        if (lastError instanceof ModelProviderResponseError) {
+          reject(lastError);
+          return;
+        }
+        if (lastError instanceof GroqModelSelectionError) {
+          reject(
+            new ModelProviderUnavailableError(
+              'The configured chat provider models are not available.',
+            ),
+          );
+          return;
+        }
+        reject(
+          new ModelProviderUnavailableError(
+            `The chat provider is temporarily unavailable; all ${models.length} free chat models failed.`,
+          ),
+        );
+      });
+    };
+
+    const launch = () => {
+      if (settled || nextIndex >= models.length) {
+        if (!settled && inFlight === 0) rejectExhausted();
+        return;
+      }
+      const model = models[nextIndex];
+      nextIndex += 1;
+      const controller = new AbortController();
+      controllers.add(controller);
+      inFlight += 1;
+      const startedAt = Date.now();
+
+      requestGroqModel(
+        baseUrl,
+        apiKey,
+        model,
+        messages,
+        maxTokens,
+        controller.signal,
+      )
+        .then((content) => {
+          if (settled) return;
+          recordGroqSuccess(model, Date.now() - startedAt);
+          finish(() => {
+            abortAll();
+            resolve(content);
+          });
+        })
+        .catch((error: unknown) => {
+          controllers.delete(controller);
+          inFlight -= 1;
+          if (settled) return;
+          if (error instanceof GroqAbortedError) return;
+          recordGroqFailure(model);
+          if (error instanceof GroqFatalError) {
+            finish(() => {
+              abortAll();
+              reject(error);
+            });
+            return;
+          }
+          lastError = error;
+          launch();
+          if (nextIndex >= models.length && inFlight === 0) rejectExhausted();
+        });
+    };
+
+    for (let index = 0; index < parallel; index += 1) {
+      if (index === 0) {
+        launch();
+        continue;
+      }
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        if (inFlight < parallel) launch();
+      }, hedgeDelay * index);
+      timers.add(timer);
     }
-    throw error;
-  }
+  });
 }
 
 export async function generateChatCompletion(
