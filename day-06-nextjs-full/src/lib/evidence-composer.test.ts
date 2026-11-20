@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildEvidencePacket, composeValidatedSummary, validateDraftAgainstEvidence } from './evidence-composer';
+import {
+  answerFromAvailableEvidence,
+  buildEvidencePacket,
+  composeValidatedSummary,
+  validateDraftAgainstEvidence,
+} from './evidence-composer';
 
 describe('evidence-bound composition', () => {
   it('distinguishes empty, single-row and multi-row evidence', () => {
@@ -32,5 +37,22 @@ describe('evidence-bound composition', () => {
       { period: '2026-10', capitalAdequacy: 9.4 },
     ]);
     expect(composeValidatedSummary(packet).text).toContain('13.74');
+  });
+
+  it('calculates from arbitrary nested tool results', () => {
+    const answer = answerFromAvailableEvidence(
+      'What is the average loan for June to October 2026?',
+      {
+        institution: { institutionId: 'TZ004' },
+        reports: [
+          { period: '2026-06', loans: 10.7 },
+          { period: '2026-07', loans: 14.8 },
+          { period: '2026-08', loans: 14.8 },
+          { period: '2026-09', loans: 14.8 },
+          { period: '2026-10', loans: 15.5 },
+        ],
+      },
+    );
+    expect(answer).toContain('14.12');
   });
 });

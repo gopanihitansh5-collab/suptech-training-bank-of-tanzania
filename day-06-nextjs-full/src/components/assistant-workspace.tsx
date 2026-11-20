@@ -574,7 +574,11 @@ export function AssistantWorkspace() {
       const response = await fetch('/api/assistant/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tool: plan.tool, arguments: plan.arguments }),
+        body: JSON.stringify({
+          tool: plan.tool,
+          arguments: plan.arguments,
+          question,
+        }),
       });
       const payload: unknown = await response.json().catch(() => null);
       if (!response.ok) {

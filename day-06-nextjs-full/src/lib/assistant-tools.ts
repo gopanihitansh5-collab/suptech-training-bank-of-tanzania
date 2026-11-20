@@ -11,6 +11,7 @@ import {
 import { answerFromEvidence } from './grounded-answer';
 import { searchGroundedEvidence } from './grounded-retrieval';
 import { narrateToolResult, type AssistantNarrative } from './assistant-narrative';
+import { answerFromAvailableEvidence } from './evidence-composer';
 
 export type ToolName =
   | 'get_portfolio_overview'
@@ -340,7 +341,7 @@ function defined(values: Record<string, unknown>): Record<string, unknown> {
   );
 }
 
-export async function runTool(name: string, rawArguments: unknown): Promise<ToolResult> {
+async function executeTool(name: string, rawArguments: unknown): Promise<ToolResult> {
   if (!isToolName(name)) {
     throw new RequestValidationError('Unknown assistant tool.');
   }
@@ -524,4 +525,25 @@ export async function runTool(name: string, rawArguments: unknown): Promise<Tool
     default:
       throw new RequestValidationError('Unknown assistant tool.');
   }
+}
+
+export async function runTool(
+  name: string,
+  rawArguments: unknown,
+  question?: string,
+): Promise<ToolResult> {
+  const toolResult = await executeTool(name, rawArguments);
+  if (!question) return toolResult;
+  const evidenceAnswer = answerFromAvailableEvidence(question, toolResult.result);
+  if (!evidenceAnswer) return toolResult;
+  return {
+    ...toolResult,
+    summary: evidenceAnswer,
+    narrative: {
+      ...toolResult.narrative,
+      headline: 'Evidence-based result',
+      summary: evidenceAnswer,
+      detail: 'Calculated directly from the returned synthetic records.',
+    },
+  };
 }

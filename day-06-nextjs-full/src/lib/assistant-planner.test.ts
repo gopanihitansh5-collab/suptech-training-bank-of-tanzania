@@ -191,4 +191,10 @@ describe('assistant query planner', () => {
       arguments: { status: 'open' },
     });
   });
+
+  it('routes institution history calculations to the full institution evidence', () => {
+    expect(planAssistantQuestion(
+      'What is the average capital ratio for TZ004 from June to October 2026?',
+    ).tool).toBe('get_institution');
+  });
 });

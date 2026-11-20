@@ -172,6 +172,19 @@ export function planAssistantQuestion(question: string): AssistantPlan {
     );
   }
 
+  if (
+    institutionId &&
+    /\b(?:average|avg|mean|sum|total|change|difference|highest|max|maximum|lowest|min|minimum|latest|most recent|current|from|through|between)\b/.test(normalized) &&
+    /\b(?:capital|captical|car|npl|liquidity|completeness|deposits?|loans?|report|history)\b/.test(normalized)
+  ) {
+    return plan(
+      'get_institution',
+      { institutionId },
+      `Inspect the full synthetic reporting history for ${institutionId} and calculate the requested result.`,
+      'Persisted synthetic institution reports and linked review signals.',
+    );
+  }
+
   if (hasBreakdownTerm) {
     if (hasExceptionTerm) {
       return planExceptions(normalized, institutionId, period);

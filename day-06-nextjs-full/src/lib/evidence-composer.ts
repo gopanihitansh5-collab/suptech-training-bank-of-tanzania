@@ -102,6 +102,10 @@ function computeRequestedOperation(packet: EvidencePacket): string | null {
           requested.field,
           requested.field === 'capitalAdequacy' ? 'capital_adequacy' : requested.field,
           requested.field === 'nplRatio' ? 'npl_ratio' : requested.field,
+          requested.field === 'capitalAdequacy' ? 'capitalAdequacyRatioPercent' : requested.field,
+          requested.field === 'nplRatio' ? 'nplRatioPercent' : requested.field,
+          requested.field === 'liquidity' ? 'liquidityRatioPercent' : requested.field,
+          requested.field === 'completeness' ? 'completenessPercent' : requested.field,
           requested.field === 'deposits' ? 'depositsTzsBillions' : requested.field,
           requested.field === 'loans' ? 'loansTzsBillions' : requested.field,
         ]
@@ -223,4 +227,38 @@ export function composeValidatedSummary(packet: EvidencePacket, draft?: string):
     validated: false,
     unsupportedNumbers: validation.unsupportedNumbers,
   };
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function collectEvidenceRows(value: unknown, rows: Array<Record<string, unknown>>, depth = 0): void {
+  if (depth > 4) return;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (isPlainRecord(item)) rows.push(item);
+      collectEvidenceRows(item, rows, depth + 1);
+    }
+    return;
+  }
+  if (!isPlainRecord(value)) return;
+  for (const child of Object.values(value)) {
+    if (Array.isArray(child) || isPlainRecord(child)) {
+      collectEvidenceRows(child, rows, depth + 1);
+    }
+  }
+}
+
+export function answerFromAvailableEvidence(question: string, evidence: unknown): string | null {
+  const rows: Array<Record<string, unknown>> = [];
+  collectEvidenceRows(evidence, rows);
+  if (rows.length === 0) return null;
+  const packet = buildEvidencePacket(question, rows);
+  const answer = composeDataSummary(packet);
+  if (answer.startsWith('No rows matched') ||
+      answer.startsWith(`${packet.rowCount} rows were returned`)) {
+    return null;
+  }
+  return answer;
 }
